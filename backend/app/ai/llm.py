@@ -35,7 +35,15 @@ def _openai():
     if _client is None:
         from openai import AsyncOpenAI
 
-        kwargs = {"api_key": settings.OPENAI_API_KEY}
+        import httpx
+
+        # The SDK default is 600 s per attempt with 2 retries: an overloaded provider then
+        # leaves a run silent for many minutes. Fail in 2 minutes instead → ai.run.error.
+        kwargs = {
+            "api_key": settings.OPENAI_API_KEY,
+            "timeout": httpx.Timeout(120.0, connect=15.0),
+            "max_retries": 1,
+        }
         if settings.OPENAI_BASE_URL:
             kwargs["base_url"] = settings.OPENAI_BASE_URL
         _client = AsyncOpenAI(**kwargs)
