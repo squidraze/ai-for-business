@@ -1,0 +1,243 @@
+{
+  "approval": {
+    "actionFallback": "Action",
+    "allowSession": "Allow for this session",
+    "alwaysAllow": "Always allow",
+    "approve": "Approve",
+    "approved": "You approved this action.",
+    "approvedAlways": "You approved this action · always allowed.",
+    "approvedSession": "You approved this action · allowed for this session.",
+    "free": "Free this action",
+    "freeFailed": "Couldn't free this action. Please try again.",
+    "freeFailedTitle": "Couldn't free it",
+    "message": "The assistant needs your OK to continue.",
+    "reject": "Reject",
+    "rejected": "You rejected this action.",
+    "strandedMessage": "Your decision was received, but the assistant never continued. Free it to decide again.",
+    "strandedTitle": "This action got stuck",
+    "submitFailed": "Couldn't submit your decision. Please try again.",
+    "submitFailedTitle": "Couldn't submit",
+    "title": "Approval required"
+  },
+  "artifact": {
+    "empty": "This view arrived without content.",
+    "failed": "This view couldn’t be displayed.",
+    "untitled": "Generated view"
+  },
+  "attachments": {
+    "image": "Image",
+    "list": "Attachments",
+    "noUploadedFile": "The server did not return an uploaded file.",
+    "notAvailable": "This file isn't available yet.",
+    "notUploaded": "This file didn't upload.",
+    "open": "Open {{name}}",
+    "photos_one": "1 photo",
+    "photos_other": "{{count}} photos",
+    "remove": "Remove {{name}}",
+    "retryUpload": "Retry uploading {{name}}",
+    "sheetTitle": "Add to Chat",
+    "someFailed": "Some attachments failed to upload. Tap them to retry.",
+    "sources": {
+      "camera": "Camera",
+      "files": "Files",
+      "photos": "Photos"
+    },
+    "stillUploading": "Please wait for attachments to finish uploading.",
+    "tooLarge_one": "That file is larger than 20 MB.",
+    "tooLarge_other": "{{count}} files are larger than 20 MB.",
+    "tooMany": "You can attach up to {{max}} files at once.",
+    "untitled": "Attachment",
+    "uploadFailedRetry": "Attachment failed to upload. Tap to retry.",
+    "uploadFailed_one": "Couldn't upload {{count}} file. Tap to retry.",
+    "uploadFailed_other": "Couldn't upload {{count}} files. Tap to retry.",
+    "uploadTimedOut": "The attachment upload timed out. Tap to retry.",
+    "uploading_one": "Uploading {{count}} file…",
+    "uploading_other": "Uploading {{count}} files…",
+    "view": "View {{name}}"
+  },
+  "autoApproved": {
+    "fallback": "an allowed action",
+    "label": "Ran automatically: {{summary}}"
+  },
+  "blocks": {
+    "alertFallback": "Notice",
+    "call": "Call {{name}}",
+    "copy": "Copy {{value}}",
+    "message": "Message {{name}}",
+    "noStops": "No stops to show.",
+    "openShipment": "Open shipment {{id}}",
+    "route": "Route",
+    "status": {
+      "cancelled": "Cancelled",
+      "delayed": "Delayed",
+      "delivered": "Delivered",
+      "inTransit": "In transit",
+      "pending": "Pending"
+    },
+    "stops_one": "{{count}} stop",
+    "stops_other": "{{count}} stops"
+  },
+  "boot": {
+    "failed": "The chat could not start."
+  },
+  "branch": {
+    "next": "Next version",
+    "previous": "Previous version",
+    "switchFailed": "Couldn't switch to that version. Please try again.",
+    "version": "Version {{index}} of {{count}}"
+  },
+  "charts": {
+    "lineChart": "Line chart",
+    "noData": "No data.",
+    "other": "Other",
+    "total": "Total"
+  },
+  "chat": {
+    "loadFailed": "Could not load this conversation. Please try again.",
+    "loading": "Loading conversation",
+    "scrollToBottom": "Scroll to latest message"
+  },
+  "common": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "send": "Send",
+    "tryAgain": "Try again"
+  },
+  "company": {
+    "change": "Company: {{name}}. Change company",
+    "current": "Company: {{name}}",
+    "select": "Select company"
+  },
+  "composer": {
+    "addAttachment": "Add attachment",
+    "message": "Message",
+    "placeholder": "Your message...",
+    "send": "Send message",
+    "stop": "Stop generating",
+    "voiceMode": "Voice mode"
+  },
+  "connectors": {
+    "add": "Add connector",
+    "emptyDescription": "Connect Telegram and Gmail for the assistant to use.",
+    "emptyTitle": "No connected apps",
+    "loadFailed": "Couldn't load your connected apps.",
+    "manage": "Manage connectors",
+    "subtitle": "The assistant can use these apps in this chat.",
+    "title": "Connectors",
+    "toggleFailed": "Couldn't change the connector"
+  },
+  "delegation": {
+    "status": {
+      "done": "Done",
+      "failed": "Didn’t finish",
+      "running": "Working…"
+    },
+    "title": "Delegating to {{agent}}",
+    "titleUnnamed": "Delegating to a subagent"
+  },
+  "emptyThread": {
+    "agentTitle": "Chat with {{name}}",
+    "attention": {
+      "count_one": "{{count}} items",
+      "count_other": "{{count}} items",
+      "title": "Needs attention"
+    },
+    "greeting": "What help do you need?"
+  },
+  "errors": {
+    "loadFailedTitle": "Couldn't load",
+    "offline": "No connection. Check your network and try again.",
+    "requestFailed": "The request failed.",
+    "requestFailedStatus": "Request failed with status code {{status}}",
+    "resumeFailed": "Could not send your decision. Please try again.",
+    "sendFailed": "Could not send your message. Please try again.",
+    "somethingWentWrong": "Something went wrong.",
+    "timedOut": "The request timed out. Please try again."
+  },
+  "message": {
+    "actions": "Message actions",
+    "copied": "Copied",
+    "copy": "Copy message",
+    "delete": "Delete message",
+    "deleteConfirm": "Delete",
+    "deleteDescription": "It will be removed from this conversation. This can’t be undone.",
+    "deleteFailed": "Couldn't delete the message. Please try again.",
+    "deleteTitle": "Delete this message?",
+    "edit": "Edit message",
+    "less": "Less",
+    "more": "More",
+    "notSent": "Message not sent",
+    "notSentHint": "Tap Try again to resend it."
+  },
+  "queue": {
+    "queued": "Queued",
+    "remove": "Remove",
+    "sendNow": "Send now"
+  },
+  "rating": {
+    "bad": "Bad response",
+    "failed": "Couldn't save that. Please try again.",
+    "good": "Good response",
+    "regenerate": "Regenerate response",
+    "remove": "Remove your rating",
+    "unsupported": "This reply is from before feedback existed, so it can’t be rated."
+  },
+  "reply": {
+    "emptyMessage": "The assistant didn't return a response. Please try again.",
+    "emptyTitle": "No response",
+    "failedMessage": "Something went wrong while generating the reply. Please try again.",
+    "failedTitle": "Couldn't get a response",
+    "runFailed": "AI run failed",
+    "stalled": "The assistant stopped responding — this reply is incomplete.",
+    "stopped": "The response was stopped.",
+    "stoppedResponding": "The assistant stopped responding. Please try again.",
+    "typing": "AI is replying"
+  },
+  "report": {
+    "open": "Report response"
+  },
+  "starters": {
+    "telegramUnread": {
+      "label": "Unread Telegram chats",
+      "prompt": "Summarize my unread Telegram chats: who wrote, what they want, and what needs a reply."
+    },
+    "emailsToday": {
+      "label": "Important emails today",
+      "prompt": "Today is {{today}}. What important emails did I get today? List each with the sender and a one-line summary."
+    },
+    "draftReply": {
+      "label": "Reply to the last email",
+      "prompt": "Draft a reply to the last email I received. Show me the draft before sending anything."
+    },
+    "telegramSearch": {
+      "label": "Find a Telegram message",
+      "prompt": "I'll describe a message — find it in my Telegram chats and tell me who sent it and when."
+    }
+  },
+  "time": {
+    "dayAt": "{{day}}, {{time}}",
+    "todayAt": "Today, {{time}}",
+    "yesterdayAt": "Yesterday, {{time}}"
+  },
+  "todos": {
+    "progress": "Tasks · {{done}} of {{total}}"
+  },
+  "toolCalls": {
+    "fallbackName": "Tool call",
+    "parameters": "Parameters",
+    "result": "Result",
+    "searchConnectedApps": "Connected apps · Search",
+    "status": {
+      "awaiting": "Awaiting approval",
+      "denied": "Denied",
+      "done": "Completed",
+      "error": "Error",
+      "running": "Pending"
+    },
+    "used_one": "Used {{count}} tool",
+    "used_other": "Used {{count}} tools",
+    "using_one": "Using {{count}} tool…",
+    "using_other": "Using {{count}} tools…"
+  }
+}

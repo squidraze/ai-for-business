@@ -1,0 +1,243 @@
+{
+  "approval": {
+    "actionFallback": "Amal",
+    "allowSession": "Bu seans uchun ruxsat berish",
+    "alwaysAllow": "Doim ruxsat berish",
+    "approve": "Tasdiqlash",
+    "approved": "Siz bu amalni tasdiqladingiz.",
+    "approvedAlways": "Siz bu amalni tasdiqladingiz · endi doim ruxsat etiladi.",
+    "approvedSession": "Siz bu amalni tasdiqladingiz · bu seansda ruxsat etiladi.",
+    "free": "Amalni boʻshatish",
+    "freeFailed": "Amalni boʻshatib boʻlmadi. Qayta urinib koʻring.",
+    "freeFailedTitle": "Boʻshatib boʻlmadi",
+    "message": "Davom etish uchun assistentga roziligingiz kerak.",
+    "reject": "Rad etish",
+    "rejected": "Siz bu amalni rad etdingiz.",
+    "strandedMessage": "Qaroringiz qabul qilindi, lekin assistent davom etmadi. Qaytadan qaror qilish uchun amalni boʻshating.",
+    "strandedTitle": "Bu amal osilib qoldi",
+    "submitFailed": "Qaroringizni yuborib boʻlmadi. Qayta urinib koʻring.",
+    "submitFailedTitle": "Yuborib boʻlmadi",
+    "title": "Tasdiqlash talab etiladi"
+  },
+  "artifact": {
+    "empty": "Bu koʻrinish mazmunsiz keldi.",
+    "failed": "Bu koʻrinishni koʻrsatib boʻlmadi.",
+    "untitled": "Yaratilgan koʻrinish"
+  },
+  "attachments": {
+    "image": "Rasm",
+    "list": "Ilovalar",
+    "noUploadedFile": "Server yuklangan faylni qaytarmadi.",
+    "notAvailable": "Bu fayl hali mavjud emas.",
+    "notUploaded": "Bu fayl yuklanmadi.",
+    "open": "Ochish: {{name}}",
+    "photos_one": "{{count}} ta rasm",
+    "photos_other": "{{count}} ta rasm",
+    "remove": "Olib tashlash: {{name}}",
+    "retryUpload": "Qayta yuklash: {{name}}",
+    "sheetTitle": "Chatga qoʻshish",
+    "someFailed": "Baʼzi ilovalar yuklanmadi. Qayta urinish uchun ularni bosing.",
+    "sources": {
+      "camera": "Kamera",
+      "files": "Fayllar",
+      "photos": "Rasmlar"
+    },
+    "stillUploading": "Ilovalar yuklanib boʻlishini kuting.",
+    "tooLarge_one": "Bu fayl 20 MB dan katta.",
+    "tooLarge_other": "{{count}} ta fayl 20 MB dan katta.",
+    "tooMany": "Bir vaqtda koʻpi bilan {{max}} ta fayl biriktirish mumkin.",
+    "untitled": "Ilova",
+    "uploadFailedRetry": "Ilova yuklanmadi. Qayta urinish uchun bosing.",
+    "uploadFailed_one": "{{count}} ta faylni yuklab boʻlmadi. Qayta urinish uchun bosing.",
+    "uploadFailed_other": "{{count}} ta faylni yuklab boʻlmadi. Qayta urinish uchun bosing.",
+    "uploadTimedOut": "Ilovani yuklash vaqti tugadi. Qayta urinish uchun bosing.",
+    "uploading_one": "{{count}} ta fayl yuklanmoqda…",
+    "uploading_other": "{{count}} ta fayl yuklanmoqda…",
+    "view": "Koʻrish: {{name}}"
+  },
+  "autoApproved": {
+    "fallback": "ruxsat berilgan amal",
+    "label": "Avtomatik bajarildi: {{summary}}"
+  },
+  "blocks": {
+    "alertFallback": "Bildirishnoma",
+    "call": "Qoʻngʻiroq qilish: {{name}}",
+    "copy": "Nusxa olish: {{value}}",
+    "message": "Xabar yozish: {{name}}",
+    "noStops": "Koʻrsatiladigan bekatlar yoʻq.",
+    "openShipment": "{{id}} yukini ochish",
+    "route": "Marshrut",
+    "status": {
+      "cancelled": "Bekor qilindi",
+      "delayed": "Kechikmoqda",
+      "delivered": "Yetkazildi",
+      "inTransit": "Yoʻlda",
+      "pending": "Kutilmoqda"
+    },
+    "stops_one": "{{count}} ta bekat",
+    "stops_other": "{{count}} ta bekat"
+  },
+  "boot": {
+    "failed": "Chatni ishga tushirib boʻlmadi."
+  },
+  "branch": {
+    "next": "Keyingi versiya",
+    "previous": "Oldingi versiya",
+    "switchFailed": "Bu versiyaga oʻtib boʻlmadi. Qayta urinib koʻring.",
+    "version": "{{count}} tadan {{index}}-versiya"
+  },
+  "charts": {
+    "lineChart": "Chiziqli grafik",
+    "noData": "Maʼlumot yoʻq.",
+    "other": "Boshqa",
+    "total": "Jami"
+  },
+  "chat": {
+    "loadFailed": "Suhbatni yuklab boʻlmadi. Qayta urinib koʻring.",
+    "loading": "Suhbat yuklanmoqda",
+    "scrollToBottom": "Oxirgi xabarga oʻtish"
+  },
+  "common": {
+    "back": "Orqaga",
+    "cancel": "Bekor qilish",
+    "close": "Yopish",
+    "send": "Yuborish",
+    "tryAgain": "Qayta urinish"
+  },
+  "company": {
+    "change": "Kompaniya: {{name}}. Kompaniyani almashtirish",
+    "current": "Kompaniya: {{name}}",
+    "select": "Kompaniyani tanlang"
+  },
+  "composer": {
+    "addAttachment": "Ilova qoʻshish",
+    "message": "Xabar",
+    "placeholder": "Xabaringiz...",
+    "send": "Xabarni yuborish",
+    "stop": "Javobni toʻxtatish",
+    "voiceMode": "Ovozli rejim"
+  },
+  "connectors": {
+    "add": "Konnektor qoʻshish",
+    "emptyDescription": "Assistent foydalanishi uchun Telegram va Gmail’ni ulang.",
+    "emptyTitle": "Ulangan ilovalar yoʻq",
+    "loadFailed": "Ulangan ilovalarni yuklab boʻlmadi.",
+    "manage": "Konnektorlarni boshqarish",
+    "subtitle": "Assistent bu chatda ushbu ilovalardan foydalana oladi.",
+    "title": "Konnektorlar",
+    "toggleFailed": "Konnektorni oʻzgartirib boʻlmadi"
+  },
+  "delegation": {
+    "status": {
+      "done": "Tayyor",
+      "failed": "Yakunlanmadi",
+      "running": "Bajarilmoqda…"
+    },
+    "title": "Vazifa topshirilmoqda: {{agent}}",
+    "titleUnnamed": "Vazifa subagentga topshirilmoqda"
+  },
+  "emptyThread": {
+    "agentTitle": "{{name}} bilan chat",
+    "attention": {
+      "count_one": "{{count}} ta band",
+      "count_other": "{{count}} ta band",
+      "title": "Eʼtibor talab etadi"
+    },
+    "greeting": "Sizga qanday yordam kerak?"
+  },
+  "errors": {
+    "loadFailedTitle": "Yuklab boʻlmadi",
+    "offline": "Aloqa yoʻq. Internetni tekshirib, qayta urinib koʻring.",
+    "requestFailed": "Soʻrov bajarilmadi.",
+    "requestFailedStatus": "Soʻrov {{status}} kodi bilan yakunlandi",
+    "resumeFailed": "Qaroringizni yuborib boʻlmadi. Qayta urinib koʻring.",
+    "sendFailed": "Xabarni yuborib boʻlmadi. Qayta urinib koʻring.",
+    "somethingWentWrong": "Nimadir xato ketdi.",
+    "timedOut": "Soʻrov vaqti tugadi. Qayta urinib koʻring."
+  },
+  "message": {
+    "actions": "Xabar amallari",
+    "copied": "Nusxa olindi",
+    "copy": "Xabardan nusxa olish",
+    "delete": "Xabarni oʻchirish",
+    "deleteConfirm": "Oʻchirish",
+    "deleteDescription": "U ushbu suhbatdan olib tashlanadi. Buni qaytarib boʻlmaydi.",
+    "deleteFailed": "Xabarni oʻchirib boʻlmadi. Qayta urinib koʻring.",
+    "deleteTitle": "Bu xabar oʻchirilsinmi?",
+    "edit": "Xabarni tahrirlash",
+    "less": "Yigʻish",
+    "more": "Yana",
+    "notSent": "Xabar yuborilmadi",
+    "notSentHint": "Qayta yuborish uchun “Qayta urinish”ni bosing."
+  },
+  "queue": {
+    "queued": "Navbatda",
+    "remove": "Olib tashlash",
+    "sendNow": "Hozir yuborish"
+  },
+  "rating": {
+    "bad": "Yomon javob",
+    "failed": "Saqlab boʻlmadi. Qayta urinib koʻring.",
+    "good": "Yaxshi javob",
+    "regenerate": "Javobni qayta yaratish",
+    "remove": "Bahoni olib tashlash",
+    "unsupported": "Bu javob baholash funksiyasidan oldin yozilgan, shuning uchun uni baholab boʻlmaydi."
+  },
+  "reply": {
+    "emptyMessage": "Assistent javob qaytarmadi. Qayta urinib koʻring.",
+    "emptyTitle": "Javob yoʻq",
+    "failedMessage": "Javob tayyorlashda xatolik yuz berdi. Qayta urinib koʻring.",
+    "failedTitle": "Javob olib boʻlmadi",
+    "runFailed": "AI soʻrovini bajarishda xato",
+    "stalled": "Assistent javob berishni toʻxtatdi — bu javob toʻliq emas.",
+    "stopped": "Javob toʻxtatildi.",
+    "stoppedResponding": "Assistent javob berishni toʻxtatdi. Qayta urinib koʻring.",
+    "typing": "AI javob yozmoqda"
+  },
+  "report": {
+    "open": "Javob ustidan shikoyat qilish"
+  },
+  "starters": {
+    "telegramUnread": {
+      "label": "O‘qilmagan Telegram chatlar",
+      "prompt": "O‘qilmagan Telegram chatlarimni qisqacha bayon qil: kim yozdi, nima istaydi va nimaga javob berish kerak."
+    },
+    "emailsToday": {
+      "label": "Bugungi muhim xatlar",
+      "prompt": "Bugun {{today}}. Bugun qanday muhim xatlar oldim? Har birini yuboruvchi va bir qatorlik mazmuni bilan sanab ber."
+    },
+    "draftReply": {
+      "label": "Oxirgi xatga javob",
+      "prompt": "Oxirgi olgan xatimga javob tayyorla. Biror narsa yuborishdan oldin qoralamani ko‘rsat."
+    },
+    "telegramSearch": {
+      "label": "Telegram xabarini topish",
+      "prompt": "Men xabarni tasvirlab beraman — uni Telegram chatlarimdan top va kim, qachon yuborganini ayt."
+    }
+  },
+  "time": {
+    "dayAt": "{{day}}, {{time}}",
+    "todayAt": "Bugun, {{time}}",
+    "yesterdayAt": "Kecha, {{time}}"
+  },
+  "todos": {
+    "progress": "Vazifalar · {{total}} tadan {{done}}"
+  },
+  "toolCalls": {
+    "fallbackName": "Vosita chaqiruvi",
+    "parameters": "Parametrlar",
+    "result": "Natija",
+    "searchConnectedApps": "Ulangan ilovalar · Qidiruv",
+    "status": {
+      "awaiting": "Tasdiq kutilmoqda",
+      "denied": "Rad etildi",
+      "done": "Bajarildi",
+      "error": "Xato",
+      "running": "Bajarilmoqda"
+    },
+    "used_one": "{{count}} ta vositadan foydalanildi",
+    "used_other": "{{count}} ta vositadan foydalanildi",
+    "using_one": "{{count}} ta vositadan foydalanilmoqda…",
+    "using_other": "{{count}} ta vositadan foydalanilmoqda…"
+  }
+}
