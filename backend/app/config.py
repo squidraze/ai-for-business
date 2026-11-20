@@ -1,0 +1,42 @@
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=str(BACKEND_DIR / ".env"), extra="ignore")
+
+    # core
+    JWT_SECRET: str = "dev-secret-change-me"
+    JWT_TTL_DAYS: int = 30
+    DATA_DIR: str = str(BACKEND_DIR / "data")
+    BACKEND_PUBLIC_URL: str = "http://localhost:8000"
+
+    # AI
+    OPENAI_API_KEY: str = ""
+    OPENAI_BASE_URL: str = ""
+    AI_MODEL: str = "gpt-4.1-mini"
+    AI_FAKE: bool = False
+
+    # Centrifugo
+    CENTRIFUGO_API_URL: str = "http://localhost:8001/api"
+    CENTRIFUGO_API_KEY: str = "dev-centrifugo-api-key"
+    CENTRIFUGO_TOKEN_HMAC_SECRET_KEY: str = "dev-centrifugo-hmac-secret"
+    CENTRIFUGO_PUBLIC_URL: str = "ws://localhost:8001/connection/websocket"
+
+    # connectors
+    TELEGRAM_API_ID: int = 0
+    TELEGRAM_API_HASH: str = ""
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+
+    @property
+    def data_path(self) -> Path:
+        p = Path(self.DATA_DIR)
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+
+
+settings = Settings()
