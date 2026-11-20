@@ -63,6 +63,9 @@ async def step(messages: list[dict], tools: list[dict], on_delta: OnDelta) -> tu
 
     text = ""
     calls: dict[int, dict] = {}
+    # OpenAI keys parallel calls by `index`; Gemini sends every parallel call whole, all at
+    # index 0 with distinct ids — so a new id on an occupied index starts a new call.
+    current: dict[int, int] = {}  # stream index → key in `calls`
     async for chunk in stream:
         if not chunk.choices:
             continue
@@ -73,7 +76,13 @@ async def step(messages: list[dict], tools: list[dict], on_delta: OnDelta) -> tu
             text += delta.content
             await on_delta(delta.content)
         for tc in delta.tool_calls or []:
-            slot = calls.setdefault(tc.index, {"id": None, "name": "", "arguments": ""})
+            idx = tc.index or 0
+            key = current.get(idx)
+            if key is None or (tc.id and calls[key]["id"] and calls[key]["id"] != tc.id):
+                key = len(calls)
+                current[idx] = key
+                calls[key] = {"id": None, "name": "", "arguments": ""}
+            slot = calls[key]
             if tc.id:
                 slot["id"] = tc.id
             if tc.function:
