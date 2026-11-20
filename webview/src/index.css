@@ -4,7 +4,7 @@
  * SF Pro Display — the app's own face, carried by this page too.
  *
  * These are the same three files the Expo app loads in `app/_layout.tsx`
- * (`apps/business/assets/fonts/`), copied in because a `file://` page with
+ * (`src/fonts/`), copied in because a `file://` page with
  * `allowFileAccessFromFileURLs` off cannot read the app's assets, and the CSP
  * allows fonts from `data:` only. `build.assetsInlineLimit` is effectively
  * infinite, so Vite base64s them straight into the single-file bundle — which is

@@ -2,7 +2,7 @@ import { send } from '@/bridge/bridge';
 import type { LogLevel } from '@/bridge/protocol';
 
 /**
- * Everything the web app logs is forwarded to the native `@rooler/core/logger`
+ * Everything the web app logs is forwarded to the native logger
  * so one Sentry trail covers a session. Never log a token.
  */
 function emit(level: LogLevel, scope: string, message: string, context?: unknown): void {

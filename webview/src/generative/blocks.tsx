@@ -1,7 +1,7 @@
 /**
  * Generative-UI blocks — the components an AI turn can render instead of (or
  * alongside) plain text. Web port of
- * `apps/business/src/features/ai-chat/.../generativeUI/blocks.tsx`.
+ * the native app's generative blocks.
  *
  * Each block is driven by a single typed `args` object — that object IS the
  * contract the backend agrees to emit. The backend never sends React; it sends

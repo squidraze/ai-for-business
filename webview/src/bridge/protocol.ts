@@ -1,6 +1,6 @@
 /**
- * The bridge contract between the native host (apps/business,
- * src/features/ai-chat/webchat) and this web app.
+ * The bridge contract between the native host (mobile/src/webchat) and this
+ * web app.
  *
  * SOURCE OF TRUTH. This file is copied verbatim into the Expo app by
  * `npm run sync` — edit it here, never there.
