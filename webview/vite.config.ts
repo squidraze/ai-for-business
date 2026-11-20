@@ -36,7 +36,9 @@ const CONTENT_SECURITY_POLICY = [
   // NOT here any more — with nothing left to fetch, allowing it would only widen
   // where a prompt-injected string could try to send data. `blob:`/`data:` serve
   // the browser-only attachment fallback, which never runs inside the host.
-  'connect-src wss: blob: data:',
+  // forBusiness demo: Centrifugo runs on cleartext ws://localhost:8001 (adb reverse),
+  // so `ws:` is allowed too.
+  'connect-src ws: wss: blob: data:',
   "base-uri 'none'",
   "form-action 'none'",
 ].join('; ');

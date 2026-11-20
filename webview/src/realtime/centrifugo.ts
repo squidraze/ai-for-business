@@ -119,13 +119,10 @@ function openTransport(session: RealtimeSession, onReconnected: () => void): Cen
     token: describeToken(token),
   });
 
-  // The production bundle ships a CSP with `connect-src wss:` — REST leaves
-  // through the host, so the websocket is the only connection the page opens.
-  // A cleartext `ws://` endpoint is therefore blocked by the browser, and the
-  // only trace is a console line nobody reads on a device. Say it out loud
-  // instead: this is a server configuration problem, not a chat bug.
-  if (!/^wss:\/\//.test(url ?? '')) {
-    log.error('realtime url is not wss — the page CSP will block it', { url });
+  // The production bundle's CSP allows `ws:` and `wss:` (the demo backend's
+  // Centrifugo is cleartext ws://localhost:8001); anything else is blocked.
+  if (!/^wss?:\/\//.test(url ?? '')) {
+    log.error('realtime url is not ws(s) — the page CSP will block it', { url });
   }
 
   const c = new Centrifuge(url, {
