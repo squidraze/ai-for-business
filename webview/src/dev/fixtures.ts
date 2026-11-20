@@ -162,7 +162,7 @@ function seedHistory(): MockConversation {
   return {
     uuid: HISTORY_CONVERSATION_UUID,
     title: 'Late loads this week',
-    model: 'rooler-fast',
+    model: 'gpt-4.1-mini',
     createdAt: minutesAgo(45),
     updatedAt: minutesAgo(11),
     messages,
@@ -175,7 +175,7 @@ function seedEmpty(): MockConversation {
   return {
     uuid: EMPTY_CONVERSATION_UUID,
     title: 'Empty thread',
-    model: 'rooler-fast',
+    model: 'gpt-4.1-mini',
     createdAt: minutesAgo(5),
     updatedAt: minutesAgo(5),
     messages: [],

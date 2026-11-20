@@ -93,7 +93,7 @@ function conversation(conversationUuid: string): MockConversation {
   const created: MockConversation = {
     uuid: conversationUuid,
     title: null,
-    model: 'rooler-fast',
+    model: 'gpt-4.1-mini',
     createdAt: nowIso(),
     updatedAt: nowIso(),
     messages: [],
@@ -213,12 +213,8 @@ function toConversationRead(target: MockConversation): AIConversationRead {
  * `chat/connectors.ts` has something to do.
  */
 const MOCK_CONNECTIONS = [
-  { uuid: 'conn-1', provider_key: 'google-calendar', provider_display_name: 'Google Calendar', status: 'active' },
-  { uuid: 'conn-2', provider_key: 'quickbooks', provider_display_name: 'QuickBooks', status: 'active' },
-  { uuid: 'conn-3', provider_key: 'notion', provider_display_name: 'Notion', status: 'active' },
-  { uuid: 'conn-4', provider_key: 'google-calendar', provider_display_name: 'Google Calendar (work)', status: 'active' },
-  { uuid: 'conn-5', provider_key: 'telegram-bot', provider_display_name: 'Telegram bot', status: 'active' },
-  { uuid: 'conn-6', provider_key: 'zoom', provider_display_name: 'Zoom', status: 'error' },
+  { uuid: 'conn-1', provider_key: 'telegram', provider_display_name: 'Telegram', status: 'active' },
+  { uuid: 'conn-2', provider_key: 'gmail', provider_display_name: 'Gmail', status: 'active' },
 ];
 
 /** First line of the prompt — the backend auto-titles a conversation much like this. */
@@ -436,8 +432,7 @@ export function routeRequest(
     return acceptTurn(target, payload, existing === '');
   }
 
-  // A dispatcher whose role is missing `driver:read`: their own four lose
-  // "Available drivers", and the row is topped up from the fallback order.
+  // One fake company, as the demo backend answers it.
   if (verb === 'GET' && path === '/api/v1/auth/me/context') {
     return ok({
       user: { id: 'dev-user' },
@@ -447,7 +442,7 @@ export function routeRequest(
           company_id:
             (import.meta.env.VITE_DEV_COMPANY_ID as string | undefined) ||
             '00000000-0000-0000-0000-000000000001',
-          company_name: 'Dev Logistics',
+          company_name: 'Demo Company',
           role: 'dispatcher',
           permissions: ['load:read', 'analytics:read', 'ar_batch:read', 'ai:chat'],
         },
@@ -462,33 +457,33 @@ export function routeRequest(
       items: [
         {
           uuid: 'att-1',
-          kind: 'document_expired',
+          kind: 'email_unanswered',
           severity: 'critical',
-          title: 'Medical card expired',
-          subtitle: 'Alex Boznikov',
-          occurred_at: hoursAgo(50),
-          prompt: 'Alex Boznikov’s medical card expired two days ago. What does that block, and what should I do?',
+          title: 'Invoice #1042 due in 3 days',
+          subtitle: 'billing@acme.com · Gmail',
+          occurred_at: hoursAgo(26),
+          prompt: 'The email from billing@acme.com about invoice #1042 is still unanswered. Summarise it and draft a reply.',
         },
         {
           uuid: 'att-2',
-          kind: 'invoice_overdue',
+          kind: 'telegram_unread',
           severity: 'warning',
-          title: 'Invoice 30 days overdue',
-          subtitle: 'Fulton Foods · $4,820',
+          title: 'Anna is waiting for an answer',
+          subtitle: 'Telegram · 2 unread',
           occurred_at: hoursAgo(5),
-          prompt: 'Fulton Foods has an invoice 30 days overdue. Summarise it and draft a reminder.',
+          prompt: 'Anna wrote to me on Telegram. What does she want, and draft a reply.',
         },
         {
           uuid: 'att-3',
-          kind: 'status_request_pending',
+          kind: 'telegram_unread',
           severity: 'info',
-          title: 'Status request waiting',
-          subtitle: 'Load ST-4822',
+          title: '12 new messages in Team chat',
+          subtitle: 'Telegram',
           occurred_at: hoursAgo(0.5),
-          prompt: 'A driver status request on load ST-4822 is waiting. What is it and should I approve it?',
+          prompt: 'Summarise the 12 new messages in the Team chat on Telegram.',
         },
       ],
-      meta: { total: 7 },
+      meta: { total: 3 },
     });
   }
 

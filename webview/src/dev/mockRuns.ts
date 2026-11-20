@@ -221,23 +221,20 @@ export const liveRunConversation = (): string | null => {
 
 const REPLY =
   'Here is what I can see right now.\n\n' +
-  '**ST-4821** left the Chicago DC on Monday at 08:00 and cleared St. Louis at 19:40. ' +
-  'It is currently between Little Rock and Dallas, running about 20 minutes ahead of the ' +
-  'planned arrival.\n\n' +
-  '- Current ETA: **Tue 14:30** at Dallas DC\n' +
-  '- Driver: M. Reeves, truck 118\n' +
-  '- Last position update: 6 minutes ago\n\n' +
-  'Nothing on this load needs your attention. Ask me to notify the customer and I will draft ' +
-  'the message.';
+  'You have **3 unread Telegram chats** and **2 new emails** that look important.\n\n' +
+  '- **Anna (Telegram)** asks whether the contract can be signed by Friday.\n' +
+  '- **Team chat (Telegram)** — 12 new messages, mostly about the Monday release.\n' +
+  '- **billing@acme.com (Gmail)** — invoice #1042 is due in 3 days.\n\n' +
+  'Nothing is urgent. Ask me to reply to Anna and I will draft the message.';
 
 const HITL_INTRO =
-  'I can notify the customer that **ST-4822** is running late. Here is the action I want to ' +
-  'take — approve it and I will send it.\n\n';
+  'I can tell **Anna** on Telegram that the contract will be signed on Friday. Here is the ' +
+  'action I want to take — approve it and I will send it.\n\n';
 
 const HITL_TAIL =
-  '\n\nDone — the customer was notified and the ETA on the load was updated to **Wed 11:10**.';
+  '\n\nDone — Anna got the message and the reply email to billing@acme.com was sent.';
 
-const ERROR_INTRO = 'Let me pull that up for you. Checking the load board';
+const ERROR_INTRO = 'Let me pull that up for you. Checking your inbox';
 
 /**
  * What a thinking model writes before it answers — deltas on `ai.reasoning`,
@@ -389,7 +386,7 @@ export function startRun(options: StartRunOptions): void {
   runs.set(conversationUuid, run);
 
   const { mode, tool } = modeFor(prompt);
-  emit(run, 0, 'ai.run.started', { model: 'rooler-fast' });
+  emit(run, 0, 'ai.run.started', { model: 'gpt-4.1-mini' });
 
   if (mode === 'error') {
     emitTokens(run, ERROR_INTRO);
@@ -415,15 +412,14 @@ export function startRun(options: StartRunOptions): void {
     run.awaitingApproval = true;
     const actions = [
       {
-        tool: 'notify_customer',
-        title: 'Notify the customer about ST-4822',
-        description:
-          'Sends an SMS to Fulton Foods (+1 312 555 0142) with the new ETA of Wed 11:10.',
+        tool: 'telegram_send_message',
+        title: 'Send a Telegram message to Anna',
+        description: '“Hi Anna, the contract will be signed on Friday.”',
       },
       {
-        tool: 'update_load',
-        title: 'Update the load ETA',
-        description: 'Writes the revised ETA back onto ST-4822 in the TMS.',
+        tool: 'gmail_reply',
+        title: 'Reply to billing@acme.com',
+        description: 'Replies in the invoice #1042 thread: “Thanks, it will be paid by Thursday.”',
       },
     ];
     // `/hitl session`: one tool on the card accepts only `session`, so the card
@@ -431,14 +427,14 @@ export function startRun(options: StartRunOptions): void {
     const allowOptions: Record<string, AllowScope[]> = prompt.includes('none')
       ? {}
       : prompt.includes('session')
-        ? { notify_customer: ['session'], update_load: ['session', 'always'] }
-        : { notify_customer: ['session', 'always'], update_load: ['session', 'always'] };
+        ? { telegram_send_message: ['session'], gmail_reply: ['session', 'always'] }
+        : { telegram_send_message: ['session', 'always'], gmail_reply: ['session', 'always'] };
     // The gated call is announced before the pause, the way the backend does it,
     // so its card reads "Awaiting approval" until the decision lands.
     emit(run, 150, 'ai.tool_call', {
-      tool: 'notify_customer',
+      tool: 'telegram_send_message',
       tool_call_id: `call-${runUuid}-gated`,
-      args: { load: 'ST-4822', channel: 'sms' },
+      args: { chat_id: 'Anna', text: 'Hi Anna, the contract will be signed on Friday.' },
     });
     run.pending = {
       uuid: `pending-${runUuid}`,
@@ -693,7 +689,7 @@ export function resumeRun(
   emit(run, 150, 'ai.run.resumed', { decision });
 
   if (decision === 'reject') {
-    const rejected = '\n\nUnderstood — I have not sent anything. Nothing was changed on the load.';
+    const rejected = '\n\nUnderstood — I have not sent anything.';
     emitTokens(run, rejected);
   } else {
     // The resumed segment announces the gated call again — same id, no args —
@@ -737,7 +733,7 @@ export function listRuns(conversationUuid: string): AIRunRead[] {
     {
       uuid: run.runUuid,
       status: run.awaitingApproval ? 'awaiting_approval' : 'running',
-      model: 'rooler-fast',
+      model: 'gpt-4.1-mini',
       created_at: new Date().toISOString(),
     },
   ];
