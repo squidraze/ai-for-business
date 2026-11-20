@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     @property
     def data_path(self) -> Path:
         p = Path(self.DATA_DIR)
+        if not p.is_absolute():
+            p = BACKEND_DIR / p
         p.mkdir(parents=True, exist_ok=True)
         return p
 

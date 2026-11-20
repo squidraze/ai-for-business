@@ -29,7 +29,10 @@ except ImportError as e:  # connectors not written yet
 
 
 @app.on_event("startup")
-def _startup():
+async def _startup():
+    import asyncio
+
+    runner.set_loop(asyncio.get_running_loop())
     create_all()
     runner.mark_stale_runs()
     from app.ai import llm

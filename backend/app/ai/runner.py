@@ -129,10 +129,30 @@ def record_allow(db, user_id: int, conversation_id: int, tool_names: list[str], 
 # ---------------------------------------------------------------- lifecycle
 
 
+LOOP: asyncio.AbstractEventLoop | None = None  # uvicorn's loop, set on startup
+
+
+def set_loop(loop: asyncio.AbstractEventLoop) -> None:
+    global LOOP
+    LOOP = loop
+
+
 def spawn(run_uuid: str, resume: dict | None = None) -> None:
-    task = asyncio.create_task(_run_task(run_uuid, resume))
-    TASKS[run_uuid] = task
-    task.add_done_callback(lambda _t: TASKS.pop(run_uuid, None) if TASKS.get(run_uuid) is _t else None)
+    """Start the run on the main event loop (Telethon clients live there), from any thread."""
+
+    def _start() -> None:
+        task = asyncio.ensure_future(_run_task(run_uuid, resume))
+        TASKS[run_uuid] = task
+        task.add_done_callback(lambda _t: TASKS.pop(run_uuid, None) if TASKS.get(run_uuid) is _t else None)
+
+    try:
+        running = asyncio.get_running_loop()
+    except RuntimeError:
+        running = None
+    if running is not None and running is LOOP:
+        _start()
+    else:
+        LOOP.call_soon_threadsafe(_start)
 
 
 def create_run(db, conv: Conversation, user_id: int, anchor_uuid: str | None, head_uuid: str | None, fresh: bool) -> Run:
