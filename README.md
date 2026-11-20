@@ -25,6 +25,8 @@ adb reverse tcp:8001 tcp:8001
 npx expo run:android          # соберёт и поставит приложение на телефон
 ```
 
+На Windows сборка Android может упасть с `ninja: error: mkdir(...)` из-за длинных путей. Тогда поставь в Android Studio → SDK Manager → SDK Tools пакет CMake 3.31 или новее и добавь в `mobile/android/local.properties` строку `cmake.dir=C\:/Users/<you>/AppData/Local/Android/Sdk/cmake/<версия>`.
+
 После изменений в чате (папка `webview/`) обнови его в приложении:
 
 ```bash
