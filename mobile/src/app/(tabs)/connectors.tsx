@@ -13,17 +13,39 @@ import {
   View,
 } from 'react-native';
 
-import { Button, Card, ErrorView, ListSkeleton } from '@/components/ui';
+import { Button, Card, ErrorView, Field, ListSkeleton } from '@/components/ui';
 import {
   api,
   CONNECTORS_KEY,
   errorMessage,
+  type BitrixAccount,
   type ConnectorStatus,
   type TelegramAccount,
 } from '@/lib/api';
 import { useColors } from '@/lib/theme';
 
 const GMAIL_REDIRECT = 'forbusiness://connectors';
+const BITRIX_TINT = '#2fc6f6';
+
+type ConnectorId = 'telegram' | 'gmail' | 'bitrix24';
+
+const CONNECTOR_NAMES: Record<ConnectorId, string> = {
+  telegram: 'Telegram',
+  gmail: 'Gmail',
+  bitrix24: 'Bitrix24',
+};
+
+const DISCONNECT_PATHS: Record<ConnectorId, string> = {
+  telegram: '/api/v1/connectors/telegram/logout',
+  gmail: '/api/v1/connectors/gmail/disconnect',
+  bitrix24: '/api/v1/connectors/bitrix24/disconnect',
+};
+
+const BITRIX_STEPS = [
+  'In Bitrix24: Developer resources → Other → Inbound webhook.',
+  'Tick the CRM permission (optionally Tasks, Users).',
+  'Copy the webhook URL and paste it here.',
+];
 
 function useConnectors() {
   return useQuery({
@@ -65,18 +87,34 @@ export default function ConnectorsScreen() {
 
   const telegram = query.data?.find((item) => item.id === 'telegram');
   const gmail = query.data?.find((item) => item.id === 'gmail');
+  const bitrix = query.data?.find((item) => item.id === 'bitrix24');
+  const [webhookUrl, setWebhookUrl] = useState('');
 
   const disconnect = useMutation({
-    mutationFn: (id: 'telegram' | 'gmail') =>
-      api.post(
-        id === 'telegram' ? '/api/v1/connectors/telegram/logout' : '/api/v1/connectors/gmail/disconnect',
-      ),
+    mutationFn: (id: ConnectorId) => api.post(DISCONNECT_PATHS[id]),
     onSuccess: () => refresh(),
     onError: (e) => Alert.alert('Disconnect failed', errorMessage(e)),
   });
 
-  const confirmDisconnect = (id: 'telegram' | 'gmail') =>
-    Alert.alert(`Disconnect ${id === 'telegram' ? 'Telegram' : 'Gmail'}?`, undefined, [
+  const connectBitrix = useMutation({
+    mutationFn: (url: string) =>
+      api.post<{ status: string; account: BitrixAccount }>('/api/v1/connectors/bitrix24/connect', {
+        webhook_url: url,
+      }),
+    onSuccess: () => {
+      setWebhookUrl('');
+      void refresh();
+    },
+    onError: (e) => Alert.alert('Bitrix24', errorMessage(e, 'Could not connect the portal')),
+  });
+
+  const submitWebhook = () => {
+    const url = webhookUrl.trim();
+    if (url && !connectBitrix.isPending) connectBitrix.mutate(url);
+  };
+
+  const confirmDisconnect = (id: ConnectorId) =>
+    Alert.alert(`Disconnect ${CONNECTOR_NAMES[id]}?`, undefined, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Disconnect', style: 'destructive', onPress: () => disconnect.mutate(id) },
     ]);
@@ -110,6 +148,7 @@ export default function ConnectorsScreen() {
   const tg = (telegram?.account ?? null) as TelegramAccount | null;
   const tgName = tg ? [tg.first_name, tg.last_name].filter(Boolean).join(' ') : '';
   const gmailEmail = (gmail?.account as { email?: string } | null)?.email;
+  const bx = (bitrix?.account ?? null) as BitrixAccount | null;
 
   return (
     <ScrollView
@@ -191,6 +230,61 @@ export default function ConnectorsScreen() {
           </>
         )}
       </Card>
+
+      <Card>
+        <Header icon="briefcase" tint={BITRIX_TINT} title="Bitrix24" connected={!!bitrix?.connected} />
+        {bitrix?.connected ? (
+          <>
+            <View style={styles.account}>
+              <Text style={[styles.accountName, { color: c.text }]}>{bx?.portal || 'Bitrix24 portal'}</Text>
+              {bx?.user_name ? (
+                <Text style={[styles.accountLine, { color: c.muted }]}>{bx.user_name}</Text>
+              ) : null}
+            </View>
+            <Button title="Open CRM" icon="briefcase-outline" onPress={() => router.push('/bitrix')} />
+            <Button
+              title="Disconnect"
+              variant="danger"
+              onPress={() => confirmDisconnect('bitrix24')}
+              loading={disconnect.isPending && disconnect.variables === 'bitrix24'}
+              style={{ marginTop: 10 }}
+            />
+          </>
+        ) : (
+          <>
+            <Text style={[styles.description, { color: c.muted }]}>
+              Connect your Bitrix24 portal to browse deals and leads and add comments.
+            </Text>
+            <View style={[styles.steps, { backgroundColor: c.inputBg }]}>
+              <Text style={[styles.stepsTitle, { color: c.text }]}>How to connect</Text>
+              {BITRIX_STEPS.map((step, index) => (
+                <View key={step} style={styles.step}>
+                  <Text style={[styles.stepNumber, { color: c.muted }]}>{index + 1}.</Text>
+                  <Text style={[styles.stepText, { color: c.text }]}>{step}</Text>
+                </View>
+              ))}
+            </View>
+            <Field
+              value={webhookUrl}
+              onChangeText={setWebhookUrl}
+              placeholder="https://yourportal.bitrix24.com/rest/1/…/"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+              textContentType="URL"
+              returnKeyType="done"
+              editable={!connectBitrix.isPending}
+              onSubmitEditing={submitWebhook}
+            />
+            <Button
+              title="Connect"
+              onPress={submitWebhook}
+              disabled={!webhookUrl.trim()}
+              loading={connectBitrix.isPending}
+            />
+          </>
+        )}
+      </Card>
     </ScrollView>
   );
 }
@@ -201,7 +295,7 @@ function Header({
   title,
   connected,
 }: {
-  icon: 'paper-plane' | 'mail';
+  icon: 'paper-plane' | 'mail' | 'briefcase';
   tint: string;
   title: string;
   connected: boolean;
@@ -243,4 +337,9 @@ const styles = StyleSheet.create({
   account: { marginBottom: 14 },
   accountName: { fontSize: 16, fontWeight: '600' },
   accountLine: { fontSize: 14, marginTop: 2 },
+  steps: { borderRadius: 12, padding: 12, marginBottom: 14 },
+  stepsTitle: { fontSize: 14, fontWeight: '600', marginBottom: 4 },
+  step: { flexDirection: 'row', marginTop: 4 },
+  stepNumber: { fontSize: 14, width: 20, lineHeight: 20 },
+  stepText: { fontSize: 14, flex: 1, lineHeight: 20 },
 });
