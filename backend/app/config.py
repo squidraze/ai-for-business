@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +32,12 @@ class Settings(BaseSettings):
     TELEGRAM_API_HASH: str = ""
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
+
+    @field_validator("TELEGRAM_API_ID", mode="before")
+    @classmethod
+    def _empty_int(cls, v):
+        # an empty `TELEGRAM_API_ID=` line in .env means "not set"
+        return 0 if v in ("", None) else v
 
     @property
     def data_path(self) -> Path:
