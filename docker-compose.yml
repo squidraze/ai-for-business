@@ -1,0 +1,31 @@
+services:
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    command: centrifugo -c /centrifugo/config.json
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./centrifugo/config.json:/centrifugo/config.json:ro
+    environment:
+      # env overrides the file; must equal the backend's values in backend/.env
+      CENTRIFUGO_TOKEN_HMAC_SECRET_KEY: ${CENTRIFUGO_TOKEN_HMAC_SECRET_KEY:-dev-centrifugo-hmac-secret}
+      CENTRIFUGO_API_KEY: ${CENTRIFUGO_API_KEY:-dev-centrifugo-api-key}
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file: backend/.env
+    environment:
+      CENTRIFUGO_API_URL: http://centrifugo:8000/api
+      DATA_DIR: /app/data
+    volumes:
+      - ./backend/data:/app/data
+    depends_on:
+      - centrifugo
+    restart: unless-stopped

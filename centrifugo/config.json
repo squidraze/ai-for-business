@@ -1,0 +1,9 @@
+{
+  "token_hmac_secret_key": "dev-centrifugo-hmac-secret",
+  "api_key": "dev-centrifugo-api-key",
+  "allowed_origins": ["*"],
+  "log_level": "info",
+  "namespaces": [
+    { "name": "ai" }
+  ]
+}
