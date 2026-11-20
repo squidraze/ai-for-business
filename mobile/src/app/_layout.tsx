@@ -51,6 +51,8 @@ function RootStack() {
         <Stack.Screen name="gmail/index" options={{ title: 'Inbox' }} />
         <Stack.Screen name="gmail/[threadId]" options={{ title: '' }} />
         <Stack.Screen name="gmail/compose" options={{ title: 'New email' }} />
+        <Stack.Screen name="bitrix/index" options={{ title: 'CRM' }} />
+        <Stack.Screen name="bitrix/[entity]/[id]" options={{ title: '' }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
     </Stack>
   );

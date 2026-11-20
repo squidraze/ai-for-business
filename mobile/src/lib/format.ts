@@ -39,6 +39,25 @@ export function fullDate(iso?: string | null): string {
   });
 }
 
+/** 12500 + "USD" -> "$12,500"; an unknown currency code is appended ("12,500 XYZ"). */
+export function formatMoney(amount?: number | null, currency?: string | null): string {
+  if (amount === null || amount === undefined || Number.isNaN(Number(amount))) return '';
+  const value = Number(amount);
+  if (currency) {
+    try {
+      return value.toLocaleString(undefined, {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: value % 1 === 0 ? 0 : 2,
+      });
+    } catch {
+      // not an ISO 4217 code — fall through
+    }
+  }
+  const plain = value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  return currency ? `${plain} ${currency}` : plain;
+}
+
 export function initials(name?: string | null): string {
   const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return '?';

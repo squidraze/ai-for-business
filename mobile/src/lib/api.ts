@@ -92,7 +92,7 @@ export type AIConversation = {
 };
 
 export type ConnectorStatus = {
-  id: 'telegram' | 'gmail';
+  id: 'telegram' | 'gmail' | 'bitrix24';
   connected: boolean;
   account: Record<string, unknown> | null;
 };
@@ -149,6 +149,56 @@ export type GmailMessage = {
 };
 
 export type GmailThread = { id: string; subject: string; messages: GmailMessage[] };
+
+export type BitrixAccount = { portal: string; user_name: string; user_id: string };
+
+export type BitrixEntity = 'deals' | 'leads';
+
+export type BitrixDeal = {
+  id: string;
+  title: string;
+  stage_id: string;
+  stage_name: string;
+  opportunity: number | null;
+  currency: string | null;
+  contact_name: string | null;
+  company_title: string | null;
+  assigned_name: string | null;
+  date_create: string | null;
+  date_modify: string | null;
+  comments_text: string | null;
+  url: string;
+};
+
+export type BitrixLead = {
+  id: string;
+  title: string;
+  status_id: string;
+  status_name: string;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  opportunity: number | null;
+  currency: string | null;
+  assigned_name: string | null;
+  source: string | null;
+  date_create: string | null;
+  date_modify: string | null;
+  comments_text: string | null;
+  url: string;
+};
+
+export type BitrixComment = {
+  id: string;
+  text: string;
+  author_name: string | null;
+  created: string | null;
+};
+
+export type BitrixPage<T> = { items: T[]; next: number | null };
+
+export type BitrixDealDetail = BitrixDeal & { comments: BitrixComment[] };
+export type BitrixLeadDetail = BitrixLead & { comments: BitrixComment[] };
 
 /* Query keys shared between screens. */
 export const CONVERSATIONS_KEY = ['ai-conversations'] as const;
