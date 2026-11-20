@@ -1,0 +1,39 @@
+<!doctype html>
+<!-- forbusiness-webchat-placeholder -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Web chat bundle missing</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        margin: 0; display: grid; place-items: center; min-height: 100vh;
+        font: 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+        padding: 24px; text-align: center; box-sizing: border-box;
+        background: #ffffff; color: #18181b;
+      }
+      @media (prefers-color-scheme: dark) { body { background: #09090b; color: #fafafa; } }
+      code { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+    </style>
+  </head>
+  <body>
+    <div>
+      <p><strong>The web chat bundle has not been built.</strong></p>
+      <p>Run <code>npm run sync</code> in <code>webview/</code> and reload the app.</p>
+    </div>
+    <script>
+      // Tell the native host why nothing is coming. Deliberately never posts
+      // `ready`, so the host shows its own error state.
+      try {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            v: 1,
+            type: 'error',
+            payload: { message: 'WEBCHAT_BUNDLE_PLACEHOLDER: Run npm run sync in webview/' },
+          }),
+        );
+      } catch (_) {}
+    </script>
+  </body>
+</html>
