@@ -583,7 +583,7 @@ export function GenerativeShowcase() {
   }, []);
 
   const openLink = useCallback(() => {
-    send('generative.action', { action: 'open_url', params: { url: 'https://rooler.ai' } });
+    send('generative.action', { action: 'open_url', params: { url: 'https://example.com' } });
   }, []);
 
   return (

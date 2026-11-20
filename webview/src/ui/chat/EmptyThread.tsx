@@ -2,7 +2,6 @@ import clsx from 'clsx';
 import { useEffect, useMemo } from 'react';
 
 import { send } from '@/bridge/bridge';
-import { useAccess } from '@/chat/access';
 import { loadAttention, shortTimeAgo, useAttention, type AttentionSeverity } from '@/chat/attention';
 import { pickChatStarters } from '@/chat/starters';
 import { useChatState } from '@/chat/useChat';
@@ -44,19 +43,17 @@ const SEVERITY_CLASS: Record<AttentionSeverity, string> = {
 };
 
 export function EmptyThread({ onSelect, disabled = false }: EmptyThreadProps) {
-  // A custom agent's chat names the agent and offers none of Rooler's own
-  // starters or inbox — they are about Rooler, not about what the agent was
-  // built for (web client, `ai-agents.md`).
+  // A custom agent's chat names the agent and offers none of the built-in
+  // starters or inbox — they are not about what the agent was built for.
   const { agent } = useChatState();
-  const { role, permissions } = useAccess();
   const { t, i18n } = useTranslation();
   const language = i18n.language;
   // `language` is not read inside: `pickChatStarters` translates through the
   // shared instance, and this is what re-picks the text when the host switches it.
   const starters = useMemo(
-    () => pickChatStarters(role, permissions),
+    () => pickChatStarters(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [role, permissions, language],
+    [language],
   );
   const attention = useAttention();
 

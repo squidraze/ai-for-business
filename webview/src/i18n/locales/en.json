@@ -119,7 +119,7 @@
   },
   "connectors": {
     "add": "Add connector",
-    "emptyDescription": "Connect Google Calendar, QuickBooks and more for the assistant to use.",
+    "emptyDescription": "Connect Telegram and Gmail for the assistant to use.",
     "emptyTitle": "No connected apps",
     "loadFailed": "Couldn't load your connected apps.",
     "manage": "Manage connectors",
@@ -192,99 +192,27 @@
     "stalled": "The assistant stopped responding — this reply is incomplete.",
     "stopped": "The response was stopped.",
     "stoppedResponding": "The assistant stopped responding. Please try again.",
-    "typing": "Rooler ai is replying"
+    "typing": "AI is replying"
   },
   "report": {
     "open": "Report response"
   },
   "starters": {
-    "cashWeek": {
-      "label": "Cash coming in",
-      "prompt": "Today is {{today}}. Using ar_invoices_upcoming and ar_collections_daily, what cash is expected in the next 14 days by due date, and how does it compare with what was collected in the last 14?"
+    "telegramUnread": {
+      "label": "Unread Telegram chats",
+      "prompt": "Summarize my unread Telegram chats: who wrote, what they want, and what needs a reply."
     },
-    "coverageGaps": {
-      "label": "Why trucks sat idle",
-      "prompt": "Using dispatch_analytics_utilization_gap_reasons for this month, what were the top reasons driver-days went uncovered, and what would close the biggest gap?"
+    "emailsToday": {
+      "label": "Important emails today",
+      "prompt": "Today is {{today}}. What important emails did I get today? List each with the sender and a one-line summary."
     },
-    "dispatchToday": {
-      "label": "Today's dispatch picture",
-      "prompt": "Today is {{today}}. Give me today's dispatch picture from the dispatch_analytics_summary and shipment_pipeline_upcoming charts: scheduled pickups and deliveries today and tomorrow, loads by status, and coverage gaps. Use only those two charts — do not look loads or drivers up one by one."
+    "draftReply": {
+      "label": "Reply to the last email",
+      "prompt": "Draft a reply to the last email I received. Show me the draft before sending anything."
     },
-    "driverLookup": {
-      "label": "Check a driver",
-      "prompt": "Today is {{today}}. I'll name a driver — give me their headline numbers for the last 30 days (get_driver_overview) and their weekly earnings against the company's (driver_weekly_earnings)."
-    },
-    "driversAvailable": {
-      "label": "Available drivers",
-      "prompt": "List the drivers who are available right now (list_available_drivers, status available) with their phone numbers. One tool call, no per-driver look-ups."
-    },
-    "emailSearch": {
-      "label": "Find an email",
-      "prompt": "I'll describe an email — find it in my inbox (search_emails), summarize what it asks, and say whether it needs a reply."
-    },
-    "expensesMonth": {
-      "label": "Track expenses",
-      "prompt": "Today is {{today}}. Break down this month's expenses by category from company_operating_pnl_summary and maintenance_cost_by_truck; flag the biggest line and anything unassigned to a truck (unassigned_expenses)."
-    },
-    "finances30d": {
-      "label": "Analyze my finances",
-      "prompt": "Today is {{today}}. Analyze my company's finances for the last 30 days: get_company_overview (period last_30_days) and the company_operating_pnl_summary chart — revenue, expenses and margin, in plain words."
-    },
-    "fleetWeek": {
-      "label": "Fleet performance",
-      "prompt": "Today is {{today}}. How is the fleet doing this week? Use fleet_utilization_by_truck (truck_scope active) and fleet_truck_pnl: idle vs driving time, fuel waste, per-truck profit, and what dropped against last week."
-    },
-    "fuelSpend": {
-      "label": "Fuel spend",
-      "prompt": "Today is {{today}}. Break down fuel spend for this month: company_fuel_spend_daily for the trend and fuel_by_state for where it was bought; point out the outliers."
-    },
-    "insights": {
-      "label": "Business insights",
-      "prompt": "Today is {{today}}. Give me the key business insights from the last 30 days: get_company_overview, company_profitability_trend (date_basis delivery) and top_customers_by_revenue_detail — three calls, then the three things I should act on."
-    },
-    "invoicesOverdue": {
-      "label": "Review invoices",
-      "prompt": "Review open invoices with the ar_invoice_aging chart: how much is past due in each bucket, which customers owe the most (customer_revenue_share for context), and what to chase first."
-    },
-    "knowledge": {
-      "label": "Ask the knowledge base",
-      "prompt": "I'll ask a question — answer it from the company knowledge base (search_knowledge) and say which document the answer came from."
-    },
-    "loadLookup": {
-      "label": "Look up a load",
-      "prompt": "I'll give you a load number — show its status, rate, commodity, broker and stops (get_load_details), then tell me what has to happen next on it."
-    },
-    "loadsByStatus": {
-      "label": "Loads by status",
-      "prompt": "Today is {{today}}. Show the current load mix by status (load_status_distribution for this month, date_basis pickup) and the loads funnel (dispatch_operations_loads). Two chart calls, then a short read-out."
-    },
-    "maintenanceSpend": {
-      "label": "Maintenance by truck",
-      "prompt": "Today is {{today}}. Using maintenance_cost_by_truck for this quarter, which trucks cost the most in work orders, and which of them look like a replacement case?"
-    },
-    "payrollPeriod": {
-      "label": "Driver pay this period",
-      "prompt": "Today is {{today}}. Using driver_pnl_summary and reserve_by_driver for this pay period, show each driver's settlement P&L and broker pay vs driver pay, and point out the outliers."
-    },
-    "pipelineWeek": {
-      "label": "Upcoming pickups & deliveries",
-      "prompt": "Today is {{today}}. Using the shipment_pipeline_upcoming chart, list the scheduled pickups and deliveries per day for the next 7 days and point out the heavy days. One chart call."
-    },
-    "recruitingCalls": {
-      "label": "Recruiting calls",
-      "prompt": "How is recruiting going? Use recruiter_call_frequency and recruiter_call_score_summary: calls per recruiter, candidates reached, call quality, and who needs attention."
-    },
-    "routeEstimate": {
-      "label": "Estimate a route",
-      "prompt": "Today is {{today}}. I'll name an origin and a destination — estimate the driving distance and ETA (get_route_estimate), then say what rate the trip would need to match our recent rate per mile (daily_rpm_gross_trend, date_basis pickup, last 30 days)."
-    },
-    "safetyCosts": {
-      "label": "Safety costs",
-      "prompt": "Today is {{today}}. Using safety_cost_by_month for the last 6 months, how have claims and inspection costs moved, and which month stands out and why?"
-    },
-    "truckLookup": {
-      "label": "Check a truck",
-      "prompt": "Today is {{today}}. I'll name a truck — give me its headline numbers for the last 30 days (get_vehicle_overview) and its miles per day (truck_daily_miles)."
+    "telegramSearch": {
+      "label": "Find a Telegram message",
+      "prompt": "I'll describe a message — find it in my Telegram chats and tell me who sent it and when."
     }
   },
   "time": {

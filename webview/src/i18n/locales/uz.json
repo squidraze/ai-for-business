@@ -119,7 +119,7 @@
   },
   "connectors": {
     "add": "Konnektor qoʻshish",
-    "emptyDescription": "Assistent foydalanishi uchun Google Calendar, QuickBooks va boshqa ilovalarni ulang.",
+    "emptyDescription": "Assistent foydalanishi uchun Telegram va Gmail’ni ulang.",
     "emptyTitle": "Ulangan ilovalar yoʻq",
     "loadFailed": "Ulangan ilovalarni yuklab boʻlmadi.",
     "manage": "Konnektorlarni boshqarish",
@@ -192,99 +192,27 @@
     "stalled": "Assistent javob berishni toʻxtatdi — bu javob toʻliq emas.",
     "stopped": "Javob toʻxtatildi.",
     "stoppedResponding": "Assistent javob berishni toʻxtatdi. Qayta urinib koʻring.",
-    "typing": "Rooler ai javob yozmoqda"
+    "typing": "AI javob yozmoqda"
   },
   "report": {
     "open": "Javob ustidan shikoyat qilish"
   },
   "starters": {
-    "cashWeek": {
-      "label": "Kutilayotgan tushumlar",
-      "prompt": "Bugun {{today}}. ar_invoices_upcoming va ar_collections_daily boʻyicha: keyingi 14 kunda toʻlov muddati boʻyicha qancha pul kutilmoqda va bu soʻnggi 14 kunda tushgan pul bilan qanday solishtiriladi?"
+    "telegramUnread": {
+      "label": "O‘qilmagan Telegram chatlar",
+      "prompt": "O‘qilmagan Telegram chatlarimni qisqacha bayon qil: kim yozdi, nima istaydi va nimaga javob berish kerak."
     },
-    "coverageGaps": {
-      "label": "Tyagachlar nega boʻsh turdi",
-      "prompt": "Shu oy uchun dispatch_analytics_utilization_gap_reasons boʻyicha: haydovchi kunlari yuksiz qolishining asosiy sabablari nima edi va eng katta boʻshliqni nima yopadi?"
+    "emailsToday": {
+      "label": "Bugungi muhim xatlar",
+      "prompt": "Bugun {{today}}. Bugun qanday muhim xatlar oldim? Har birini yuboruvchi va bir qatorlik mazmuni bilan sanab ber."
     },
-    "dispatchToday": {
-      "label": "Bugungi dispetcherlik",
-      "prompt": "Bugun {{today}}. dispatch_analytics_summary va shipment_pipeline_upcoming grafiklari boʻyicha bugungi dispetcherlik holatini koʻrsat: bugun va ertaga rejalashtirilgan yuklash va yetkazishlar, holatlar boʻyicha yuklar va qamrovdagi boʻshliqlar. Faqat shu ikki grafikdan foydalan — yuklar yoki haydovchilarni birma-bir qidirma."
+    "draftReply": {
+      "label": "Oxirgi xatga javob",
+      "prompt": "Oxirgi olgan xatimga javob tayyorla. Biror narsa yuborishdan oldin qoralamani ko‘rsat."
     },
-    "driverLookup": {
-      "label": "Haydovchini tekshirish",
-      "prompt": "Bugun {{today}}. Men haydovchini aytaman — uning soʻnggi 30 kunlik asosiy koʻrsatkichlarini (get_driver_overview) va haftalik daromadini kompaniyaniki bilan solishtirib (driver_weekly_earnings) ber."
-    },
-    "driversAvailable": {
-      "label": "Boʻsh haydovchilar",
-      "prompt": "Hozir boʻsh boʻlgan haydovchilarni (list_available_drivers, status available) telefon raqamlari bilan sanab ber. Bitta vosita chaqiruvi, har bir haydovchi boʻyicha alohida soʻrovlarsiz."
-    },
-    "emailSearch": {
-      "label": "Xatni topish",
-      "prompt": "Men xatni tasvirlab beraman — uni kirish qutimdan top (search_emails), unda nima soʻralayotganini qisqacha ayt va javob kerakmi-yoʻqmi, ayt."
-    },
-    "expensesMonth": {
-      "label": "Xarajatlarni kuzatish",
-      "prompt": "Bugun {{today}}. company_operating_pnl_summary va maintenance_cost_by_truck boʻyicha shu oydagi xarajatlarni toifalarga ajrat; eng katta moddani va tyagachga biriktirilmagan har qanday xarajatni (unassigned_expenses) belgila."
-    },
-    "finances30d": {
-      "label": "Moliyani tahlil qilish",
-      "prompt": "Bugun {{today}}. Kompaniyamning soʻnggi 30 kunlik moliyasini tahlil qil: get_company_overview (period last_30_days) va company_operating_pnl_summary grafigi — daromad, xarajatlar va marja, oddiy soʻzlar bilan."
-    },
-    "fleetWeek": {
-      "label": "Avtopark koʻrsatkichlari",
-      "prompt": "Bugun {{today}}. Bu hafta avtopark qanday ishlayapti? fleet_utilization_by_truck (truck_scope active) va fleet_truck_pnl dan foydalan: boʻsh turish va harakatdagi vaqt, yoqilgʻi isrofi, har bir tyagach foydasi va oʻtgan haftaga nisbatan nima pasaygani."
-    },
-    "fuelSpend": {
-      "label": "Yoqilgʻi xarajatlari",
-      "prompt": "Bugun {{today}}. Shu oydagi yoqilgʻi xarajatlarini tahlil qil: dinamika uchun company_fuel_spend_daily va qayerda sotib olingani uchun fuel_by_state; keskin farqlarni belgila."
-    },
-    "insights": {
-      "label": "Biznes tahlili",
-      "prompt": "Bugun {{today}}. Soʻnggi 30 kun boʻyicha biznes haqidagi asosiy xulosalarni ber: get_company_overview, company_profitability_trend (date_basis delivery) va top_customers_by_revenue_detail — uchta chaqiruv, soʻng men chora koʻrishim kerak boʻlgan uchta narsa."
-    },
-    "invoicesOverdue": {
-      "label": "Hisob-fakturalarni koʻrish",
-      "prompt": "Ochiq hisob-fakturalarni ar_invoice_aging grafigi boʻyicha koʻrib chiq: har bir oraliqda qancha muddati oʻtgan, qaysi mijozlar eng koʻp qarzdor (kontekst uchun customer_revenue_share) va birinchi navbatda nimani undirish kerak."
-    },
-    "knowledge": {
-      "label": "Bilimlar bazasidan soʻrash",
-      "prompt": "Men savol beraman — unga kompaniya bilimlar bazasidan (search_knowledge) javob ber va javob qaysi hujjatdan olinganini ayt."
-    },
-    "loadLookup": {
-      "label": "Yukni topish",
-      "prompt": "Men yuk raqamini aytaman — uning holati, tarifi, mahsuloti, brokeri va bekatlarini koʻrsat (get_load_details), soʻng u boʻyicha keyin nima qilish kerakligini ayt."
-    },
-    "loadsByStatus": {
-      "label": "Holatlar boʻyicha yuklar",
-      "prompt": "Bugun {{today}}. Yuklarning holatlar boʻyicha joriy taqsimotini (load_status_distribution, shu oy uchun, date_basis pickup) va yuklar voronkasini (dispatch_operations_loads) koʻrsat. Ikkita grafik chaqiruvi, soʻng qisqa xulosa."
-    },
-    "maintenanceSpend": {
-      "label": "Tyagachlar texnik xizmati",
-      "prompt": "Bugun {{today}}. Shu chorak uchun maintenance_cost_by_truck boʻyicha: qaysi tyagachlar ish buyurtmalari boʻyicha eng qimmatga tushmoqda va ulardan qaysilari almashtirishga nomzodga oʻxshaydi?"
-    },
-    "payrollPeriod": {
-      "label": "Haydovchilar haqi shu davrda",
-      "prompt": "Bugun {{today}}. Shu hisob-kitob davri uchun driver_pnl_summary va reserve_by_driver boʻyicha har bir haydovchining hisob-kitob P&L koʻrsatkichini hamda broker toʻlovi va haydovchi haqini solishtirib koʻrsat, keskin farqlarni belgila."
-    },
-    "pipelineWeek": {
-      "label": "Yaqin yuklash va yetkazishlar",
-      "prompt": "Bugun {{today}}. shipment_pipeline_upcoming grafigi boʻyicha keyingi 7 kunda har kunga rejalashtirilgan yuklash va yetkazishlarni sanab ber va eng band kunlarni belgila. Bitta grafik chaqiruvi."
-    },
-    "recruitingCalls": {
-      "label": "Rekruterlar qoʻngʻiroqlari",
-      "prompt": "Yollash qanday ketyapti? recruiter_call_frequency va recruiter_call_score_summary dan foydalan: har bir rekruter qoʻngʻiroqlari, bogʻlanilgan nomzodlar, qoʻngʻiroqlar sifati va kimga eʼtibor kerak."
-    },
-    "routeEstimate": {
-      "label": "Marshrutni baholash",
-      "prompt": "Bugun {{today}}. Men joʻnash va borish manzilini aytaman — yoʻl masofasi va yetib borish vaqtini baholab ber (get_route_estimate), soʻng reys tarifi soʻnggi milya boshiga tarifimizga (daily_rpm_gross_trend, date_basis pickup, soʻnggi 30 kun) mos kelishi uchun qancha boʻlishi kerakligini ayt."
-    },
-    "safetyCosts": {
-      "label": "Xavfsizlik xarajatlari",
-      "prompt": "Bugun {{today}}. Soʻnggi 6 oy uchun safety_cost_by_month boʻyicha: daʼvolar va tekshiruvlar xarajatlari qanday oʻzgardi, qaysi oy ajralib turadi va nima uchun?"
-    },
-    "truckLookup": {
-      "label": "Tyagachni tekshirish",
-      "prompt": "Bugun {{today}}. Men tyagachni aytaman — uning soʻnggi 30 kunlik asosiy koʻrsatkichlarini (get_vehicle_overview) va kunlik yurgan masofasini (truck_daily_miles) ber."
+    "telegramSearch": {
+      "label": "Telegram xabarini topish",
+      "prompt": "Men xabarni tasvirlab beraman — uni Telegram chatlarimdan top va kim, qachon yuborganini ayt."
     }
   },
   "time": {
