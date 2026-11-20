@@ -7,7 +7,10 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=str(BACKEND_DIR / ".env"), extra="ignore")
+    # the repo-root .env is the one file to fill in; backend/.env (optional) overrides it
+    model_config = SettingsConfigDict(
+        env_file=(str(BACKEND_DIR.parent / ".env"), str(BACKEND_DIR / ".env")), extra="ignore"
+    )
 
     # core
     JWT_SECRET: str = "dev-secret-change-me"
