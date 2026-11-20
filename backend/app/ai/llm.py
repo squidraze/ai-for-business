@@ -73,12 +73,20 @@ async def step(messages: list[dict], tools: list[dict], on_delta: OnDelta) -> tu
                     slot["name"] += tc.function.name
                 if tc.function.arguments:
                     slot["arguments"] += tc.function.arguments
+            # Gemini 3 attaches `extra_content.google.thought_signature` to each call and
+            # rejects the next turn (400) unless it is sent back with that call.
+            extra = (getattr(tc, "model_extra", None) or {}).get("extra_content")
+            if extra:
+                slot["extra_content"] = extra
     out = []
     for i in sorted(calls):
         c = calls[i]
         if not c["name"]:
             continue
-        out.append({"id": c["id"] or f"call_{i}", "name": c["name"], "arguments": c["arguments"] or "{}"})
+        call = {"id": c["id"] or f"call_{i}", "name": c["name"], "arguments": c["arguments"] or "{}"}
+        if c.get("extra_content"):
+            call["extra_content"] = c["extra_content"]
+        out.append(call)
     return text, out
 
 

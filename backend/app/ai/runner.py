@@ -374,7 +374,12 @@ async def _loop(run_uuid: str, user_id: int, em: Emitter, partial: dict) -> None
             run = db.scalar(select(Run).where(Run.uuid == run_uuid))
             conv = db.get(Conversation, run.conversation_id)
             openai_calls = [
-                {"id": c["id"], "type": "function", "function": {"name": c["name"], "arguments": c["arguments"]}}
+                {
+                    "id": c["id"],
+                    "type": "function",
+                    "function": {"name": c["name"], "arguments": c["arguments"]},
+                    **({"extra_content": c["extra_content"]} if c.get("extra_content") else {}),
+                }
                 for c in calls
             ]
             _persist_assistant(db, conv, run, text, openai_calls)
