@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -12,6 +12,18 @@ import { useColors } from '@/lib/theme';
 function RootStack() {
   const { status } = useAuth();
   const c = useColors();
+  const segments = useSegments();
+  const router = useRouter();
+  const navReady = !!useRootNavigationState()?.key;
+  const signedIn = status === 'signedIn';
+  const inAuth = segments[0] === '(auth)';
+
+  // Stack.Protected left "/" unmatched when signed out, so route explicitly.
+  useEffect(() => {
+    if (status === 'loading' || !navReady) return;
+    if (!signedIn && !inAuth) router.replace('/sign-in');
+    else if (signedIn && inAuth) router.replace('/');
+  }, [status, signedIn, inAuth, navReady, router]);
 
   if (status === 'loading') {
     return (
@@ -21,7 +33,6 @@ function RootStack() {
     );
   }
 
-  const signedIn = status === 'signedIn';
   return (
     <Stack
       screenOptions={{
@@ -32,7 +43,6 @@ function RootStack() {
         headerShadowVisible: false,
       }}
     >
-      <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="telegram/connect" options={{ title: 'Connect Telegram' }} />
@@ -41,10 +51,7 @@ function RootStack() {
         <Stack.Screen name="gmail/index" options={{ title: 'Inbox' }} />
         <Stack.Screen name="gmail/[threadId]" options={{ title: '' }} />
         <Stack.Screen name="gmail/compose" options={{ title: 'New email' }} />
-      </Stack.Protected>
-      <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      </Stack.Protected>
     </Stack>
   );
 }
