@@ -20,7 +20,7 @@ import { IconButton, useToast } from '@/ui/primitives';
 
 import { AttachmentPickerSheet } from './AttachmentPickerSheet';
 import { ComposerAttachments } from './ComposerAttachments';
-import { CompanySelector } from './CompanySelector';
+
 
 /**
  * The message composer — Figma `Rooler-AI` 3234:70940 / 3234:71111.
@@ -396,7 +396,7 @@ export function Composer({ showVoice = true, className }: ComposerProps) {
         <div className="flex items-center justify-between gap-2 p-1.5">
           <div className="flex min-w-0 items-center gap-1.5">
             <IconButton icon={Paperclip} onPress={handleAttach} label={t('composer.addAttachment')} />
-            <CompanySelector isNewThread={conversationUuid === null} />
+            {/* forBusiness: one fake company, so the company pill is never shown. */}
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
