@@ -118,3 +118,20 @@ def login(body: LoginIn, db: Session = Depends(get_db)):
 @router.get("/me")
 def me(user: User = Depends(get_current_user)):
     return user_out(user)
+
+
+@router.get("/me/context")
+def me_context(user: User = Depends(get_current_user)):
+    """The shape the WebView's `chat/access.ts` reads: one fake company, id "1"."""
+    return {
+        "user": user_out(user),
+        "memberships": [
+            {
+                "company_id": "1",
+                "company_name": "forBusiness",
+                "role": "owner",
+                "permissions": ["ai:chat"],
+            }
+        ],
+        "user_features": {},
+    }
