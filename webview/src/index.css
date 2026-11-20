@@ -1,0 +1,595 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------ *
+ * SF Pro Display — the app's own face, carried by this page too.
+ *
+ * These are the same three files the Expo app loads in `app/_layout.tsx`
+ * (`apps/business/assets/fonts/`), copied in because a `file://` page with
+ * `allowFileAccessFromFileURLs` off cannot read the app's assets, and the CSP
+ * allows fonts from `data:` only. `build.assetsInlineLimit` is effectively
+ * infinite, so Vite base64s them straight into the single-file bundle — which is
+ * what `font-src data:` in vite.config.ts was written for.
+ *
+ * They are here for two reasons, and the second is the one that is a *bug*:
+ *
+ * 1. Without them Android has no SF Pro at all (the stack fell through to
+ *    Roboto) while the native header directly above this page is SF Pro Display.
+ * 2. **Weight 500 did not render.** The default Android sans exposes only 400
+ *    and 700 to the WebView, and CSS font matching for a target of 500 with no
+ *    500 face checks 500 upwards, finds nothing, then walks *down* — landing on
+ *    400. So every `font-medium` in the app (the timestamps, the company pill, the
+ *    buttons, the toast) silently rendered as Regular. A real Medium face is the
+ *    only fix; there is nothing to write in CSS that conjures one.
+ *
+ * There is deliberately no 600: the app ships no upright Semibold either, so
+ * `font-semibold` matches 700 and renders Bold — identical to the native side.
+ * Drop a `SFProDisplay-Semibold.otf` in here *and* in the app when that is
+ * fixed; adding it to one of the two would make the halves disagree.
+ * ------------------------------------------------------------------ */
+@font-face {
+  font-family: 'SF Pro Display';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./fonts/SFProDisplay-Regular.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  font-style: normal;
+  font-weight: 500;
+  src: url('./fonts/SFProDisplay-Medium.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  font-style: normal;
+  font-weight: 700;
+  src: url('./fonts/SFProDisplay-Bold.otf') format('opentype');
+}
+
+/*
+ * Design tokens. Light comes from Figma (Rooler-AI 3234:70940 / 3234:71111);
+ * dark is the app's own zinc scale (packages/ui/theme/screen.ts) so the WebView
+ * matches the rest of the app rather than inventing a palette. The active theme
+ * is set by the native host through the `theme.set` bridge message, never by
+ * prefers-color-scheme alone.
+ *
+ * TWO OF THESE ARE SHARED WITH THE NATIVE HOST AND MUST NOT DRIFT:
+ *
+ *   --color-screen  ==  SCREEN_SURFACE  (packages/ui/theme/screen.ts)
+ *
+ * The chat screen is one surface split across two renderers — the native app bar
+ * on top, this page underneath — and Figma 3234:70940 paints both in
+ * `bg/tertiarySystemBackground`. Any difference shows as a horizontal seam under
+ * the header, which is exactly what a white bar over a grey page looked like.
+ * `SCREEN_SURFACE` is `zinc-100` / `zinc-800`: the light step is the design's
+ * #f2f2f2 rounded to the scale (a decision that predates this page — see the
+ * note on that constant), so the value below follows the *host*, not Figma, and
+ * is off the design by one imperceptible shade on purpose.
+ *
+ * Dark follows the app's card convention, which is the inverse of light: the
+ * screen is the *lighter* zinc-800 and a card is the darker zinc-900 (CARD_FILL).
+ * This page used to have it the other way round, which is why a dark chat did
+ * not look like a dark anything-else in this app.
+ */
+:root {
+  --color-screen: #f4f4f5;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f2f2f2;
+  --color-border: #e9eaeb;
+  --color-label: #2d2c2c;
+  --color-label-secondary: #5e6270;
+  --color-label-tertiary: #7f9ea0;
+  --color-primary: #1f7bd1;
+  --color-primary-dark: #0c60af;
+  --color-primary-disabled: #79b0e3;
+  --color-primary-tint: #bcd7f1;
+  --color-on-primary: #ffffff;
+  --color-danger: #ef4444;
+  --color-danger-tint: #fee2e2;
+  /* The alarm glyph itself is red-500 in *both* themes (RN's StateMessage
+     hardcodes #ef4444), so it cannot ride on `--color-danger`, which lightens in
+     dark to stay legible as text. */
+  --color-danger-solid: #ef4444;
+  /* The soft disc behind that glyph: red-50 in light, red-500 at 10% in dark —
+     the pair `packages/ui/shared/StateMessage.tsx` uses. */
+  --color-danger-surface: #fef2f2;
+  --color-success: #10b981;
+  --color-success-tint: #d1fae5;
+  --color-warning: #d97706;
+  --color-warning-tint: #fef3c7;
+  --color-skeleton: #e4e4e7;
+  /* The muted glyph of an empty state — zinc-300 / zinc-600, the pair
+     `EMPTY_ICON_COLOR` uses in `packages/ui/shared/StateMessage.tsx`. Lighter
+     than `--color-label-tertiary`, which is for text. */
+  --color-icon-muted: #d4d4d8;
+  --color-overlay: rgb(0 0 0 / 0.45);
+  /* The scrim behind the long-press message menu. Deliberately lighter than
+     `--color-overlay`: a sheet takes over the screen and should read as modal, a
+     context menu only has to lift itself off the transcript it belongs to. */
+  --color-overlay-menu: rgb(0 0 0 / 0.18);
+  /* The scrim over a failed attachment tile (RN: zinc-200/85 · zinc-900/85).
+     A literal `rgb(… / …)` for the same reason `--color-overlay` is one:
+     Tailwind compiles `bg-token/85` to `color-mix()`, which the oldest Android
+     System WebViews we support fall back to as a *fully opaque* fill. */
+  --color-surface-scrim: rgb(228 228 231 / 0.85);
+
+  /*
+   * The app's card, as two tokens.
+   *
+   * `packages/ui/theme/screen.ts` (`CARD_SURFACE` + `useCardShadow`) separates a
+   * card from the page with a soft glow in light and with a hairline in dark —
+   * the glow does not survive on a dark ground, and a border in light is not what
+   * the mockups draw. This page has no Tailwind `dark:` variant (the theme is
+   * token-swapped on `[data-theme]`), so the *difference* has to be a token: the
+   * border is always 1px and simply transparent in light, which also keeps the
+   * geometry identical across themes.
+   */
+  --shadow-card: 0px 0px 12px 0px rgba(221, 221, 221, 0.2);
+  --border-card: transparent;
+
+  /*
+   * The categorical chart palette, from `packages/ui/theme/colors.ts`
+   * (`chartSeries`). Assigned by position and never cycled: a series keeps its
+   * colour across a card so the legend beside it stays true. Decorative — none of
+   * these carries state or brand meaning.
+   */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-6: #008300;
+  --chart-7: #4a3aa7;
+  --chart-8: #e34948;
+}
+
+[data-theme='dark'] {
+  --color-screen: #27272a;
+  --color-surface: #18181b;
+  --color-surface-muted: #3f3f46;
+  --color-border: #3f3f46;
+  --color-label: #fafafa;
+  --color-label-secondary: #a1a1aa;
+  --color-label-tertiary: #71717a;
+  --color-primary: #1f7bd1;
+  --color-primary-dark: #0c60af;
+  --color-primary-disabled: #3f6a97;
+  --color-primary-tint: #1e3a5f;
+  --color-on-primary: #ffffff;
+  --color-danger: #f87171;
+  --color-danger-tint: #45272a;
+  --color-danger-solid: #ef4444;
+  --color-danger-surface: rgb(239 68 68 / 0.1);
+  --color-success: #34d399;
+  --color-success-tint: #14372c;
+  --color-warning: #fbbf24;
+  --color-warning-tint: #422f10;
+  --color-skeleton: #3f3f46;
+  --color-icon-muted: #52525b;
+  --color-overlay: rgb(0 0 0 / 0.6);
+  --color-overlay-menu: rgb(0 0 0 / 0.4);
+  --color-surface-scrim: rgb(24 24 27 / 0.85);
+
+  /* Dark leans on the hairline instead: a #dddddd glow on a dark ground reads as
+     a halo around every card rather than as depth. */
+  --shadow-card: none;
+  --border-card: var(--color-border);
+
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-6: #008300;
+  --chart-7: #9085e9;
+  --chart-8: #e66767;
+}
+
+@theme inline {
+  --color-screen: var(--color-screen);
+  --color-surface: var(--color-surface);
+  --color-surface-muted: var(--color-surface-muted);
+  --color-border: var(--color-border);
+  --color-label: var(--color-label);
+  --color-label-secondary: var(--color-label-secondary);
+  --color-label-tertiary: var(--color-label-tertiary);
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-primary-disabled: var(--color-primary-disabled);
+  --color-primary-tint: var(--color-primary-tint);
+  --color-on-primary: var(--color-on-primary);
+  --color-danger: var(--color-danger);
+  --color-danger-tint: var(--color-danger-tint);
+  --color-danger-solid: var(--color-danger-solid);
+  --color-danger-surface: var(--color-danger-surface);
+  --color-success: var(--color-success);
+  --color-success-tint: var(--color-success-tint);
+  --color-warning: var(--color-warning);
+  --color-warning-tint: var(--color-warning-tint);
+  --color-skeleton: var(--color-skeleton);
+  --color-icon-muted: var(--color-icon-muted);
+  --color-surface-scrim: var(--color-surface-scrim);
+
+  /*
+   * READ THIS BEFORE ASSUMING THE PAGE IS IN THE APP'S FONT — it is not, on
+   * Android.
+   *
+   * `SF Pro Display` leads, and it is the embedded face declared at the top of
+   * this file — the same file the Expo app loads — so both platforms render the
+   * page in exactly the typeface of the native header above it, with a real
+   * Medium at 500.
+   *
+   * The rest is the fallback for the seconds before the face is parsed and for
+   * any surface that somehow lacks it: `-apple-system` on iOS, Roboto on
+   * Android. Neither of those has a 500 face on Android, which is the whole
+   * reason the family above exists — see the note there.
+   */
+  --font-sans:
+    'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+
+  --radius-bubble: 20px;
+  --radius-composer: 24px;
+  --radius-card: 16px;
+}
+
+/* Safe-area + keyboard insets are pushed in by the native host (`insets.set`);
+   env(safe-area-inset-*) is not reliable inside a WebView. */
+:root {
+  --inset-top: 0px;
+  --inset-bottom: 0px;
+  --inset-left: 0px;
+  --inset-right: 0px;
+  --inset-keyboard: 0px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/*
+ * The page's scale knob.
+ *
+ * `rem` resolves against the **root** element, so this has to sit on `html`, not
+ * on `body` — a font-size on `body` changes inherited text and nothing else.
+ * Tailwind v4 builds almost the whole layout out of it: `--spacing` is
+ * `0.25rem`, so every `p-*`, `gap-*`, `h-*`, `w-*` and `m-*` is a multiple of
+ * this number, as are `text-sm` / `text-base` and the `rounded-*` steps.
+ *
+ * Type follows it too: every font-size and line-height in this app is authored
+ * in `rem` (`text-[0.8125rem]` is the 13px of the Figma frames divided by 16)
+ * precisely so that one number moves the whole page instead of the paddings
+ * only. Do not reintroduce a px font-size — it would sit still while everything
+ * around it scaled.
+ *
+ * What stays fixed: physical geometry that is not type — the transcript's
+ * `px-[14px]` gutter, `--radius-bubble` and friends, the attachment tiles'
+ * 64/96/172px. A 20px corner is a 20px corner at any text size.
+ *
+ * **`1` is the design.** The Figma frames (3234:70940 / 3234:71111) were
+ * measured at a 16px root, so every value in this file matches them exactly at
+ * `--ui-scale: 1` and is a proportional shrink below it. Change this one number,
+ * nothing else.
+ */
+:root {
+  --ui-scale: 1;
+}
+
+html {
+  font-size: calc(16px * var(--ui-scale));
+}
+
+/*
+ * Never let the engine resize text on its own.
+ *
+ * Two separate mechanisms inflate a WebView's type, and both had to be turned
+ * off before this page matched the design:
+ *
+ *  - **font boosting** (Android's text autosizing, and iOS on orientation
+ *    change) grows the font of a text block it judges too small to read. It is
+ *    what this property disables, and it fires even with a correct viewport
+ *    meta.
+ *  - **the OS font-size setting**, which Android WebView applies on top of
+ *    everything as a text zoom. CSS cannot see it — the host pins it with
+ *    `textZoom={100}` on the `WebView`, matching `app/_layout.tsx`, which
+ *    clamps the same multiplier to 1 for the native side.
+ *
+ * Accessibility is not lost by this: the page is inside an app whose own text
+ * does not scale either, and a user who needs larger type gets it from the
+ * device's display-size (density) setting, which does reach this page.
+ */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-screen);
+  color: var(--color-label);
+  font-family: var(--font-sans);
+  /* In `rem`, so text with no size of its own follows the knob above. Most of
+     the chat overrides this with an explicit px size and will not. */
+  font-size: 1rem;
+  line-height: 1.375rem;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  /* A WebView that behaves like a web page reads as a web page. */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/*
+ * Opt-in text selection.
+ *
+ * Nothing carries this right now, and that is the point of the comment: the
+ * message bodies used to, and it had to come off when they became press-and-hold
+ * targets — the platform starts a selection mid-hold and the two gestures fight
+ * (see `useLongPress`). Selection is now a menu action waiting to be written,
+ * and this is the class it will put on the message it is invoked from. Deleting
+ * it only means writing it again.
+ */
+.selectable {
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/*
+ * These MUST stay inside `@layer base`. An unlayered rule beats every layered one
+ * regardless of specificity, and Tailwind v4 emits its utilities into
+ * `@layer utilities` — so unlayered, this reset silently stripped the background,
+ * border and padding from every styled button in the app (`bg-primary` send button,
+ * the suggestion chips, every IconButton). It renders as "the class did nothing".
+ */
+@layer base {
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  textarea,
+  input {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    outline: none;
+    user-select: text;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Motion
+ *
+ * Every animation in this app is CSS: the bundle is one self-contained
+ * `index.html` under a CSP that blocks external requests, so there is no
+ * animation library to reach for (and none is wanted — these are all fades and
+ * pulses). The durations are ported from the native screens' reanimated values
+ * so the WebView and the rest of the app move at the same speed.
+ * ------------------------------------------------------------------ */
+
+/* Skeleton pulse. RN drives one shared `withRepeat(withTiming(1, 700), -1, true)`
+   from 0.5, i.e. 700ms each way — Tailwind's own `animate-pulse` is a 2s cycle,
+   which reads as a different app next to the native skeleton the host draws on
+   top of this WebView while it boots. */
+@keyframes rooler-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.rooler-pulse {
+  animation: rooler-pulse 1400ms ease-in-out infinite;
+}
+
+/* One typing dot: 0.3 -> 1 -> 0.3, 400ms each half (RN's `withSequence` of two
+   400ms timings), started 0 / 150 / 300ms apart by the caller. */
+@keyframes rooler-typing-dot {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.rooler-typing-dot {
+  animation: rooler-typing-dot 800ms ease-in-out infinite;
+}
+
+/*
+ * The one accessibility escape hatch, in one place: a viewer who asked for less
+ * motion gets the same screens with the transitions collapsed rather than a
+ * second, separately-maintained set of components. Durations are near-zero
+ * rather than `none` on purpose — the JS that unmounts a fading element waits on
+ * a timer, not on `transitionend`, so killing the transition outright would be
+ * fine here but leaving a hair of duration keeps `transitionend` listeners
+ * (anywhere they are added later) firing.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * A generated view's plain HTML.
+ *
+ * `render_ui` lays a view out with ordinary tags — `div`, `h2`, `p`, `ul` — and
+ * Tailwind classes. The classes are stripped before render (see
+ * `generative/jsx/ArtifactView.tsx`) for two reasons: Tailwind only emits classes
+ * it saw in source, so a class written by a model at runtime resolves to nothing;
+ * and the model writes `text-gray-500` and `bg-white`, which have no dark mode.
+ *
+ * So the prose elements are styled here instead, off the same tokens as the rest
+ * of the app. This is deliberately a *typographic* reset and not a layout one:
+ * the model writes desktop grids (`md:grid-cols-3`) and this is a 390px WebView
+ * where a column is the right answer anyway, so every block simply stacks.
+ *
+ * Scoped to `.ai-artifact` — nothing here may leak into the chat around it.
+ */
+.ai-artifact {
+  gap: 0.5rem;
+}
+
+.ai-artifact h1,
+.ai-artifact h2,
+.ai-artifact h3,
+.ai-artifact h4 {
+  color: var(--color-label);
+  font-weight: 600;
+  /* One heading size: a generated view is a card, not a document, and three
+     levels of hierarchy inside a chat bubble reads as noise. */
+  font-size: 1rem;
+  line-height: 1.375rem;
+  margin-block: 0.5rem 0.25rem;
+}
+
+.ai-artifact p {
+  color: var(--color-label);
+  font-size: 0.9375rem;
+  line-height: 1.375rem;
+}
+
+.ai-artifact ul,
+.ai-artifact ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-inline-start: 1.125rem;
+  color: var(--color-label);
+  font-size: 0.9375rem;
+  line-height: 1.375rem;
+}
+
+.ai-artifact ul {
+  list-style: disc;
+}
+
+.ai-artifact ol {
+  list-style: decimal;
+}
+
+.ai-artifact strong,
+.ai-artifact b {
+  font-weight: 600;
+}
+
+.ai-artifact em,
+.ai-artifact i {
+  font-style: italic;
+}
+
+.ai-artifact small {
+  color: var(--color-label-tertiary);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.ai-artifact hr {
+  border: 0;
+  block-size: 1px;
+  background: var(--color-border);
+  margin-block: 0.75rem;
+}
+
+/*
+ * The model's own containers — and how the layout it meant survives having its
+ * classes stripped.
+ *
+ * A `<div>` the model writes is routed through the whitelist like any other tag
+ * and comes back marked `.ai-box` (see `ArtifactBox`). The mark is positive on
+ * purpose: this rule used to select `div:not([class])` — a div *lacking* a class,
+ * which after `className` is stripped is what the model's boxes look like — and
+ * it silently captured two classless wrappers of our own inside `BarChart` and
+ * `LineChart`, laying each plot beside its axis labels and collapsing both.
+ *
+ * They lay out as a **wrapping row**, not a column, because that is what the
+ * model meant — it writes `grid grid-cols-2` around a set of KPIs. Everything
+ * block-sized takes a full row of its own (`w-full` in `primitives.tsx`), so only
+ * the small tiles share one, and a fifth wraps instead of squeezing. At 390px
+ * that lands on two per row, which is what the app's own KPI rows do.
+ */
+.ai-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+
+/* Prose, headings and rules never share a row with anything. */
+.ai-box > p,
+.ai-box > h1,
+.ai-box > h2,
+.ai-box > h3,
+.ai-box > h4,
+.ai-box > ul,
+.ai-box > ol,
+.ai-box > hr {
+  flex-basis: 100%;
+}
+
+/*
+ * A framed block inside another one loses its frame.
+ *
+ * The model nests freely — a `<Table>` inside a `<CardContent>` is the shape it
+ * reached for on the very first response — and a bordered box inside a bordered
+ * box, each with its own 16px padding, reads as a mistake rather than as
+ * structure. The outer frame is the one that means something.
+ */
+.ai-artifact .ai-framed .ai-framed {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin-block: 0;
+}
+
+/*
+ * The app's card, on every block a generated view draws.
+ *
+ * 20px and a soft glow rather than the 16px-with-a-border the chat's own blocks
+ * use: the reference here is the home and insights screens
+ * (`packages/ui/theme/screen.ts`), because that is what "looks like the rest of
+ * the app" means to someone holding it.
+ */
+.ai-surface {
+  border-radius: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-card);
+}
+
+/*
+ * Rows are divided by a hairline, not by a zebra fill — `InsightsTable` is the
+ * app's table and that is how it separates rows.
+ */
+.ai-artifact .ai-table-body > tr:not(:last-child) > td {
+  border-bottom: 1px solid var(--color-border);
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}

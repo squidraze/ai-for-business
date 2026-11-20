@@ -1,0 +1,315 @@
+{
+  "approval": {
+    "actionFallback": "Action",
+    "allowSession": "Allow for this session",
+    "alwaysAllow": "Always allow",
+    "approve": "Approve",
+    "approved": "You approved this action.",
+    "approvedAlways": "You approved this action · always allowed.",
+    "approvedSession": "You approved this action · allowed for this session.",
+    "free": "Free this action",
+    "freeFailed": "Couldn't free this action. Please try again.",
+    "freeFailedTitle": "Couldn't free it",
+    "message": "The assistant needs your OK to continue.",
+    "reject": "Reject",
+    "rejected": "You rejected this action.",
+    "strandedMessage": "Your decision was received, but the assistant never continued. Free it to decide again.",
+    "strandedTitle": "This action got stuck",
+    "submitFailed": "Couldn't submit your decision. Please try again.",
+    "submitFailedTitle": "Couldn't submit",
+    "title": "Approval required"
+  },
+  "artifact": {
+    "empty": "This view arrived without content.",
+    "failed": "This view couldn’t be displayed.",
+    "untitled": "Generated view"
+  },
+  "attachments": {
+    "image": "Image",
+    "list": "Attachments",
+    "noUploadedFile": "The server did not return an uploaded file.",
+    "notAvailable": "This file isn't available yet.",
+    "notUploaded": "This file didn't upload.",
+    "open": "Open {{name}}",
+    "photos_one": "1 photo",
+    "photos_other": "{{count}} photos",
+    "remove": "Remove {{name}}",
+    "retryUpload": "Retry uploading {{name}}",
+    "sheetTitle": "Add to Chat",
+    "someFailed": "Some attachments failed to upload. Tap them to retry.",
+    "sources": {
+      "camera": "Camera",
+      "files": "Files",
+      "photos": "Photos"
+    },
+    "stillUploading": "Please wait for attachments to finish uploading.",
+    "tooLarge_one": "That file is larger than 20 MB.",
+    "tooLarge_other": "{{count}} files are larger than 20 MB.",
+    "tooMany": "You can attach up to {{max}} files at once.",
+    "untitled": "Attachment",
+    "uploadFailedRetry": "Attachment failed to upload. Tap to retry.",
+    "uploadFailed_one": "Couldn't upload {{count}} file. Tap to retry.",
+    "uploadFailed_other": "Couldn't upload {{count}} files. Tap to retry.",
+    "uploadTimedOut": "The attachment upload timed out. Tap to retry.",
+    "uploading_one": "Uploading {{count}} file…",
+    "uploading_other": "Uploading {{count}} files…",
+    "view": "View {{name}}"
+  },
+  "autoApproved": {
+    "fallback": "an allowed action",
+    "label": "Ran automatically: {{summary}}"
+  },
+  "blocks": {
+    "alertFallback": "Notice",
+    "call": "Call {{name}}",
+    "copy": "Copy {{value}}",
+    "message": "Message {{name}}",
+    "noStops": "No stops to show.",
+    "openShipment": "Open shipment {{id}}",
+    "route": "Route",
+    "status": {
+      "cancelled": "Cancelled",
+      "delayed": "Delayed",
+      "delivered": "Delivered",
+      "inTransit": "In transit",
+      "pending": "Pending"
+    },
+    "stops_one": "{{count}} stop",
+    "stops_other": "{{count}} stops"
+  },
+  "boot": {
+    "failed": "The chat could not start."
+  },
+  "branch": {
+    "next": "Next version",
+    "previous": "Previous version",
+    "switchFailed": "Couldn't switch to that version. Please try again.",
+    "version": "Version {{index}} of {{count}}"
+  },
+  "charts": {
+    "lineChart": "Line chart",
+    "noData": "No data.",
+    "other": "Other",
+    "total": "Total"
+  },
+  "chat": {
+    "loadFailed": "Could not load this conversation. Please try again.",
+    "loading": "Loading conversation",
+    "scrollToBottom": "Scroll to latest message"
+  },
+  "common": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "send": "Send",
+    "tryAgain": "Try again"
+  },
+  "company": {
+    "change": "Company: {{name}}. Change company",
+    "current": "Company: {{name}}",
+    "select": "Select company"
+  },
+  "composer": {
+    "addAttachment": "Add attachment",
+    "message": "Message",
+    "placeholder": "Your message...",
+    "send": "Send message",
+    "stop": "Stop generating",
+    "voiceMode": "Voice mode"
+  },
+  "connectors": {
+    "add": "Add connector",
+    "emptyDescription": "Connect Google Calendar, QuickBooks and more for the assistant to use.",
+    "emptyTitle": "No connected apps",
+    "loadFailed": "Couldn't load your connected apps.",
+    "manage": "Manage connectors",
+    "subtitle": "The assistant can use these apps in this chat.",
+    "title": "Connectors",
+    "toggleFailed": "Couldn't change the connector"
+  },
+  "delegation": {
+    "status": {
+      "done": "Done",
+      "failed": "Didn’t finish",
+      "running": "Working…"
+    },
+    "title": "Delegating to {{agent}}",
+    "titleUnnamed": "Delegating to a subagent"
+  },
+  "emptyThread": {
+    "agentTitle": "Chat with {{name}}",
+    "attention": {
+      "count_one": "{{count}} items",
+      "count_other": "{{count}} items",
+      "title": "Needs attention"
+    },
+    "greeting": "What help do you need?"
+  },
+  "errors": {
+    "loadFailedTitle": "Couldn't load",
+    "offline": "No connection. Check your network and try again.",
+    "requestFailed": "The request failed.",
+    "requestFailedStatus": "Request failed with status code {{status}}",
+    "resumeFailed": "Could not send your decision. Please try again.",
+    "sendFailed": "Could not send your message. Please try again.",
+    "somethingWentWrong": "Something went wrong.",
+    "timedOut": "The request timed out. Please try again."
+  },
+  "message": {
+    "actions": "Message actions",
+    "copied": "Copied",
+    "copy": "Copy message",
+    "delete": "Delete message",
+    "deleteConfirm": "Delete",
+    "deleteDescription": "It will be removed from this conversation. This can’t be undone.",
+    "deleteFailed": "Couldn't delete the message. Please try again.",
+    "deleteTitle": "Delete this message?",
+    "edit": "Edit message",
+    "less": "Less",
+    "more": "More",
+    "notSent": "Message not sent",
+    "notSentHint": "Tap Try again to resend it."
+  },
+  "queue": {
+    "queued": "Queued",
+    "remove": "Remove",
+    "sendNow": "Send now"
+  },
+  "rating": {
+    "bad": "Bad response",
+    "failed": "Couldn't save that. Please try again.",
+    "good": "Good response",
+    "regenerate": "Regenerate response",
+    "remove": "Remove your rating",
+    "unsupported": "This reply is from before feedback existed, so it can’t be rated."
+  },
+  "reply": {
+    "emptyMessage": "The assistant didn't return a response. Please try again.",
+    "emptyTitle": "No response",
+    "failedMessage": "Something went wrong while generating the reply. Please try again.",
+    "failedTitle": "Couldn't get a response",
+    "runFailed": "AI run failed",
+    "stalled": "The assistant stopped responding — this reply is incomplete.",
+    "stopped": "The response was stopped.",
+    "stoppedResponding": "The assistant stopped responding. Please try again.",
+    "typing": "Rooler ai is replying"
+  },
+  "report": {
+    "open": "Report response"
+  },
+  "starters": {
+    "cashWeek": {
+      "label": "Cash coming in",
+      "prompt": "Today is {{today}}. Using ar_invoices_upcoming and ar_collections_daily, what cash is expected in the next 14 days by due date, and how does it compare with what was collected in the last 14?"
+    },
+    "coverageGaps": {
+      "label": "Why trucks sat idle",
+      "prompt": "Using dispatch_analytics_utilization_gap_reasons for this month, what were the top reasons driver-days went uncovered, and what would close the biggest gap?"
+    },
+    "dispatchToday": {
+      "label": "Today's dispatch picture",
+      "prompt": "Today is {{today}}. Give me today's dispatch picture from the dispatch_analytics_summary and shipment_pipeline_upcoming charts: scheduled pickups and deliveries today and tomorrow, loads by status, and coverage gaps. Use only those two charts — do not look loads or drivers up one by one."
+    },
+    "driverLookup": {
+      "label": "Check a driver",
+      "prompt": "Today is {{today}}. I'll name a driver — give me their headline numbers for the last 30 days (get_driver_overview) and their weekly earnings against the company's (driver_weekly_earnings)."
+    },
+    "driversAvailable": {
+      "label": "Available drivers",
+      "prompt": "List the drivers who are available right now (list_available_drivers, status available) with their phone numbers. One tool call, no per-driver look-ups."
+    },
+    "emailSearch": {
+      "label": "Find an email",
+      "prompt": "I'll describe an email — find it in my inbox (search_emails), summarize what it asks, and say whether it needs a reply."
+    },
+    "expensesMonth": {
+      "label": "Track expenses",
+      "prompt": "Today is {{today}}. Break down this month's expenses by category from company_operating_pnl_summary and maintenance_cost_by_truck; flag the biggest line and anything unassigned to a truck (unassigned_expenses)."
+    },
+    "finances30d": {
+      "label": "Analyze my finances",
+      "prompt": "Today is {{today}}. Analyze my company's finances for the last 30 days: get_company_overview (period last_30_days) and the company_operating_pnl_summary chart — revenue, expenses and margin, in plain words."
+    },
+    "fleetWeek": {
+      "label": "Fleet performance",
+      "prompt": "Today is {{today}}. How is the fleet doing this week? Use fleet_utilization_by_truck (truck_scope active) and fleet_truck_pnl: idle vs driving time, fuel waste, per-truck profit, and what dropped against last week."
+    },
+    "fuelSpend": {
+      "label": "Fuel spend",
+      "prompt": "Today is {{today}}. Break down fuel spend for this month: company_fuel_spend_daily for the trend and fuel_by_state for where it was bought; point out the outliers."
+    },
+    "insights": {
+      "label": "Business insights",
+      "prompt": "Today is {{today}}. Give me the key business insights from the last 30 days: get_company_overview, company_profitability_trend (date_basis delivery) and top_customers_by_revenue_detail — three calls, then the three things I should act on."
+    },
+    "invoicesOverdue": {
+      "label": "Review invoices",
+      "prompt": "Review open invoices with the ar_invoice_aging chart: how much is past due in each bucket, which customers owe the most (customer_revenue_share for context), and what to chase first."
+    },
+    "knowledge": {
+      "label": "Ask the knowledge base",
+      "prompt": "I'll ask a question — answer it from the company knowledge base (search_knowledge) and say which document the answer came from."
+    },
+    "loadLookup": {
+      "label": "Look up a load",
+      "prompt": "I'll give you a load number — show its status, rate, commodity, broker and stops (get_load_details), then tell me what has to happen next on it."
+    },
+    "loadsByStatus": {
+      "label": "Loads by status",
+      "prompt": "Today is {{today}}. Show the current load mix by status (load_status_distribution for this month, date_basis pickup) and the loads funnel (dispatch_operations_loads). Two chart calls, then a short read-out."
+    },
+    "maintenanceSpend": {
+      "label": "Maintenance by truck",
+      "prompt": "Today is {{today}}. Using maintenance_cost_by_truck for this quarter, which trucks cost the most in work orders, and which of them look like a replacement case?"
+    },
+    "payrollPeriod": {
+      "label": "Driver pay this period",
+      "prompt": "Today is {{today}}. Using driver_pnl_summary and reserve_by_driver for this pay period, show each driver's settlement P&L and broker pay vs driver pay, and point out the outliers."
+    },
+    "pipelineWeek": {
+      "label": "Upcoming pickups & deliveries",
+      "prompt": "Today is {{today}}. Using the shipment_pipeline_upcoming chart, list the scheduled pickups and deliveries per day for the next 7 days and point out the heavy days. One chart call."
+    },
+    "recruitingCalls": {
+      "label": "Recruiting calls",
+      "prompt": "How is recruiting going? Use recruiter_call_frequency and recruiter_call_score_summary: calls per recruiter, candidates reached, call quality, and who needs attention."
+    },
+    "routeEstimate": {
+      "label": "Estimate a route",
+      "prompt": "Today is {{today}}. I'll name an origin and a destination — estimate the driving distance and ETA (get_route_estimate), then say what rate the trip would need to match our recent rate per mile (daily_rpm_gross_trend, date_basis pickup, last 30 days)."
+    },
+    "safetyCosts": {
+      "label": "Safety costs",
+      "prompt": "Today is {{today}}. Using safety_cost_by_month for the last 6 months, how have claims and inspection costs moved, and which month stands out and why?"
+    },
+    "truckLookup": {
+      "label": "Check a truck",
+      "prompt": "Today is {{today}}. I'll name a truck — give me its headline numbers for the last 30 days (get_vehicle_overview) and its miles per day (truck_daily_miles)."
+    }
+  },
+  "time": {
+    "dayAt": "{{day}}, {{time}}",
+    "todayAt": "Today, {{time}}",
+    "yesterdayAt": "Yesterday, {{time}}"
+  },
+  "todos": {
+    "progress": "Tasks · {{done}} of {{total}}"
+  },
+  "toolCalls": {
+    "fallbackName": "Tool call",
+    "parameters": "Parameters",
+    "result": "Result",
+    "searchConnectedApps": "Connected apps · Search",
+    "status": {
+      "awaiting": "Awaiting approval",
+      "denied": "Denied",
+      "done": "Completed",
+      "error": "Error",
+      "running": "Pending"
+    },
+    "used_one": "Used {{count}} tool",
+    "used_other": "Used {{count}} tools",
+    "using_one": "Using {{count}} tool…",
+    "using_other": "Using {{count}} tools…"
+  }
+}
