@@ -14,16 +14,33 @@
 
 Нужны Docker, Node.js 20+ и Android-телефон с включённой отладкой по USB.
 
-```bash
-cp .env.example .env          # вписать ключи — что где взять, написано в самом файле
-docker compose up -d --build  # бэкенд + сервер стрима
+### 1. Ключи
 
+```bash
+cp .env.example .env    # вписать ключи — что где взять, написано в самом файле
+```
+
+### 2. Бэкенд
+
+```bash
+docker compose up -d --build   # бэкенд (порт 8000) + сервер стрима ответов (порт 8001)
+docker compose logs -f backend # логи
+docker compose down            # остановить
+```
+
+### 3. Мобилка
+
+```bash
 cd mobile
 npm install
-adb reverse tcp:8000 tcp:8000
-adb reverse tcp:8001 tcp:8001
-npx expo run:android          # соберёт и поставит приложение на телефон
+adb reverse tcp:8000 tcp:8000  # телефон видит бэкенд как localhost
+adb reverse tcp:8001 tcp:8001  # повторять после каждого переподключения телефона
+npx expo run:android           # соберёт и поставит приложение на телефон
 ```
+
+### 4. Telegram
+
+Бот не нужен: в приложении Connectors → Connect Telegram → номер телефона → код из Telegram → пароль 2FA (если включён).
 
 На Windows сборка Android может упасть с `ninja: error: mkdir(...)` из-за длинных путей. Тогда поставь в Android Studio → SDK Manager → SDK Tools пакет CMake 3.31 или новее и добавь в `mobile/android/local.properties` строку `cmake.dir=C\:/Users/<you>/AppData/Local/Android/Sdk/cmake/<версия>`.
 
