@@ -153,3 +153,11 @@ export type GmailThread = { id: string; subject: string; messages: GmailMessage[
 /* Query keys shared between screens. */
 export const CONVERSATIONS_KEY = ['ai-conversations'] as const;
 export const CONNECTORS_KEY = ['connectors'] as const;
+
+/** Telegram dialog avatar — the backend wants the Bearer header on the image request. */
+export function dialogPhotoSource(chatId: string) {
+  return {
+    uri: `${API_URL}/api/v1/connectors/telegram/dialogs/${encodeURIComponent(chatId)}/photo`,
+    headers: { Authorization: `Bearer ${token ?? ''}` },
+  };
+}
