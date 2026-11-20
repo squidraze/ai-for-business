@@ -2,10 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { useCallback, useEffect, useState } from 'react';
+import { type ComponentRef, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   AppState,
+  Keyboard,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -89,6 +90,16 @@ export default function ConnectorsScreen() {
   const gmail = query.data?.find((item) => item.id === 'gmail');
   const bitrix = query.data?.find((item) => item.id === 'bitrix24');
   const [webhookUrl, setWebhookUrl] = useState('');
+  // The webhook field is the last thing on the screen, so the keyboard covers it:
+  // once the keyboard is up (and the window has resized), bring the field into view.
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const revealWebhookField = useCallback(() => {
+    const sub = Keyboard.addListener('keyboardDidShow', () => {
+      sub.remove();
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
+    });
+    setTimeout(() => sub.remove(), 1500);
+  }, []);
 
   const disconnect = useMutation({
     mutationFn: (id: ConnectorId) => api.post(DISCONNECT_PATHS[id]),
@@ -152,6 +163,8 @@ export default function ConnectorsScreen() {
 
   return (
     <ScrollView
+      ref={scrollRef}
+      keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ padding: 16, gap: 16 }}
       refreshControl={
         <RefreshControl
@@ -275,6 +288,7 @@ export default function ConnectorsScreen() {
               returnKeyType="done"
               editable={!connectBitrix.isPending}
               onSubmitEditing={submitWebhook}
+              onFocus={revealWebhookField}
             />
             <Button
               title="Connect"
