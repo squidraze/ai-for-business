@@ -1,0 +1,176 @@
+{
+  "common": {
+    "cancel": "Bekor qilish",
+    "retry": "Qayta urinish",
+    "delete": "O‘chirish",
+    "ok": "OK",
+    "nothingFound": "Hech narsa topilmadi"
+  },
+  "tabs": {
+    "chats": "Chatlar",
+    "connectors": "Ulanishlar",
+    "profile": "Profil"
+  },
+  "states": {
+    "errorTitle": "Yuklab bo‘lmadi",
+    "emptyTitle": "Hozircha bo‘sh"
+  },
+  "errors": {
+    "generic": "Nimadir xato ketdi. Qaytadan urinib ko‘ring.",
+    "network": "Server bilan aloqa yo‘q. Internetni tekshiring.",
+    "timeout": "Server uzoq vaqt javob bermayapti. Qaytadan urinib ko‘ring.",
+    "unauthorized": "Sessiya muddati tugadi. Qaytadan kiring.",
+    "internal_error": "Server xatosi. Keyinroq urinib ko‘ring.",
+    "validation_error": "Belgilangan maydonlarni tekshiring.",
+    "email_taken": "Bu email bilan akkaunt allaqachon mavjud.",
+    "invalid_code": "Kod noto‘g‘ri.",
+    "invalid_code_attempts": "Kod noto‘g‘ri. Qolgan urinishlar: {{n}}.",
+    "code_expired": "Kodning muddati tugagan. Yangisini so‘rang.",
+    "too_many_attempts": "Urinishlar juda ko‘p. Yangi kod so‘rang.",
+    "already_verified": "Bu email allaqachon tasdiqlangan. Akkauntga kiring.",
+    "resend_cooldown": "Kodni qayta so‘rashdan oldin biroz kuting.",
+    "resend_cooldown_seconds": "Yangi kodni {{n}} soniyadan keyin so‘rash mumkin.",
+    "invalid_credentials": "Email yoki parol noto‘g‘ri.",
+    "email_not_verified": "Kirish uchun emailingizni tasdiqlang.",
+    "invalid_google_token": "Google orqali kirib bo‘lmadi. Qaytadan urinib ko‘ring.",
+    "google_email_unverified": "Google akkauntidagi email tasdiqlanmagan.",
+    "google_not_configured": "Google orqali kirish hozir mavjud emas.",
+    "invalid_apple_token": "Apple orqali kirib bo‘lmadi. Qaytadan urinib ko‘ring.",
+    "apple_email_missing": "Apple emailingizni bermadi. Emailga ruxsat bering va qaytadan urinib ko‘ring.",
+    "email_send_failed": "Xatni yuborib bo‘lmadi. Keyinroq urinib ko‘ring.",
+    "play_services_unavailable": "Qurilmada Google Play xizmatlari yo‘q yoki eskirgan.",
+    "google_failed": "Google orqali kirib bo‘lmadi. Qaytadan urinib ko‘ring.",
+    "apple_failed": "Apple orqali kirib bo‘lmadi. Qaytadan urinib ko‘ring.",
+    "google_unavailable": "Google javob bermayapti. Keyinroq urinib ko‘ring.",
+    "apple_unavailable": "Apple javob bermayapti. Keyinroq urinib ko‘ring.",
+    "apple_not_configured": "Apple orqali kirish hozir mavjud emas.",
+    "not_authenticated": "Akkauntga qaytadan kiring.",
+    "invalid_token": "Sessiya muddati tugadi. Qaytadan kiring."
+  },
+  "validation": {
+    "required": "Bu maydonni to‘ldiring.",
+    "invalid_email": "To‘g‘ri email kiriting.",
+    "password_too_short": "Parol kamida 8 ta belgidan iborat bo‘lishi kerak.",
+    "password_too_long": "Parol 128 ta belgidan oshmasligi kerak.",
+    "password_needs_letter": "Parolda kamida bitta harf bo‘lishi kerak.",
+    "password_needs_digit": "Parolda kamida bitta raqam bo‘lishi kerak.",
+    "password_whitespace": "Parol bo‘sh joy bilan boshlanmasligi va tugamasligi kerak.",
+    "password_equals_email": "Parol email bilan bir xil bo‘lmasligi kerak.",
+    "name_too_long": "Ism 100 ta belgidan oshmasligi kerak.",
+    "passwords_mismatch": "Parollar mos kelmadi.",
+    "invalid_code_format": "6 xonali kodni kiriting.",
+    "invalid": "Bu maydonni tekshiring."
+  },
+  "auth": {
+    "tagline": "Biznesingiz uchun AI yordamchi",
+    "or": "yoki",
+    "server": "Server: {{url}}",
+    "showPassword": "Parolni ko‘rsatish",
+    "hidePassword": "Parolni yashirish",
+    "fields": {
+      "name": "Ism",
+      "namePlaceholder": "Ali Valiyev",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "password": "Parol",
+      "passwordPlaceholder": "Parolingiz",
+      "newPassword": "Yangi parol",
+      "newPasswordPlaceholder": "Kamida 8 ta belgi",
+      "confirmPassword": "Parolni takrorlang",
+      "confirmPasswordPlaceholder": "Parolni qayta kiriting",
+      "code": "Kod"
+    },
+    "rules": {
+      "length": "Kamida 8 ta belgi",
+      "letter": "Kamida bitta harf",
+      "digit": "Kamida bitta raqam"
+    },
+    "social": {
+      "google": "Google bilan davom etish",
+      "googleUnavailable": "Bu versiyada Google orqali kirish sozlanmagan."
+    },
+    "signIn": {
+      "title": "Xush kelibsiz",
+      "subtitle": "AI yordamchingizga kiring",
+      "submit": "Kirish",
+      "forgot": "Parolni unutdingizmi?",
+      "noAccount": "Akkauntingiz yo‘qmi?",
+      "createOne": "Yaratish"
+    },
+    "register": {
+      "title": "Akkaunt yaratish",
+      "subtitle": "Bir daqiqadan kam vaqt oladi",
+      "submit": "Akkaunt yaratish",
+      "haveAccount": "Akkauntingiz bormi?",
+      "signIn": "Kirish"
+    },
+    "verify": {
+      "title": "Emailni tasdiqlang",
+      "subtitle": "{{email}} manziliga 6 xonali kod yubordik",
+      "submit": "Tasdiqlash",
+      "resend": "Kodni qayta yuborish",
+      "resendIn": "{{n}} soniyadan keyin qayta yuborish",
+      "resent": "Yangi kod yuborildi.",
+      "attemptsLeft": "Qolgan urinishlar: {{n}}",
+      "changeEmail": "Boshqa email kiritish"
+    },
+    "forgot": {
+      "title": "Parolni tiklash",
+      "subtitle": "Akkaunt emailini kiriting, biz kod yuboramiz.",
+      "submit": "Kod yuborish",
+      "back": "Kirish sahifasiga qaytish"
+    },
+    "reset": {
+      "title": "Yangi parol",
+      "subtitle": "{{email}} manziliga yuborilgan kodni kiriting va yangi parol o‘ylab toping.",
+      "submit": "Parolni saqlash"
+    }
+  },
+  "profile": {
+    "verified": "Tasdiqlangan",
+    "notVerified": "Tasdiqlanmagan",
+    "signInMethods": "Kirish usullari",
+    "providers": {
+      "password": "Email va parol",
+      "google": "Google",
+      "apple": "Apple"
+    },
+    "language": "Til",
+    "server": "Server",
+    "appVersion": "Ilova versiyasi",
+    "signOut": "Chiqish",
+    "signOutConfirm": "Akkauntdan chiqasizmi?",
+    "deleteAccount": "Akkauntni o‘chirish",
+    "deleteConfirmTitle": "Akkauntni o‘chirasizmi?",
+    "deleteConfirmText": "Bu amalni bekor qilib bo‘lmaydi. Akkaunt, ulangan xizmatlar (Telegram, Gmail, Bitrix24) va barcha chatlar butunlay o‘chiriladi.",
+    "deleteFailed": "Akkauntni o‘chirib bo‘lmadi"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "uz": "O‘zbekcha"
+  },
+  "chats": {
+    "emptyTitle": "Hozircha chatlar yo‘q",
+    "emptyText": "Yordamchidan istalgan narsani so‘rang — u Telegram va Gmail xabarlaringizni o‘qiy oladi.",
+    "start": "Chat boshlash"
+  },
+  "telegram": {
+    "noChats": "Chatlar yo‘q",
+    "noMatch": "«{{query}}» bo‘yicha chatlar topilmadi.",
+    "noMessages": "Hozircha xabarlar yo‘q"
+  },
+  "gmail": {
+    "empty": "Kiruvchi xatlar yo‘q",
+    "noMatch": "«{{query}}» bo‘yicha xatlar topilmadi."
+  },
+  "bitrix": {
+    "notConnected": "Bitrix24 ulanmagan",
+    "openConnectors": "Ulanishlarni ochish",
+    "noDeals": "Hozircha bitimlar yo‘q",
+    "noLeads": "Hozircha lidlar yo‘q",
+    "noDealsMatch": "«{{query}}» bo‘yicha bitimlar topilmadi.",
+    "noLeadsMatch": "«{{query}}» bo‘yicha lidlar topilmadi.",
+    "unknownType": "CRM yozuvining turi noma’lum."
+  }
+}

@@ -11,3 +11,7 @@ email-validator==2.2.0
 # connectors
 telethon==1.38.1
 cryptg==0.5.0.post0
+# auth: Google / Apple sign-in token verification
+google-auth==2.37.0
+requests==2.32.3
+cryptography==44.0.0

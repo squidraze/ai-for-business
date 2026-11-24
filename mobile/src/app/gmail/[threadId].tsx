@@ -17,7 +17,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar, Card, ErrorView, ListSkeleton } from '@/components/ui';
+import { AsyncState } from '@/components/AsyncState';
+import { SkeletonList } from '@/components/Skeleton';
+import { Avatar, Card } from '@/components/ui';
 import { api, errorMessage, type GmailThread } from '@/lib/api';
 import { displayFrom, fullDate } from '@/lib/format';
 import { useColors } from '@/lib/theme';
@@ -74,116 +76,105 @@ export default function GmailThreadScreen() {
   const title = query.data?.subject || subject || '(no subject)';
   const header = <Stack.Screen options={{ title: '' }} />;
 
-  if (query.isLoading)
-    return (
-      <>
-        {header}
-        <ListSkeleton count={3} />
-      </>
-    );
-  if (query.isError && !query.data)
-    return (
-      <>
-        {header}
-        <ErrorView message={errorMessage(query.error)} onRetry={() => void query.refetch()} />
-      </>
-    );
-
   const messages = query.data?.messages ?? [];
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: c.bg }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 44 : 0}
-    >
+    <>
       {header}
-      <ScrollView
-        contentContainerStyle={{ padding: 16, gap: 12 }}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => void onRefresh()}
-            tintColor={c.primary}
-            colors={[c.primary]}
-          />
-        }
-      >
-        <Text style={[styles.subject, { color: c.text }]}>{title}</Text>
-        {messages.map((m) => (
-          <Card key={m.id}>
-            <View style={styles.meta}>
-              <Avatar name={displayFrom(m.from)} seed={m.from} size={36} />
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={[styles.from, { color: c.text }]} numberOfLines={1}>
-                  {displayFrom(m.from)}
-                </Text>
-                <Text style={[styles.small, { color: c.muted }]} numberOfLines={1}>
-                  to {m.to}
-                  {m.cc ? `, cc ${m.cc}` : ''}
-                </Text>
-              </View>
-              <Text style={[styles.small, { color: c.muted }]}>{fullDate(m.date)}</Text>
-            </View>
-            <Text style={[styles.body, { color: c.text }]} selectable>
-              {(m.body_text || m.snippet || '').trim()}
-            </Text>
-          </Card>
-        ))}
-      </ScrollView>
-
-      <View
-        style={[
-          styles.composer,
-          { backgroundColor: c.card, borderTopColor: c.border, paddingBottom: Math.max(insets.bottom, 10) },
-        ]}
-      >
-        {replying ? (
-          <>
-            <TextInput
-              value={reply}
-              onChangeText={setReply}
-              placeholder="Write a reply…"
-              placeholderTextColor={c.muted}
-              multiline
-              autoFocus
-              style={[styles.input, { backgroundColor: c.inputBg, color: c.text }]}
-            />
-            <View style={styles.actions}>
-              <TouchableOpacity onPress={() => setReplying(false)} hitSlop={8}>
-                <Text style={{ color: c.muted, fontSize: 15 }}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => void send()}
-                disabled={!reply.trim() || sending}
-                style={[
-                  styles.sendButton,
-                  { backgroundColor: c.primary, opacity: !reply.trim() || sending ? 0.5 : 1 },
-                ]}
-              >
-                {sending ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <>
-                    <Ionicons name="send" size={16} color="#fff" />
-                    <Text style={styles.sendText}>Send</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
-          </>
-        ) : (
-          <TouchableOpacity
-            onPress={() => setReplying(true)}
-            style={[styles.replyButton, { borderColor: c.border }]}
+      <AsyncState query={query} skeleton={<SkeletonList count={3} />}>
+        <KeyboardAvoidingView
+          style={{ flex: 1, backgroundColor: c.bg }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 44 : 0}
+        >
+          <ScrollView
+            contentContainerStyle={{ padding: 16, gap: 12 }}
+            keyboardShouldPersistTaps="handled"
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => void onRefresh()}
+                tintColor={c.primary}
+                colors={[c.primary]}
+              />
+            }
           >
-            <Ionicons name="arrow-undo-outline" size={18} color={c.text} />
-            <Text style={{ color: c.text, fontSize: 15, fontWeight: '600', marginLeft: 8 }}>Reply</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </KeyboardAvoidingView>
+            <Text style={[styles.subject, { color: c.text }]}>{title}</Text>
+            {messages.map((m) => (
+              <Card key={m.id}>
+                <View style={styles.meta}>
+                  <Avatar name={displayFrom(m.from)} seed={m.from} size={36} />
+                  <View style={{ flex: 1, marginLeft: 10 }}>
+                    <Text style={[styles.from, { color: c.text }]} numberOfLines={1}>
+                      {displayFrom(m.from)}
+                    </Text>
+                    <Text style={[styles.small, { color: c.muted }]} numberOfLines={1}>
+                      to {m.to}
+                      {m.cc ? `, cc ${m.cc}` : ''}
+                    </Text>
+                  </View>
+                  <Text style={[styles.small, { color: c.muted }]}>{fullDate(m.date)}</Text>
+                </View>
+                <Text style={[styles.body, { color: c.text }]} selectable>
+                  {(m.body_text || m.snippet || '').trim()}
+                </Text>
+              </Card>
+            ))}
+          </ScrollView>
+
+          <View
+            style={[
+              styles.composer,
+              { backgroundColor: c.card, borderTopColor: c.border, paddingBottom: Math.max(insets.bottom, 10) },
+            ]}
+          >
+            {replying ? (
+              <>
+                <TextInput
+                  value={reply}
+                  onChangeText={setReply}
+                  placeholder="Write a reply…"
+                  placeholderTextColor={c.muted}
+                  multiline
+                  autoFocus
+                  style={[styles.input, { backgroundColor: c.inputBg, color: c.text }]}
+                />
+                <View style={styles.actions}>
+                  <TouchableOpacity onPress={() => setReplying(false)} hitSlop={8}>
+                    <Text style={{ color: c.muted, fontSize: 15 }}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => void send()}
+                    disabled={!reply.trim() || sending}
+                    style={[
+                      styles.sendButton,
+                      { backgroundColor: c.primary, opacity: !reply.trim() || sending ? 0.5 : 1 },
+                    ]}
+                  >
+                    {sending ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <>
+                        <Ionicons name="send" size={16} color="#fff" />
+                        <Text style={styles.sendText}>Send</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <TouchableOpacity
+                onPress={() => setReplying(true)}
+                style={[styles.replyButton, { borderColor: c.border }]}
+              >
+                <Ionicons name="arrow-undo-outline" size={18} color={c.text} />
+                <Text style={{ color: c.text, fontSize: 15, fontWeight: '600', marginLeft: 8 }}>Reply</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </KeyboardAvoidingView>
+      </AsyncState>
+    </>
   );
 }
 

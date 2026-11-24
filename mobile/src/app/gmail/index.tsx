@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,14 +13,16 @@ import {
   View,
 } from 'react-native';
 
-import { Avatar, EmptyView, ErrorView, Field, ListSkeleton, Separator } from '@/components/ui';
-import { api, errorMessage, type GmailThreadPage } from '@/lib/api';
+import { AsyncState } from '@/components/AsyncState';
+import { Avatar, EmptyView, Field, Separator } from '@/components/ui';
+import { api, type GmailThreadPage } from '@/lib/api';
 import { displayFrom, relativeTime } from '@/lib/format';
 import { useDebounced } from '@/lib/useDebounced';
 import { useColors } from '@/lib/theme';
 
 export default function GmailInboxScreen() {
   const c = useColors();
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const debounced = useDebounced(search.trim(), 500);
   const pending = search.trim() !== debounced;
@@ -52,6 +55,14 @@ export default function GmailInboxScreen() {
     }
   };
 
+  const empty = (
+    <EmptyView
+      icon="mail-outline"
+      title={debounced ? t('common.nothingFound') : t('gmail.empty')}
+      description={debounced ? t('gmail.noMatch', { query: debounced }) : undefined}
+    />
+  );
+
   return (
     <View style={{ flex: 1 }}>
       <Stack.Screen
@@ -72,11 +83,14 @@ export default function GmailInboxScreen() {
           clearButtonMode="while-editing"
         />
       </View>
-      {query.isLoading || pending ? (
-        <ListSkeleton />
-      ) : query.isError && items.length === 0 ? (
-        <ErrorView message={errorMessage(query.error)} onRetry={() => void query.refetch()} />
-      ) : (
+      <AsyncState
+        query={query}
+        loading={pending}
+        isEmpty={items.length === 0}
+        empty={empty}
+        refreshing={refreshing}
+        onRefresh={() => void onRefresh()}
+      >
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
@@ -100,13 +114,6 @@ export default function GmailInboxScreen() {
             ) : undefined
           }
           ItemSeparatorComponent={() => <Separator inset={72} />}
-          ListEmptyComponent={
-            <EmptyView
-              icon="mail-outline"
-              title={debounced ? 'Nothing found' : 'Inbox is empty'}
-              description={debounced ? `No threads match "${debounced}".` : undefined}
-            />
-          }
           renderItem={({ item }) => {
             const from = displayFrom(item.from);
             const weight = item.unread ? '700' : '400';
@@ -158,7 +165,7 @@ export default function GmailInboxScreen() {
             );
           }}
         />
-      )}
+      </AsyncState>
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => router.push('/gmail/compose')}

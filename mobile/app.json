@@ -8,7 +8,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "ai.forbusiness.demo"
+      "bundleIdentifier": "ai.forbusiness.demo",
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
@@ -36,7 +37,9 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "expo-localization",
+      "expo-apple-authentication"
     ],
     "scheme": "forbusiness",
     "experiments": {

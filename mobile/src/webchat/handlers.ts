@@ -23,7 +23,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 
 import { api, CONVERSATIONS_KEY, errorMessage, getToken, isAbortError } from '@/lib/api';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/features/auth';
 import { APP_VERSION, COMPANY_ID } from '@/lib/config';
 import { createLogger } from '@/lib/log';
 import { useThemeName } from '@/lib/theme';

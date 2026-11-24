@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 import { API_URL, COMPANY_ID } from './config';
+import i18n from './i18n';
 
 const TOKEN_KEY = 'forbusiness_token';
 
@@ -45,6 +46,8 @@ api.interceptors.request.use((config) => {
   config.headers = config.headers ?? {};
   if (token && !config.headers.Authorization) config.headers.Authorization = `Bearer ${token}`;
   config.headers['X-Company-ID'] = COMPANY_ID;
+  // The backend localizes emails (verification / reset codes) by this header.
+  config.headers['Accept-Language'] = (i18n.language || 'en').slice(0, 2);
   return config;
 });
 
@@ -52,23 +55,128 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     const url = error.config?.url ?? '';
-    if (error.response?.status === 401 && token && !url.includes('/auth/login') && !url.includes('/auth/register')) {
+    // Unauthenticated auth endpoints (login, register, verify…) answer 401 for bad
+    // credentials — that is not an expired session. Only /auth/me means "signed out".
+    const isPublicAuth = url.includes('/auth/') && !url.includes('/auth/me');
+    if (error.response?.status === 401 && token && !isPublicAuth) {
       onUnauthorized?.();
     }
     return Promise.reject(error);
   },
 );
 
-/** `{ detail }` from the backend, or a sensible fallback. */
-export function errorMessage(error: unknown, fallback = 'Something went wrong'): string {
-  if (axios.isAxiosError(error)) {
-    const detail = (error.response?.data as { detail?: unknown } | undefined)?.detail;
-    if (typeof detail === 'string' && detail) return detail;
-    if (Array.isArray(detail) && detail[0]?.msg) return String(detail[0].msg);
-    if (!error.response) return `Can't reach the server (${API_URL})`;
-    return error.message || fallback;
+/* ------------------------------------------------------------------ */
+/* Errors                                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A failed request (or a client-side failure with a `code`) in one shape.
+ * Backend errors look like `{"detail": {"code", "message", "field"?, ...extra}}`;
+ * 422 adds `fields: {<field>: <code>}`. Older endpoints still send a string `detail`.
+ */
+export type ApiError = {
+  /** HTTP status, null when there was no response. */
+  status: number | null;
+  /** Machine code: backend `detail.code`, or `network`, `timeout`, `unknown`. */
+  code: string;
+  /** Server message (English) if any. */
+  message: string | null;
+  /** The field the error belongs to, if the backend named one. */
+  field: string | null;
+  /** Per-field codes from `validation_error`. */
+  fields: Record<string, string>;
+  /** Any other keys of `detail` (attempts_left, resend_in, retry_after, email…). */
+  extra: Record<string, unknown>;
+};
+
+/** Thrown by client-side code (Google/Apple sign-in) with a code from `errors.*`. */
+export class ClientError extends Error {
+  constructor(public code: string, message?: string) {
+    super(message ?? code);
+    this.name = 'ClientError';
   }
-  return error instanceof Error ? error.message : fallback;
+}
+
+function fastApiFields(detail: unknown[]): Record<string, string> {
+  const fields: Record<string, string> = {};
+  for (const item of detail) {
+    const loc = (item as { loc?: unknown[] })?.loc;
+    const name = Array.isArray(loc) ? loc[loc.length - 1] : undefined;
+    if (typeof name === 'string' && !fields[name]) fields[name] = 'invalid';
+  }
+  return fields;
+}
+
+export function parseApiError(error: unknown): ApiError {
+  const base: ApiError = { status: null, code: 'unknown', message: null, field: null, fields: {}, extra: {} };
+  if (axios.isAxiosError(error)) {
+    if (!error.response) {
+      const timedOut = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT';
+      return { ...base, code: timedOut ? 'timeout' : 'network', message: error.message || null };
+    }
+    const status = error.response.status;
+    const detail = (error.response.data as { detail?: unknown } | undefined)?.detail;
+    if (detail && typeof detail === 'object' && !Array.isArray(detail)) {
+      const { code, message, field, fields, ...extra } = detail as Record<string, unknown>;
+      return {
+        status,
+        code: typeof code === 'string' && code ? code : status >= 500 ? 'internal_error' : 'unknown',
+        message: typeof message === 'string' ? message : null,
+        field: typeof field === 'string' ? field : null,
+        fields:
+          fields && typeof fields === 'object' ? (fields as Record<string, string>) : {},
+        extra,
+      };
+    }
+    if (Array.isArray(detail)) {
+      return {
+        ...base,
+        status,
+        code: 'validation_error',
+        message: typeof detail[0]?.msg === 'string' ? detail[0].msg : null,
+        fields: fastApiFields(detail),
+      };
+    }
+    return {
+      ...base,
+      status,
+      code: status >= 500 ? 'internal_error' : status === 401 ? 'unauthorized' : 'unknown',
+      message: typeof detail === 'string' && detail ? detail : null,
+    };
+  }
+  if (error instanceof ClientError) return { ...base, code: error.code, message: error.message };
+  if (error instanceof Error) return { ...base, message: error.message || null };
+  return base;
+}
+
+export function apiErrorCode(error: unknown): string {
+  return parseApiError(error).code;
+}
+
+/** Translated text for an error code (`errors.<code>`), or null if there is none. */
+export function errorCodeMessage(code: string, extra: Record<string, unknown> = {}): string | null {
+  if (code === 'invalid_code' && typeof extra.attempts_left === 'number') {
+    return i18n.t('errors.invalid_code_attempts', { n: extra.attempts_left });
+  }
+  if (code === 'resend_cooldown' && typeof extra.retry_after === 'number') {
+    return i18n.t('errors.resend_cooldown_seconds', { n: Math.ceil(extra.retry_after) });
+  }
+  const key = `errors.${code}`;
+  return i18n.exists(key) ? i18n.t(key) : null;
+}
+
+/**
+ * A human message for any error, in the current language: a known code is
+ * translated; otherwise the server's own message; otherwise `fallback`/generic.
+ */
+export function errorMessage(error: unknown, fallback?: string): string {
+  const parsed = parseApiError(error);
+  return (
+    errorCodeMessage(parsed.code, parsed.extra) ??
+    parsed.message ??
+    fallback ??
+    i18n.t('errors.generic')
+  );
 }
 
 export function isAbortError(error: unknown): boolean {
@@ -79,9 +187,6 @@ export function isAbortError(error: unknown): boolean {
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
 /* ------------------------------------------------------------------ */
-
-export type User = { id: number; uuid: string; email: string; name: string };
-export type AuthResponse = { access_token: string; user: User };
 
 export type AIConversation = {
   uuid: string;

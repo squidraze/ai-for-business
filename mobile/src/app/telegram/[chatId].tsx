@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +17,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar, EmptyView, ErrorView, ListSkeleton, type IconName } from '@/components/ui';
+import { AsyncState } from '@/components/AsyncState';
+import { SkeletonList } from '@/components/Skeleton';
+import { Avatar, EmptyView, type IconName } from '@/components/ui';
 import { api, dialogPhotoSource, errorMessage, type TelegramMessage } from '@/lib/api';
 import { timeOfDay } from '@/lib/format';
 import { useColors } from '@/lib/theme';
@@ -39,6 +42,7 @@ function mergeMessages(...lists: TelegramMessage[][]): TelegramMessage[] {
 
 export default function TelegramChatScreen() {
   const c = useColors();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { chatId, title, type } = useLocalSearchParams<{
@@ -126,21 +130,6 @@ export default function TelegramChatScreen() {
     />
   );
 
-  if (latest.isLoading)
-    return (
-      <>
-        {header}
-        <ListSkeleton avatar={false} />
-      </>
-    );
-  if (latest.isError && messages.length === 0)
-    return (
-      <>
-        {header}
-        <ErrorView message={errorMessage(latest.error)} onRetry={() => void latest.refetch()} />
-      </>
-    );
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: c.bg }}
@@ -148,68 +137,69 @@ export default function TelegramChatScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 44 : 0}
     >
       {header}
-      <FlatList
-        inverted
-        data={messages}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 8, flexGrow: 1 }}
-        onEndReached={() => void loadOlder()}
-        onEndReachedThreshold={0.3}
-        ListFooterComponent={
-          loadingOlder ? <ActivityIndicator style={{ margin: 12 }} color={c.primary} /> : undefined
-        }
-        ListEmptyComponent={
-          // inverted lists flip the empty component too
-          <View style={{ flex: 1, transform: [{ scaleY: -1 }] }}>
-            <EmptyView icon="chatbubble-outline" title="No messages yet" />
-          </View>
-        }
-        renderItem={({ item, index }) => {
-          const above = messages[index + 1];
-          const showSender =
-            isGroup && !item.out && !!item.sender_name && above?.sender_id !== item.sender_id;
-          const media = item.media ? MEDIA[item.media] : null;
-          const fg = item.out ? c.bubbleOutText : c.text;
-          return (
-            <View style={[styles.bubbleRow, { justifyContent: item.out ? 'flex-end' : 'flex-start' }]}>
-              <View
-                style={[
-                  styles.bubble,
-                  item.out
-                    ? { backgroundColor: c.bubbleOut, borderBottomRightRadius: 4 }
-                    : {
-                        backgroundColor: c.bubbleIn,
-                        borderBottomLeftRadius: 4,
-                        borderColor: c.border,
-                        borderWidth: StyleSheet.hairlineWidth,
-                      },
-                ]}
-              >
-                {showSender ? (
-                  <Text style={[styles.sender, { color: c.primary }]} numberOfLines={1}>
-                    {item.sender_name}
-                  </Text>
-                ) : null}
-                {media ? (
-                  <View style={styles.media}>
-                    <Ionicons name={media.icon} size={16} color={fg} />
-                    <Text style={[styles.mediaText, { color: fg }]}>{media.label}</Text>
-                  </View>
-                ) : null}
-                {item.text ? <Text style={[styles.text, { color: fg }]}>{item.text}</Text> : null}
-                <Text
+      <AsyncState
+        query={latest}
+        isEmpty={messages.length === 0}
+        skeleton={<SkeletonList avatar={false} />}
+        empty={<EmptyView icon="chatbubble-outline" title={t('telegram.noMessages')} />}
+      >
+        <FlatList
+          inverted
+          data={messages}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 8, flexGrow: 1 }}
+          onEndReached={() => void loadOlder()}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            loadingOlder ? <ActivityIndicator style={{ margin: 12 }} color={c.primary} /> : undefined
+          }
+          renderItem={({ item, index }) => {
+            const above = messages[index + 1];
+            const showSender =
+              isGroup && !item.out && !!item.sender_name && above?.sender_id !== item.sender_id;
+            const media = item.media ? MEDIA[item.media] : null;
+            const fg = item.out ? c.bubbleOutText : c.text;
+            return (
+              <View style={[styles.bubbleRow, { justifyContent: item.out ? 'flex-end' : 'flex-start' }]}>
+                <View
                   style={[
-                    styles.time,
-                    { color: item.out ? 'rgba(255,255,255,0.75)' : c.muted },
+                    styles.bubble,
+                    item.out
+                      ? { backgroundColor: c.bubbleOut, borderBottomRightRadius: 4 }
+                      : {
+                          backgroundColor: c.bubbleIn,
+                          borderBottomLeftRadius: 4,
+                          borderColor: c.border,
+                          borderWidth: StyleSheet.hairlineWidth,
+                        },
                   ]}
                 >
-                  {timeOfDay(item.date)}
-                </Text>
+                  {showSender ? (
+                    <Text style={[styles.sender, { color: c.primary }]} numberOfLines={1}>
+                      {item.sender_name}
+                    </Text>
+                  ) : null}
+                  {media ? (
+                    <View style={styles.media}>
+                      <Ionicons name={media.icon} size={16} color={fg} />
+                      <Text style={[styles.mediaText, { color: fg }]}>{media.label}</Text>
+                    </View>
+                  ) : null}
+                  {item.text ? <Text style={[styles.text, { color: fg }]}>{item.text}</Text> : null}
+                  <Text
+                    style={[
+                      styles.time,
+                      { color: item.out ? 'rgba(255,255,255,0.75)' : c.muted },
+                    ]}
+                  >
+                    {timeOfDay(item.date)}
+                  </Text>
+                </View>
               </View>
-            </View>
-          );
-        }}
-      />
+            );
+          }}
+        />
+      </AsyncState>
       <View
         style={[
           styles.composer,

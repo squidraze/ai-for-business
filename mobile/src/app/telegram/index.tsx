@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   FlatList,
   RefreshControl,
@@ -10,14 +11,16 @@ import {
   View,
 } from 'react-native';
 
-import { Avatar, EmptyView, ErrorView, Field, ListSkeleton, Separator } from '@/components/ui';
-import { api, dialogPhotoSource, errorMessage, type TelegramDialog } from '@/lib/api';
+import { AsyncState } from '@/components/AsyncState';
+import { Avatar, EmptyView, Field, Separator } from '@/components/ui';
+import { api, dialogPhotoSource, type TelegramDialog } from '@/lib/api';
 import { relativeTime } from '@/lib/format';
 import { useDebounced } from '@/lib/useDebounced';
 import { useColors } from '@/lib/theme';
 
 export default function TelegramDialogsScreen() {
   const c = useColors();
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const debounced = useDebounced(search.trim(), 400);
   const pending = search.trim() !== debounced;
@@ -45,6 +48,14 @@ export default function TelegramDialogsScreen() {
     }
   };
 
+  const empty = (
+    <EmptyView
+      icon="chatbubble-ellipses-outline"
+      title={debounced ? t('common.nothingFound') : t('telegram.noChats')}
+      description={debounced ? t('telegram.noMatch', { query: debounced }) : undefined}
+    />
+  );
+
   return (
     <View style={{ flex: 1 }}>
       <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
@@ -56,11 +67,14 @@ export default function TelegramDialogsScreen() {
           clearButtonMode="while-editing"
         />
       </View>
-      {query.isLoading || pending ? (
-        <ListSkeleton />
-      ) : query.isError && items.length === 0 ? (
-        <ErrorView message={errorMessage(query.error)} onRetry={() => void query.refetch()} />
-      ) : (
+      <AsyncState
+        query={query}
+        loading={pending}
+        isEmpty={items.length === 0}
+        empty={empty}
+        refreshing={refreshing}
+        onRefresh={() => void onRefresh()}
+      >
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
@@ -75,13 +89,6 @@ export default function TelegramDialogsScreen() {
             />
           }
           ItemSeparatorComponent={() => <Separator inset={76} />}
-          ListEmptyComponent={
-            <EmptyView
-              icon="chatbubble-ellipses-outline"
-              title={debounced ? 'Nothing found' : 'No chats'}
-              description={debounced ? `No chats match "${debounced}".` : undefined}
-            />
-          }
           renderItem={({ item }) => (
             <TouchableOpacity
               activeOpacity={0.6}
@@ -121,7 +128,7 @@ export default function TelegramDialogsScreen() {
             </TouchableOpacity>
           )}
         />
-      )}
+      </AsyncState>
     </View>
   );
 }

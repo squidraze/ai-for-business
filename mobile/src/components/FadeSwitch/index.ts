@@ -1,0 +1,1 @@
+export { FadeSwitch } from './FadeSwitch';

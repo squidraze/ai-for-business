@@ -1,12 +1,16 @@
+import '@/lib/i18n';
+
+import { Ionicons } from '@expo/vector-icons';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { LoadingView } from '@/components/ui';
-import { AuthProvider, useAuth } from '@/lib/auth';
+import { FadeSwitch } from '@/components/FadeSwitch';
+import { SplashSkeleton } from '@/components/Skeleton';
+import { AuthProvider, useAuth } from '@/features/auth';
 import { useColors } from '@/lib/theme';
 
 function RootStack() {
@@ -25,38 +29,47 @@ function RootStack() {
     else if (signedIn && inAuth) router.replace('/');
   }, [status, signedIn, inAuth, navReady, router]);
 
-  if (status === 'loading') {
-    return (
-      <View style={{ flex: 1, backgroundColor: c.bg }}>
-        <LoadingView />
-      </View>
-    );
-  }
-
+  // Checking the saved session: a skeleton splash that cross-fades into the app.
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: c.card },
-        headerTintColor: c.text,
-        headerTitleStyle: { color: c.text },
-        contentStyle: { backgroundColor: c.bg },
-        headerShadowVisible: false,
-      }}
-    >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="telegram/connect" options={{ title: 'Connect Telegram' }} />
-        <Stack.Screen name="telegram/index" options={{ title: 'Telegram' }} />
-        <Stack.Screen name="telegram/[chatId]" options={{ title: '' }} />
-        <Stack.Screen name="gmail/index" options={{ title: 'Inbox' }} />
-        <Stack.Screen name="gmail/[threadId]" options={{ title: '' }} />
-        <Stack.Screen name="gmail/compose" options={{ title: 'New email' }} />
-        <Stack.Screen name="bitrix/index" options={{ title: 'CRM' }} />
-        <Stack.Screen name="bitrix/[entity]/[id]" options={{ title: '' }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-    </Stack>
+    <FadeSwitch stateKey={status === 'loading' ? 'splash' : 'app'} appear style={{ backgroundColor: c.bg }}>
+      {status === 'loading' ? (
+        <SplashSkeleton
+          logo={
+            <View style={[styles.logo, { backgroundColor: c.primary }]}>
+              <Ionicons name="sparkles" size={30} color="#fff" />
+            </View>
+          }
+        />
+      ) : (
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: c.card },
+            headerTintColor: c.text,
+            headerTitleStyle: { color: c.text },
+            contentStyle: { backgroundColor: c.bg },
+            headerShadowVisible: false,
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="telegram/connect" options={{ title: 'Connect Telegram' }} />
+          <Stack.Screen name="telegram/index" options={{ title: 'Telegram' }} />
+          <Stack.Screen name="telegram/[chatId]" options={{ title: '' }} />
+          <Stack.Screen name="gmail/index" options={{ title: 'Inbox' }} />
+          <Stack.Screen name="gmail/[threadId]" options={{ title: '' }} />
+          <Stack.Screen name="gmail/compose" options={{ title: 'New email' }} />
+          <Stack.Screen name="bitrix/index" options={{ title: 'CRM' }} />
+          <Stack.Screen name="bitrix/[entity]/[id]" options={{ title: '' }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        </Stack>
+      )}
+    </FadeSwitch>
   );
 }
+
+const styles = StyleSheet.create({
+  logo: { width: 60, height: 60, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+});
 
 export default function RootLayout() {
   const [queryClient] = useState(
