@@ -67,7 +67,8 @@ Google $25 разово) и бюджет продвижения (таргет в
 
 ## Что уже есть (прототип, ноябрь 2026)
 
-Репозиторий: `D:\projects\forBusiness`, без remote, тестов пока нет.
+Репозиторий: `D:\projects\forBusiness`, на GitHub `squidraze/ai-for-business`
+(ветки `main` и `prod`, правила в `docs/git/`), тестов пока нет.
 Запуск описан в его `README.md`.
 
 - **backend/** — Python, FastAPI, SQLAlchemy на **SQLite**, JWT. Вход сейчас —
