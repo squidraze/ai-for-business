@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { errorCodeMessage, parseApiError, type ApiError } from '@/lib/api';
 
-import type { TextInputRef } from './components/TextField';
+import type { TextInputRef } from '@/components/TextField';
 
 type Values<F extends string> = Record<F, string>;
 type Validators<F extends string> = Record<F, (values: Values<F>) => string | null>;

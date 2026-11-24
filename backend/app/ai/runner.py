@@ -5,10 +5,12 @@ per-segment counter starting at 1; a resumed run starts a new segment.
 """
 
 import asyncio
+import inspect
 import json
 import logging
 import time
 from datetime import datetime
+from typing import Any, Callable
 
 from sqlalchemy import select
 
@@ -24,6 +26,33 @@ TOKEN_FLUSH_SECONDS = 0.15
 TOKEN_FLUSH_CHARS = 120
 
 TASKS: dict[str, asyncio.Task] = {}
+
+
+# ---------------------------------------------------------------- lifecycle hooks
+# Other modules (e.g. app.schedules) react to runs without this file knowing
+# about them. A hook is `fn(run_uuid, status, conversation_id, user_id)`, sync or
+# async, called after the status is committed, each time a run reaches
+# awaiting_approval / completed / error / cancelled (the `Run.status` values).
+# A run that pauses for approval more than once fires awaiting_approval each time.
+
+RunHook = Callable[[str, str, int, int], Any]
+_RUN_HOOKS: list[RunHook] = []
+
+
+def on_run_finished(fn: RunHook) -> RunHook:
+    if fn not in _RUN_HOOKS:
+        _RUN_HOOKS.append(fn)
+    return fn
+
+
+async def _fire_run_hooks(run_uuid: str, status: str, conversation_id: int, user_id: int) -> None:
+    for fn in list(_RUN_HOOKS):
+        try:
+            result = fn(run_uuid, status, conversation_id, user_id)
+            if inspect.isawaitable(result):
+                await result
+        except Exception:
+            log.exception("run hook %s failed for run %s", getattr(fn, "__qualname__", fn), run_uuid)
 
 
 # ---------------------------------------------------------------- events
@@ -170,6 +199,36 @@ def create_run(db, conv: Conversation, user_id: int, anchor_uuid: str | None, he
     return run
 
 
+def start_user_turn(
+    db,
+    conv: Conversation,
+    user_id: int,
+    content: str,
+    attachment_uuids: list[str] | None = None,
+    parent_uuid: str | None = None,
+    fresh: bool = False,
+    start: bool = True,
+    model_note: str | None = None,
+) -> tuple[Message, Run]:
+    """Append a user message under `parent_uuid` and start a run answering it.
+
+    The one path for a new user turn: the chat endpoints and programmatic callers
+    (e.g. scheduled tasks) both use it. Commits; the run starts on the main loop.
+    With `start=False` the caller links its own rows to the run first, then calls `spawn(run.uuid)`.
+    `model_note` is extra context only the model sees (the chat shows `content`).
+    """
+    m = service.add_message(
+        db, conv, parent_uuid=parent_uuid, role="user", content=content, attachment_uuids=list(attachment_uuids or [])
+    )
+    m.model_note = model_note
+    conv.active_leaf_uuid = m.uuid
+    db.commit()
+    run = create_run(db, conv, user_id, anchor_uuid=m.uuid, head_uuid=m.uuid, fresh=fresh)
+    if start:
+        spawn(run.uuid)
+    return m, run
+
+
 async def cancel(db, run: Run) -> bool:
     task = TASKS.get(run.uuid)
     if task and not task.done():
@@ -184,6 +243,7 @@ async def cancel(db, run: Run) -> bool:
         db.commit()
         em = Emitter(run.user_id, conv.uuid, run.uuid)
         await em.emit("ai.run.cancelled", {"chars": 0})
+        await _fire_run_hooks(run.uuid, "cancelled", run.conversation_id, run.user_id)
         return True
     return False
 
@@ -209,6 +269,7 @@ async def _run_task(run_uuid: str, resume: dict | None) -> None:
         conv = db.get(Conversation, run.conversation_id)
         em = Emitter(run.user_id, conv.uuid, run.uuid)
         user_id = run.user_id
+        conversation_id = conv.id
 
     partial = {"text": ""}
     try:
@@ -229,6 +290,7 @@ async def _run_task(run_uuid: str, resume: dict | None) -> None:
             run.finished_at = utcnow()
             db.commit()
         await em.emit("ai.run.cancelled", {"chars": em.chars})
+        await _fire_run_hooks(run_uuid, "cancelled", conversation_id, user_id)
     except Exception as e:
         log.exception("run %s failed", run_uuid)
         msg = _error_message(e)
@@ -242,6 +304,7 @@ async def _run_task(run_uuid: str, resume: dict | None) -> None:
             await em.emit("ai.run.error", {"message": msg})
         except Exception:
             pass
+        await _fire_run_hooks(run_uuid, "error", conversation_id, user_id)
 
 
 def _error_message(e: Exception) -> str:
@@ -366,6 +429,7 @@ async def _loop(run_uuid: str, user_id: int, em: Emitter, partial: dict) -> None
             if fresh:
                 await _title(run_uuid, em)
             await em.emit("ai.run.completed", {"message_uuid": head, "content": text})
+            await _fire_run_hooks(run_uuid, "completed", run.conversation_id, user_id)
             return
 
         offered_names = {t.name for t in offered}
@@ -390,7 +454,7 @@ async def _loop(run_uuid: str, user_id: int, em: Emitter, partial: dict) -> None
         gated: list[dict] = []
         for c in parsed:
             await em.emit("ai.tool_call", {"tool": c["name"], "tool_call_id": c["id"], "args": c["args"]})
-            tool = tools.BY_NAME.get(c["name"])
+            tool = await tools.get_tool(user_id, c["name"])
             if tool is None or (c["name"] not in offered_names and not llm.fake_mode()):
                 msg = f"Error: tool '{c['name']}' is not available (its connector is not connected or is switched off)."
                 await em.emit("ai.tool_result", {"tool": c["name"], "tool_call_id": c["id"], "content": msg})
@@ -417,7 +481,7 @@ async def _loop(run_uuid: str, user_id: int, em: Emitter, partial: dict) -> None
             actions = []
             allow_options = {}
             for c in gated:
-                title, detail = tools.BY_NAME[c["name"]].summarize(c["args"])
+                title, detail = (await tools.get_tool(user_id, c["name"])).summarize(c["args"])
                 actions.append({"tool": c["name"], "title": title, "description": detail})
                 allow_options[c["name"]] = ["session", "always"]
             with SessionLocal() as db:
@@ -437,6 +501,7 @@ async def _loop(run_uuid: str, user_id: int, em: Emitter, partial: dict) -> None
             await em.emit(
                 "ai.action.pending", {"pending_uuid": pending_uuid, "actions": actions, "allow_options": allow_options}
             )
+            await _fire_run_hooks(run_uuid, "awaiting_approval", conv_id, user_id)
             return  # paused — resume() spawns a new task for the same run
 
     # ran out of steps
@@ -450,8 +515,10 @@ async def _loop(run_uuid: str, user_id: int, em: Emitter, partial: dict) -> None
         run.status = "completed"
         run.finished_at = utcnow()
         head = run.turn_head_uuid
+        conversation_id = run.conversation_id
         db.commit()
     await em.emit("ai.run.completed", {"message_uuid": head, "content": text})
+    await _fire_run_hooks(run_uuid, "completed", conversation_id, user_id)
 
 
 async def _title(run_uuid: str, em: Emitter) -> None:

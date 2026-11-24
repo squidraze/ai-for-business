@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -15,6 +16,16 @@ import { authApi, type AuthResponse, type CodePurpose, type CodeSent, type User 
 import { getAppleCredential, getGoogleIdToken, googleSignOut } from './social';
 
 export type AuthStatus = 'loading' | 'signedOut' | 'signedIn';
+
+/**
+ * Runs while the session is still valid, right before sign-out or account
+ * deletion (e.g. to unregister the push token). Best-effort: errors are
+ * ignored and slow handlers are cut off.
+ */
+export type BeforeSignOutHandler = () => Promise<unknown> | unknown;
+
+/** How long sign-out waits for the before-sign-out handlers. */
+const BEFORE_SIGN_OUT_TIMEOUT_MS = 3000;
 
 /** Social sign-in result: `cancelled` means the user closed the dialog (no error). */
 export type SocialResult = 'signedIn' | 'cancelled';
@@ -35,6 +46,8 @@ export type AuthState = {
   signInWithApple: () => Promise<SocialResult>;
   deleteAccount: () => Promise<void>;
   signOut: () => Promise<void>;
+  /** Adds a before-sign-out handler; returns the function that removes it. */
+  registerBeforeSignOut: (handler: BeforeSignOutHandler) => () => void;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -59,18 +72,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [queryClient],
   );
 
-  const signOut = useCallback(async () => {
-    await saveToken(null);
-    void googleSignOut();
-    setUser(null);
-    setStatus('signedOut');
-    queryClient.clear();
-  }, [queryClient, setUser]);
+  const beforeSignOut = useRef(new Set<BeforeSignOutHandler>());
+  const signingOut = useRef(false);
+
+  const registerBeforeSignOut = useCallback((handler: BeforeSignOutHandler) => {
+    beforeSignOut.current.add(handler);
+    return () => {
+      beforeSignOut.current.delete(handler);
+    };
+  }, []);
+
+  const runBeforeSignOut = useCallback(async () => {
+    const handlers = [...beforeSignOut.current];
+    if (handlers.length === 0) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    await Promise.race([
+      Promise.allSettled(handlers.map((handler) => Promise.resolve().then(handler))),
+      new Promise((resolve) => {
+        timer = setTimeout(resolve, BEFORE_SIGN_OUT_TIMEOUT_MS);
+      }),
+    ]);
+    clearTimeout(timer);
+  }, []);
+
+  /** `expired`: the token no longer works (401, deleted account), so skip the handlers. */
+  const endSession = useCallback(
+    async ({ expired = false }: { expired?: boolean } = {}) => {
+      // A handler's own 401 would call this again while we are signing out.
+      if (signingOut.current) return;
+      signingOut.current = true;
+      try {
+        if (!expired) await runBeforeSignOut();
+        await saveToken(null);
+        void googleSignOut();
+        setUser(null);
+        setStatus('signedOut');
+        queryClient.clear();
+      } finally {
+        signingOut.current = false;
+      }
+    },
+    [queryClient, runBeforeSignOut, setUser],
+  );
+
+  const signOut = useCallback(() => endSession(), [endSession]);
 
   useEffect(() => {
-    setOnUnauthorized(() => void signOut());
+    setOnUnauthorized(() => void endSession({ expired: true }));
     return () => setOnUnauthorized(null);
-  }, [signOut]);
+  }, [endSession]);
 
   useEffect(() => {
     void (async () => {
@@ -85,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         // 401 already signed us out; on a network error keep the session so the
         // app still opens offline-ish (screens show their own errors).
-        if (parseApiError(error).status === 401) await signOut();
+        if (parseApiError(error).status === 401) await endSession({ expired: true });
         else setStatus('signedIn');
       }
     })();
@@ -149,9 +199,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [accept]);
 
   const deleteAccount = useCallback(async () => {
+    await runBeforeSignOut();
     await authApi.deleteMe();
-    await signOut();
-  }, [signOut]);
+    // The handlers already ran, and the token of a deleted account no longer works.
+    await endSession({ expired: true });
+  }, [endSession, runBeforeSignOut]);
 
   const value = useMemo<AuthState>(
     () => ({
@@ -168,6 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInWithApple,
       deleteAccount,
       signOut,
+      registerBeforeSignOut,
     }),
     [
       status,
@@ -183,6 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInWithApple,
       deleteAccount,
       signOut,
+      registerBeforeSignOut,
     ],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -192,4 +246,13 @@ export function useAuth(): AuthState {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth outside AuthProvider');
   return context;
+}
+
+/**
+ * Runs `handler` right before sign-out / account deletion while the session is
+ * still valid. Keep `handler` stable (useCallback) or it re-registers on every render.
+ */
+export function useBeforeSignOut(handler: BeforeSignOutHandler) {
+  const { registerBeforeSignOut } = useAuth();
+  useEffect(() => registerBeforeSignOut(handler), [registerBeforeSignOut, handler]);
 }

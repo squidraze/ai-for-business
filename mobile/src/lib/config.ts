@@ -25,3 +25,6 @@ export const SKELETON_SHIMMER_MS = positiveInt(process.env.EXPO_PUBLIC_SKELETON_
 /** Google OAuth client ids (empty = Google sign-in unavailable). */
 export const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim() ?? '';
 export const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim() ?? '';
+
+/** How often the Tasks tab badge (runs waiting for approval) refreshes while the app is open, in ms. */
+export const PENDING_POLL_MS = positiveInt(process.env.EXPO_PUBLIC_PENDING_POLL_MS, 60_000);

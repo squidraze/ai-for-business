@@ -8,6 +8,8 @@ venv/
 *.sqlite3
 *.db
 data/
+# service-account keys (Firebase push etc.) — never commit
+secrets/
 dist/
 .expo/
 mobile/android/

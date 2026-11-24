@@ -26,6 +26,8 @@ services:
       DATA_DIR: /app/data
     volumes:
       - ./backend/data:/app/data
+      # ключ сервисного аккаунта Firebase для пушей (см. FCM_SERVICE_ACCOUNT_FILE в .env.example)
+      - ./secrets:/app/secrets:ro
     depends_on:
       - centrifugo
     restart: unless-stopped

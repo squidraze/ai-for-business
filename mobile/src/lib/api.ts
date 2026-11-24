@@ -161,6 +161,9 @@ export function errorCodeMessage(code: string, extra: Record<string, unknown> = 
   if (code === 'resend_cooldown' && typeof extra.retry_after === 'number') {
     return i18n.t('errors.resend_cooldown_seconds', { n: Math.ceil(extra.retry_after) });
   }
+  if (code === 'schedule_limit_reached' && typeof extra.limit === 'number') {
+    return i18n.t('errors.schedule_limit_reached_n', { n: extra.limit });
+  }
   const key = `errors.${code}`;
   return i18n.exists(key) ? i18n.t(key) : null;
 }

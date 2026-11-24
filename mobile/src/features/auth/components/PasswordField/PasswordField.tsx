@@ -5,7 +5,7 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 
 import { useColors } from '@/lib/theme';
 
-import { TextField, type TextFieldProps } from '../TextField';
+import { TextField, type TextFieldProps } from '@/components/TextField';
 
 /** Text field with a show/hide toggle. */
 export function PasswordField(props: Omit<TextFieldProps, 'secureTextEntry' | 'right'>) {

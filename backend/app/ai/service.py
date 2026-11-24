@@ -175,6 +175,7 @@ def conversation_read(conv: Conversation) -> dict:
         "created_at": iso(conv.created_at),
         "updated_at": iso(conv.updated_at),
         "disabled_connectors": conv.disabled_connectors or [],
+        "source": conv.source or "chat",
         "agent": None,
         "company": None,
     }
@@ -242,7 +243,13 @@ def model_context(db: Session, conv: Conversation, head_uuid: str | None) -> lis
     offered: set[str] = set()
     for m in rows:
         if m.role == "user":
-            out.append({"role": "user", "content": _user_content(db, m)})
+            content = _user_content(db, m)
+            if m.model_note:
+                if isinstance(content, list):
+                    content[0]["text"] = f"{m.model_note}\n\n{content[0]['text']}"
+                else:
+                    content = f"{m.model_note}\n\n{content}"
+            out.append({"role": "user", "content": content})
         elif m.role == "assistant":
             calls = [c for c in (m.tool_calls or []) if c.get("id") in answered]
             msg: dict = {"role": "assistant", "content": m.content or ""}

@@ -39,7 +39,15 @@
         }
       ],
       "expo-localization",
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "expo-notifications",
+        {
+          "color": "#1f7bd1",
+          "defaultChannel": "schedules"
+        }
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "scheme": "forbusiness",
     "experiments": {

@@ -1,54 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  type ComponentRef,
-  type ReactNode,
-} from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-} from 'react-native';
+import type { ReactNode } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { KeyboardAwareForm } from '@/components/KeyboardAwareForm';
 import { useColors } from '@/lib/theme';
-
-/** Space kept between the keyboard and the submit button. */
-const KEYBOARD_GAP = 16;
-
-type ViewHandle = ComponentRef<typeof View>;
-type TargetRef = { current: ViewHandle | null };
-const KeyboardTargetContext = createContext<((ref: TargetRef | null) => void) | null>(null);
-
-/**
- * Wrap the form's submit button: when the keyboard opens, the layout scrolls so
- * this stays visible above it. (Android 15+ draws edge-to-edge, so
- * `adjustResize` no longer shrinks the window — we have to do it ourselves.)
- */
-export function KeyboardTarget({ children }: { children: ReactNode }) {
-  const register = useContext(KeyboardTargetContext);
-  const ref = useRef<ViewHandle>(null);
-  useEffect(() => {
-    register?.(ref);
-    return () => register?.(null);
-  }, [register]);
-  return (
-    <View ref={ref} collapsable={false}>
-      {children}
-    </View>
-  );
-}
 
 /** Logo, title and a keyboard-aware scroll for every auth screen. */
 export function AuthLayout({
@@ -69,54 +25,11 @@ export function AuthLayout({
   children: ReactNode;
 }) {
   const c = useColors();
-  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
-  const scrollY = useRef(0);
-  const target = useRef<TargetRef | null>(null);
-  const register = useCallback((ref: TargetRef | null) => {
-    target.current = ref;
-  }, []);
-
-  const revealTarget = useCallback(() => {
-    const node = target.current?.current;
-    const keyboardTop = Keyboard.metrics()?.screenY;
-    if (!node || !keyboardTop) return;
-    node.measureInWindow((_x, y, _w, height) => {
-      const overlap = y + height + KEYBOARD_GAP - keyboardTop;
-      if (overlap > 0) {
-        scrollRef.current?.scrollTo({ y: scrollY.current + overlap, animated: true });
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    // Wait a frame or two for KeyboardAvoidingView to apply its padding first.
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const schedule = () => {
-      clearTimeout(timer);
-      timer = setTimeout(revealTarget, 120);
-    };
-    const show = Keyboard.addListener('keyboardDidShow', schedule);
-    // Focus moving between fields while the keyboard stays open.
-    const change = Keyboard.addListener('keyboardDidChangeFrame', schedule);
-    return () => {
-      clearTimeout(timer);
-      show.remove();
-      change.remove();
-    };
-  }, [revealTarget]);
-
-  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    scrollY.current = e.nativeEvent.contentOffset.y;
-  };
-
   return (
-    <KeyboardTargetContext.Provider value={register}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
-        >
-          {onBack ? (
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}>
+      <KeyboardAwareForm
+        header={
+          onBack ? (
             <View style={styles.header}>
               <TouchableOpacity
                 onPress={onBack}
@@ -128,32 +41,21 @@ export function AuthLayout({
                 <Ionicons name="chevron-back" size={26} color={c.text} />
               </TouchableOpacity>
             </View>
-          ) : null}
-          <ScrollView
-            ref={scrollRef}
-            contentContainerStyle={[styles.container, onBack ? styles.containerWithHeader : null]}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="interactive"
-            onScroll={onScroll}
-            scrollEventThrottle={32}
-            // Errors appearing under fields push the button down: keep it above the keyboard.
-            onContentSizeChange={() => {
-              if (Keyboard.isVisible()) revealTarget();
-            }}
-          >
-            <View style={[styles.logo, { backgroundColor: c.primary }]}>
-              <Ionicons name="sparkles" size={30} color="#fff" />
-            </View>
-            <Text style={[styles.title, { color: c.text }]} accessibilityRole="header">
-              {title}
-            </Text>
-            {subtitle ? <Text style={[styles.subtitle, { color: c.muted }]}>{subtitle}</Text> : null}
-            <View style={styles.body}>{children}</View>
-            {footer ? <View style={styles.footer}>{footer}</View> : null}
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </KeyboardTargetContext.Provider>
+          ) : null
+        }
+        contentContainerStyle={[styles.container, onBack ? styles.containerWithHeader : null]}
+      >
+        <View style={[styles.logo, { backgroundColor: c.primary }]}>
+          <Ionicons name="sparkles" size={30} color="#fff" />
+        </View>
+        <Text style={[styles.title, { color: c.text }]} accessibilityRole="header">
+          {title}
+        </Text>
+        {subtitle ? <Text style={[styles.subtitle, { color: c.muted }]}>{subtitle}</Text> : null}
+        <View style={styles.body}>{children}</View>
+        {footer ? <View style={styles.footer}>{footer}</View> : null}
+      </KeyboardAwareForm>
+    </SafeAreaView>
   );
 }
 

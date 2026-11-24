@@ -8,6 +8,7 @@
   },
   "tabs": {
     "chats": "Chats",
+    "schedules": "Tasks",
     "connectors": "Connectors",
     "profile": "Profile"
   },
@@ -45,7 +46,21 @@
     "apple_unavailable": "Apple is not responding. Please try again later.",
     "apple_not_configured": "Sign in with Apple isn’t available right now.",
     "not_authenticated": "Please sign in again.",
-    "invalid_token": "Your session has expired. Please sign in again."
+    "invalid_token": "Your session has expired. Please sign in again.",
+    "schedule_limit_reached": "You've reached the limit of tasks. Delete one to add another.",
+    "schedule_limit_reached_n": "You can have up to {{n}} tasks. Delete one to add another.",
+    "schedule_not_found": "This task no longer exists.",
+    "run_in_progress": "This task is already running. Wait for it to finish.",
+    "invalid_kind": "Unknown frequency.",
+    "invalid_weekdays": "Pick valid days of the week.",
+    "invalid_timezone": "Your device's time zone isn't supported.",
+    "invalid_notify": "Unknown notification option.",
+    "title_too_long": "Title must be at most 100 characters.",
+    "prompt_too_long": "Instruction must be at most 4000 characters.",
+    "invalid_time": "Pick a valid time.",
+    "weekdays_required": "Pick at least one day.",
+    "interval_too_short": "The interval is too short.",
+    "interval_too_long": "The interval can't be longer than 24 hours."
   },
   "validation": {
     "required": "This field is required.",
@@ -59,7 +74,13 @@
     "name_too_long": "Name must be at most 100 characters.",
     "passwords_mismatch": "Passwords don't match.",
     "invalid_code_format": "Enter the 6-digit code.",
-    "invalid": "Check this field."
+    "invalid": "Check this field.",
+    "title_too_long": "Title must be at most 100 characters.",
+    "prompt_too_long": "Instruction must be at most 4000 characters.",
+    "invalid_time": "Pick a valid time.",
+    "weekdays_required": "Pick at least one day.",
+    "interval_too_short": "The interval is too short.",
+    "interval_too_long": "The interval can't be longer than 24 hours."
   },
   "auth": {
     "tagline": "Your AI assistant for business",
@@ -143,7 +164,11 @@
     "deleteAccount": "Delete account",
     "deleteConfirmTitle": "Delete your account?",
     "deleteConfirmText": "This can't be undone. Your account, connected apps (Telegram, Gmail, Bitrix24) and all chats will be deleted permanently.",
-    "deleteFailed": "Couldn't delete the account"
+    "deleteFailed": "Couldn't delete the account",
+    "notifications": "Notifications",
+    "notificationsOn": "Enabled",
+    "notificationsOff": "Disabled",
+    "notificationsEnableHint": "Turns notifications on or opens the system settings"
   },
   "languages": {
     "en": "English",
@@ -172,5 +197,126 @@
     "noDealsMatch": "No deals match “{{query}}”.",
     "noLeadsMatch": "No leads match “{{query}}”.",
     "unknownType": "Unknown CRM record type."
+  },
+  "notifications": {
+    "channelName": "Task results",
+    "channelDescription": "Results of scheduled tasks and actions waiting for your approval"
+  },
+  "schedules": {
+    "newTitle": "New task",
+    "editTitle": "Edit task",
+    "emptyTitle": "No tasks yet",
+    "emptyText": "Let the assistant do routine work on a schedule.",
+    "emptyExample": "For example: every morning at 9 send me a summary of unread messages",
+    "create": "Create task",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete task",
+    "runNow": "Run now",
+    "openChat": "Open chat",
+    "history": "Run history",
+    "noRuns": "No runs yet",
+    "noRunsText": "Runs will appear here after the first scheduled time or when you tap “Run now”.",
+    "runStarted": "Started. The result will appear in the chat.",
+    "toggleFailed": "Couldn't save: {{message}}",
+    "deleteConfirmTitle": "Delete this task?",
+    "deleteConfirmText": "“{{title}}” will stop running. Its chat stays in Chats.",
+    "deleteFailed": "Couldn't delete the task",
+    "notFoundTitle": "Task not found",
+    "backToList": "Back to tasks",
+    "paused": "Paused",
+    "notScheduled": "Not scheduled",
+    "nextRun": "Next: {{when}}",
+    "lastRun": "Last run: {{when}}",
+    "explain": "The assistant runs this task on schedule. Sending messages still needs your approval unless you allowed it.",
+    "examplesLabel": "Examples",
+    "charCount": "{{n}}/{{max}}",
+    "deviceTimezone": "Device",
+    "changeTime": "Opens the time picker",
+    "intervalHours_one": "{{count}} hour",
+    "intervalHours_other": "{{count}} hours",
+    "fields": {
+      "title": "Title",
+      "titlePlaceholder": "Morning summary",
+      "prompt": "Instruction for the assistant",
+      "promptPlaceholder": "What should the assistant do each time?",
+      "frequency": "Repeat",
+      "weekdays": "Days",
+      "time": "Time",
+      "interval": "Every",
+      "timezone": "Time zone",
+      "notify": "Notify me",
+      "enabled": "Enabled",
+      "enabledHint": "Turn off to pause the task without deleting it"
+    },
+    "kinds": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "interval": "Interval"
+    },
+    "weekdaysShort": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "recurrence": {
+      "daily": "Every day at {{time}}",
+      "weekdays": "Weekdays at {{time}}",
+      "weekends": "Weekends at {{time}}",
+      "weekly": "{{days}} at {{time}}",
+      "everyHour": "Every hour",
+      "everyHours_one": "Every {{count}} hour",
+      "everyHours_other": "Every {{count}} hours",
+      "everyMinutes_one": "Every {{count}} minute",
+      "everyMinutes_other": "Every {{count}} minutes",
+      "withTimeZone": "{{text}} ({{zone}})"
+    },
+    "when": {
+      "today": "today at {{time}}",
+      "tomorrow": "tomorrow at {{time}}",
+      "yesterday": "yesterday at {{time}}",
+      "date": "{{date}} at {{time}}"
+    },
+    "status": {
+      "running": "Running",
+      "awaiting_approval": "Needs approval",
+      "completed": "Completed",
+      "failed": "Failed",
+      "skipped": "Skipped",
+      "cancelled": "Cancelled"
+    },
+    "trigger": {
+      "schedule": "On schedule",
+      "manual": "Started manually"
+    },
+    "skipReason": {
+      "previous_run_active": "Skipped: previous run still waiting for approval"
+    },
+    "notify": {
+      "approval": "Only when approval is needed",
+      "approvalHint": "When the assistant wants to send or change something",
+      "always": "Every run",
+      "alwaysHint": "A notification with the result of each run",
+      "never": "Never",
+      "neverHint": "Check the results in the task's chat"
+    },
+    "examples": {
+      "summary": {
+        "title": "Morning summary",
+        "prompt": "Make a short summary of my unread Telegram messages and Gmail emails: who wrote, what they want, and what needs my reply first."
+      },
+      "followUp": {
+        "title": "Follow up with clients",
+        "prompt": "Find people in Telegram who said they would think about it or get back to me, and haven't written for 2 days or more. Draft a short, polite follow-up for each of them."
+      },
+      "deals": {
+        "title": "Daily deals report",
+        "prompt": "Make a report on Bitrix24 deals for today: new deals, deals that changed stage, and won deals with their amounts."
+      }
+    }
   }
 }

@@ -107,14 +107,9 @@ def _own_files(db: Session, user: User, file_uuids: list[str]) -> list[str]:
 def _start_turn(db: Session, user: User, conv: Conversation, content: str, file_uuids: list[str], parent: str | None, fresh: bool):
     if not content.strip() and not file_uuids:
         raise HTTPException(422, "Message is empty")
-    m = service.add_message(
-        db, conv, parent_uuid=parent, role="user", content=content, attachment_uuids=_own_files(db, user, file_uuids)
+    return runner.start_user_turn(
+        db, conv, user.id, content, _own_files(db, user, file_uuids), parent_uuid=parent, fresh=fresh
     )
-    conv.active_leaf_uuid = m.uuid
-    db.commit()
-    run = runner.create_run(db, conv, user.id, anchor_uuid=m.uuid, head_uuid=m.uuid, fresh=fresh)
-    runner.spawn(run.uuid)
-    return m, run
 
 
 # ---------------------------------------------------------------- conversations
@@ -145,7 +140,10 @@ def list_conversations(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    base = select(Conversation).where(Conversation.user_id == user.id, Conversation.deleted.is_(False))
+    # only plain chats: conversations owned by a feature (source "schedule", ...) have their own screens
+    base = select(Conversation).where(
+        Conversation.user_id == user.id, Conversation.deleted.is_(False), Conversation.source == "chat"
+    )
     total = db.scalar(select(func.count()).select_from(base.subquery())) or 0
     rows = db.scalars(
         base.order_by(func.coalesce(Conversation.last_message_at, Conversation.created_at).desc()).limit(limit).offset(offset)

@@ -5,7 +5,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useColors } from '@/lib/theme';
 
 import { CODE_LENGTH } from '../../validation';
-import type { TextInputRef } from '../TextField';
+import type { TextInputRef } from '@/components/TextField';
 
 /**
  * Six cells backed by one transparent TextInput laid over them. One input
