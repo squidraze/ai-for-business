@@ -31,6 +31,9 @@ class Conversation(Base):
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(default=utcnow)
     deleted: Mapped[bool] = mapped_column(default=False)
+    # who owns it: "chat" (the chat list) or a feature such as "schedule"; only
+    # "chat" conversations are listed in the chat list, all open normally by uuid
+    source: Mapped[str] = mapped_column(String(20), default="chat", server_default="chat", index=True)
 
 
 class Message(Base):
@@ -49,6 +52,8 @@ class Message(Base):
     tool_call_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     attachment_uuids: Mapped[list] = mapped_column(JSON, default=list)
+    # Context only the model sees, prepended to a user message (never shown in the chat).
+    model_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     # the first assistant row of a turn: the WebView keys a folded turn on it
     # (regenerate / siblings / feedback), so the sibling group lives here
     is_turn_head: Mapped[bool] = mapped_column(default=False)

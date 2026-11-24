@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app import auth, realtime
+from app import auth, notifications, realtime, schedules
 from app.ai import router as ai_router
 from app.ai import runner
 from app.db import create_all
@@ -21,6 +21,8 @@ app.include_router(auth.router)
 app.include_router(realtime.router)
 app.include_router(ai_router.router)
 app.include_router(ai_router.integrations_router)
+app.include_router(schedules.router)
+app.include_router(notifications.router)
 
 try:
     from app.connectors.router import router as connectors_router
@@ -37,6 +39,7 @@ async def _startup():
     runner.set_loop(asyncio.get_running_loop())
     create_all()
     runner.mark_stale_runs()
+    schedules.start_scheduler()
     from app.ai import llm
 
     log.info("AI model: %s%s", llm.model_name(), " (fake mode)" if llm.fake_mode() else "")
@@ -49,6 +52,7 @@ def health():
 
 @app.on_event("shutdown")
 async def _shutdown():
+    await schedules.stop_scheduler()
     try:
         from app.connectors import telegram
 

@@ -12,21 +12,45 @@ export type TextFieldProps = TextInputProps & {
   error?: string | null;
   /** Element inside the field on the right (e.g. the password eye). */
   right?: ReactNode;
+  /** Small text at the right under the field (e.g. a "120/4000" counter). */
+  counter?: string;
+  /** Turns the counter red (e.g. over the limit). */
+  counterError?: boolean;
   ref?: Ref<TextInputRef>;
 };
 
-export function TextField({ label, error, right, style, onFocus, onBlur, ref, ...rest }: TextFieldProps) {
+export function TextField({
+  label,
+  error,
+  right,
+  counter,
+  counterError,
+  multiline,
+  style,
+  onFocus,
+  onBlur,
+  ref,
+  ...rest
+}: TextFieldProps) {
   const c = useColors();
   const [focused, setFocused] = useState(false);
   const borderColor = error ? c.danger : focused ? c.primary : c.border;
   return (
     <View style={styles.wrap}>
       {label ? <Text style={[styles.label, { color: error ? c.danger : c.muted }]}>{label}</Text> : null}
-      <View style={[styles.box, { backgroundColor: c.inputBg, borderColor }]}>
+      <View
+        style={[
+          styles.box,
+          multiline ? styles.boxMultiline : null,
+          { backgroundColor: c.inputBg, borderColor },
+        ]}
+      >
         <TextInput
           ref={ref}
           placeholderTextColor={c.muted}
           accessibilityLabel={label}
+          multiline={multiline}
+          textAlignVertical={multiline ? 'top' : undefined}
           {...rest}
           onFocus={(event) => {
             setFocused(true);
@@ -36,14 +60,19 @@ export function TextField({ label, error, right, style, onFocus, onBlur, ref, ..
             setFocused(false);
             onBlur?.(event);
           }}
-          style={[styles.input, { color: c.text }, style]}
+          style={[styles.input, multiline ? styles.inputMultiline : null, { color: c.text }, style]}
         />
         {right}
       </View>
-      {error ? (
-        <Text style={[styles.error, { color: c.danger }]} accessibilityLiveRegion="polite">
-          {error}
-        </Text>
+      {error || counter ? (
+        <View style={styles.below}>
+          <Text style={[styles.error, { color: c.danger }]} accessibilityLiveRegion="polite">
+            {error ?? ''}
+          </Text>
+          {counter ? (
+            <Text style={[styles.counter, { color: counterError ? c.danger : c.muted }]}>{counter}</Text>
+          ) : null}
+        </View>
       ) : null}
     </View>
   );
@@ -59,6 +88,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
+  boxMultiline: { height: undefined, minHeight: 120, maxHeight: 260, alignItems: 'stretch' },
   input: { flex: 1, height: '100%', paddingHorizontal: 14, fontSize: 16 },
-  error: { fontSize: 13, marginTop: 6 },
+  inputMultiline: { height: undefined, paddingTop: 12, paddingBottom: 12, lineHeight: 21 },
+  below: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 6 },
+  error: { flex: 1, fontSize: 13 },
+  counter: { fontSize: 12, marginLeft: 8 },
 });

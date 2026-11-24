@@ -7,12 +7,12 @@ import { parseApiError } from '@/lib/api';
 import { useSignIn } from './auth.hooks';
 import { AuthLayout, KeyboardTarget } from './components/AuthLayout';
 import { AuthLink } from './components/AuthLink';
-import { FormError } from './components/FormError';
+import { FormError } from '@/components/FormError';
 import { OrDivider } from './components/OrDivider';
 import { PasswordField } from './components/PasswordField';
 import { ServerHint } from './components/ServerHint';
 import { SocialButtons } from './components/SocialButtons';
-import { TextField } from './components/TextField';
+import { TextField } from '@/components/TextField';
 import { useAuthForm } from './useAuthForm';
 import { normalizeEmail, validateEmail, validateLoginPassword } from './validation';
 

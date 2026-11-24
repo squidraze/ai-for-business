@@ -50,6 +50,14 @@ class Settings(BaseSettings):
     GOOGLE_SIGNIN_CLIENT_IDS: str = ""  # comma-separated ID-token audiences; empty = GOOGLE_CLIENT_ID
     APPLE_BUNDLE_ID: str = "ai.forbusiness.demo"
 
+    # schedules (recurring AI tasks)
+    SCHEDULER_TICK_SECONDS: int = 30
+    SCHEDULE_MAX_PER_USER: int = 20
+
+    # push notifications: Firebase Cloud Messaging HTTP v1 (empty = dev mode, pushes go to the log)
+    FCM_PROJECT_ID: str = ""
+    FCM_SERVICE_ACCOUNT_FILE: str = ""  # path to the service-account JSON; relative = from backend/
+
     @field_validator("TELEGRAM_API_ID", mode="before")
     @classmethod
     def _empty_int(cls, v):
@@ -57,7 +65,13 @@ class Settings(BaseSettings):
         return 0 if v in ("", None) else v
 
     @field_validator(
-        "SMTP_PORT", "EMAIL_CODE_TTL_MINUTES", "EMAIL_CODE_RESEND_SECONDS", "EMAIL_CODE_MAX_ATTEMPTS", mode="before"
+        "SMTP_PORT",
+        "EMAIL_CODE_TTL_MINUTES",
+        "EMAIL_CODE_RESEND_SECONDS",
+        "EMAIL_CODE_MAX_ATTEMPTS",
+        "SCHEDULER_TICK_SECONDS",
+        "SCHEDULE_MAX_PER_USER",
+        mode="before",
     )
     @classmethod
     def _empty_default(cls, v, info):
@@ -74,6 +88,11 @@ class Settings(BaseSettings):
         if not ids and self.GOOGLE_CLIENT_ID:
             ids = [self.GOOGLE_CLIENT_ID.strip()]
         return ids
+
+    @property
+    def fcm_service_account_path(self) -> Path:
+        p = Path(self.FCM_SERVICE_ACCOUNT_FILE)
+        return p if p.is_absolute() else BACKEND_DIR / p
 
     @property
     def data_path(self) -> Path:

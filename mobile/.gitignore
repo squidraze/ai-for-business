@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Firebase config for push notifications (not a secret, but kept out of git for now; see README)
+google-services.json
+GoogleService-Info.plist

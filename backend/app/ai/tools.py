@@ -5,6 +5,7 @@ Connectors switches and `disabled_connectors` use). Gated tools change the
 outside world and pause the run for approval before they execute.
 """
 
+import inspect
 import json
 import logging
 from typing import Any, Awaitable, Callable
@@ -391,6 +392,46 @@ TOOLS += [
 BY_NAME = {t.name: t for t in TOOLS}
 
 
+# ---------------------------------------------------------------- tool providers
+# Modules outside the connectors (e.g. app.schedules) contribute tools here, so
+# this file never needs to know about them. A provider is `fn(user_id) -> list[Tool]`
+# (sync or async); its tools are offered regardless of connector status, unless
+# their `connector` id is switched off for the conversation.
+
+ToolProvider = Callable[[int], Any]
+_PROVIDERS: list[ToolProvider] = []
+
+
+def register_tool_provider(fn: ToolProvider) -> ToolProvider:
+    if fn not in _PROVIDERS:
+        _PROVIDERS.append(fn)
+    return fn
+
+
+async def provided_tools(user_id: int) -> list["Tool"]:
+    out: list[Tool] = []
+    for fn in list(_PROVIDERS):
+        try:
+            result = fn(user_id)
+            if inspect.isawaitable(result):
+                result = await result
+            out.extend(result or [])
+        except Exception:
+            log.exception("tool provider %s failed", getattr(fn, "__qualname__", fn))
+    return out
+
+
+async def get_tool(user_id: int, name: str) -> "Tool | None":
+    """A connector tool by name, or one a provider offers this user."""
+    tool = BY_NAME.get(name)
+    if tool is not None:
+        return tool
+    for t in await provided_tools(user_id):
+        if t.name == name:
+            return t
+    return None
+
+
 async def connector_status(user_id: int) -> dict[str, bool]:
     """{connector_id: connected} — a connector that fails to answer counts as not connected."""
     out: dict[str, bool] = {}
@@ -407,6 +448,7 @@ async def available_tools(user_id: int, disabled: list[str] | None) -> tuple[lis
     status = await connector_status(user_id)
     off = set(disabled or [])
     tools = [t for t in TOOLS if status.get(t.connector) and t.connector not in off]
+    tools += [t for t in await provided_tools(user_id) if t.connector not in off]
     return tools, status
 
 
@@ -422,7 +464,7 @@ def _to_text(result: Any) -> str:
 
 async def execute(user_id: int, name: str, args: dict) -> str:
     """Run one tool and return its result as text for the model. Never raises."""
-    tool = BY_NAME.get(name)
+    tool = await get_tool(user_id, name)
     if not tool:
         return f"Error: unknown tool '{name}'."
     try:
@@ -431,7 +473,7 @@ async def execute(user_id: int, name: str, args: dict) -> str:
     except Exception as e:
         cls = type(e).__name__
         if cls == "NotConnected":
-            return f"Error: {CONNECTORS[tool.connector]} is not connected. Ask the user to connect it on the Connectors screen of the app. ({e})"
+            return f"Error: {CONNECTORS.get(tool.connector, tool.connector)} is not connected. Ask the user to connect it on the Connectors screen of the app. ({e})"
         if isinstance(e, KeyError):
             return f"Error: missing required argument {e}."
         log.exception("tool %s failed", name)

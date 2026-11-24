@@ -20,6 +20,9 @@ const light = {
   success: '#16a34a',
   successBg: 'rgba(34,197,94,0.15)',
   dangerBg: 'rgba(220,38,38,0.08)',
+  warning: '#b45309',
+  warningBg: 'rgba(245,158,11,0.16)',
+  primaryBg: 'rgba(31,123,209,0.12)',
 };
 
 const dark: typeof light = {
@@ -42,6 +45,9 @@ const dark: typeof light = {
   success: '#4ade80',
   successBg: 'rgba(74,222,128,0.15)',
   dangerBg: 'rgba(248,113,113,0.12)',
+  warning: '#fbbf24',
+  warningBg: 'rgba(251,191,36,0.16)',
+  primaryBg: 'rgba(59,143,224,0.18)',
 };
 
 export type Colors = typeof light;

@@ -8,6 +8,7 @@
   },
   "tabs": {
     "chats": "Chatlar",
+    "schedules": "Vazifalar",
     "connectors": "Ulanishlar",
     "profile": "Profil"
   },
@@ -45,7 +46,21 @@
     "apple_unavailable": "Apple javob bermayapti. Keyinroq urinib ko‘ring.",
     "apple_not_configured": "Apple orqali kirish hozir mavjud emas.",
     "not_authenticated": "Akkauntga qaytadan kiring.",
-    "invalid_token": "Sessiya muddati tugadi. Qaytadan kiring."
+    "invalid_token": "Sessiya muddati tugadi. Qaytadan kiring.",
+    "schedule_limit_reached": "Vazifalar soni chegarasiga yetdingiz. Yangisini qo‘shish uchun bittasini o‘chiring.",
+    "schedule_limit_reached_n": "Ko‘pi bilan {{n}} ta vazifa yaratish mumkin. Yangisini qo‘shish uchun bittasini o‘chiring.",
+    "schedule_not_found": "Bu vazifa endi mavjud emas.",
+    "run_in_progress": "Vazifa allaqachon bajarilmoqda. Tugashini kuting.",
+    "invalid_kind": "Noma’lum takrorlanish turi.",
+    "invalid_weekdays": "Hafta kunlarini to‘g‘ri tanlang.",
+    "invalid_timezone": "Qurilmangizning vaqt mintaqasi qo‘llab-quvvatlanmaydi.",
+    "invalid_notify": "Noma’lum bildirishnoma varianti.",
+    "title_too_long": "Nom 100 belgidan oshmasligi kerak.",
+    "prompt_too_long": "Ko‘rsatma 4000 belgidan oshmasligi kerak.",
+    "invalid_time": "To‘g‘ri vaqtni tanlang.",
+    "weekdays_required": "Kamida bitta kunni tanlang.",
+    "interval_too_short": "Interval juda qisqa.",
+    "interval_too_long": "Interval 24 soatdan oshmasligi kerak."
   },
   "validation": {
     "required": "Bu maydonni to‘ldiring.",
@@ -59,7 +74,13 @@
     "name_too_long": "Ism 100 ta belgidan oshmasligi kerak.",
     "passwords_mismatch": "Parollar mos kelmadi.",
     "invalid_code_format": "6 xonali kodni kiriting.",
-    "invalid": "Bu maydonni tekshiring."
+    "invalid": "Bu maydonni tekshiring.",
+    "title_too_long": "Nom 100 belgidan oshmasligi kerak.",
+    "prompt_too_long": "Ko‘rsatma 4000 belgidan oshmasligi kerak.",
+    "invalid_time": "To‘g‘ri vaqtni tanlang.",
+    "weekdays_required": "Kamida bitta kunni tanlang.",
+    "interval_too_short": "Interval juda qisqa.",
+    "interval_too_long": "Interval 24 soatdan oshmasligi kerak."
   },
   "auth": {
     "tagline": "Biznesingiz uchun AI yordamchi",
@@ -143,7 +164,11 @@
     "deleteAccount": "Akkauntni o‘chirish",
     "deleteConfirmTitle": "Akkauntni o‘chirasizmi?",
     "deleteConfirmText": "Bu amalni bekor qilib bo‘lmaydi. Akkaunt, ulangan xizmatlar (Telegram, Gmail, Bitrix24) va barcha chatlar butunlay o‘chiriladi.",
-    "deleteFailed": "Akkauntni o‘chirib bo‘lmadi"
+    "deleteFailed": "Akkauntni o‘chirib bo‘lmadi",
+    "notifications": "Bildirishnomalar",
+    "notificationsOn": "Yoqilgan",
+    "notificationsOff": "O‘chirilgan",
+    "notificationsEnableHint": "Bildirishnomalarni yoqadi yoki tizim sozlamalarini ochadi"
   },
   "languages": {
     "en": "English",
@@ -172,5 +197,126 @@
     "noDealsMatch": "«{{query}}» bo‘yicha bitimlar topilmadi.",
     "noLeadsMatch": "«{{query}}» bo‘yicha lidlar topilmadi.",
     "unknownType": "CRM yozuvining turi noma’lum."
+  },
+  "notifications": {
+    "channelName": "Vazifa natijalari",
+    "channelDescription": "Jadval bo‘yicha vazifalar natijalari va tasdiqlashingizni kutayotgan amallar"
+  },
+  "schedules": {
+    "newTitle": "Yangi vazifa",
+    "editTitle": "Vazifani tahrirlash",
+    "emptyTitle": "Hozircha vazifalar yo‘q",
+    "emptyText": "Kundalik ishlarni jadval bo‘yicha yordamchiga topshiring.",
+    "emptyExample": "Masalan: har kuni ertalab soat 9 da o‘qilmagan xabarlar bo‘yicha qisqacha hisobot yubor",
+    "create": "Vazifa yaratish",
+    "save": "Saqlash",
+    "edit": "Tahrirlash",
+    "delete": "Vazifani o‘chirish",
+    "runNow": "Hozir ishga tushirish",
+    "openChat": "Chatni ochish",
+    "history": "Ishga tushirishlar tarixi",
+    "noRuns": "Hozircha ishga tushirishlar yo‘q",
+    "noRunsText": "Ular jadvaldagi birinchi vaqtdan keyin yoki «Hozir ishga tushirish» bosilganda shu yerda paydo bo‘ladi.",
+    "runStarted": "Ishga tushirildi. Natija chatda paydo bo‘ladi.",
+    "toggleFailed": "Saqlab bo‘lmadi: {{message}}",
+    "deleteConfirmTitle": "Vazifa o‘chirilsinmi?",
+    "deleteConfirmText": "«{{title}}» endi ishga tushmaydi. Uning chati «Chatlar»da qoladi.",
+    "deleteFailed": "Vazifani o‘chirib bo‘lmadi",
+    "notFoundTitle": "Vazifa topilmadi",
+    "backToList": "Vazifalar ro‘yxatiga",
+    "paused": "To‘xtatilgan",
+    "notScheduled": "Rejalashtirilmagan",
+    "nextRun": "Keyingisi: {{when}}",
+    "lastRun": "Oxirgisi: {{when}}",
+    "explain": "Yordamchi bu vazifani jadval bo‘yicha bajaradi. Xabar yuborish uchun, oldindan ruxsat bermagan bo‘lsangiz, baribir tasdiqlashingiz kerak.",
+    "examplesLabel": "Misollar",
+    "charCount": "{{n}}/{{max}}",
+    "deviceTimezone": "Qurilma",
+    "changeTime": "Vaqt tanlashni ochadi",
+    "intervalHours_one": "{{count}} soat",
+    "intervalHours_other": "{{count}} soat",
+    "fields": {
+      "title": "Nomi",
+      "titlePlaceholder": "Ertalabki hisobot",
+      "prompt": "Yordamchi uchun ko‘rsatma",
+      "promptPlaceholder": "Yordamchi har safar nima qilishi kerak?",
+      "frequency": "Takrorlash",
+      "weekdays": "Kunlar",
+      "time": "Vaqt",
+      "interval": "Har",
+      "timezone": "Vaqt mintaqasi",
+      "notify": "Bildirishnoma",
+      "enabled": "Yoqilgan",
+      "enabledHint": "Vazifani o‘chirmasdan to‘xtatib turish uchun o‘chiring"
+    },
+    "kinds": {
+      "daily": "Har kuni",
+      "weekly": "Kunlar bo‘yicha",
+      "interval": "Interval"
+    },
+    "weekdaysShort": {
+      "mon": "Du",
+      "tue": "Se",
+      "wed": "Ch",
+      "thu": "Pa",
+      "fri": "Ju",
+      "sat": "Sh",
+      "sun": "Ya"
+    },
+    "recurrence": {
+      "daily": "Har kuni soat {{time}} da",
+      "weekdays": "Ish kunlari soat {{time}} da",
+      "weekends": "Dam olish kunlari soat {{time}} da",
+      "weekly": "{{days}} soat {{time}} da",
+      "everyHour": "Har soatda",
+      "everyHours_one": "Har {{count}} soatda",
+      "everyHours_other": "Har {{count}} soatda",
+      "everyMinutes_one": "Har {{count}} daqiqada",
+      "everyMinutes_other": "Har {{count}} daqiqada",
+      "withTimeZone": "{{text}} ({{zone}})"
+    },
+    "when": {
+      "today": "bugun soat {{time}} da",
+      "tomorrow": "ertaga soat {{time}} da",
+      "yesterday": "kecha soat {{time}} da",
+      "date": "{{date}}, soat {{time}} da"
+    },
+    "status": {
+      "running": "Bajarilmoqda",
+      "awaiting_approval": "Tasdiqlash kerak",
+      "completed": "Bajarildi",
+      "failed": "Xato",
+      "skipped": "O‘tkazib yuborildi",
+      "cancelled": "Bekor qilindi"
+    },
+    "trigger": {
+      "schedule": "Jadval bo‘yicha",
+      "manual": "Qo‘lda ishga tushirilgan"
+    },
+    "skipReason": {
+      "previous_run_active": "O‘tkazib yuborildi: oldingi ishga tushirish hali tasdiqlashni kutmoqda"
+    },
+    "notify": {
+      "approval": "Faqat tasdiqlash kerak bo‘lganda",
+      "approvalHint": "Yordamchi biror narsa yubormoqchi yoki o‘zgartirmoqchi bo‘lganda",
+      "always": "Har bir ishga tushirishda",
+      "alwaysHint": "Har bir natija haqida bildirishnoma",
+      "never": "Hech qachon",
+      "neverHint": "Natijalarni vazifa chatida ko‘ring"
+    },
+    "examples": {
+      "summary": {
+        "title": "Ertalabki hisobot",
+        "prompt": "Telegramdagi o‘qilmagan xabarlar va Gmaildagi xatlar bo‘yicha qisqacha hisobot tayyorla: kim yozdi, nima istaydi va avval nimaga javob berishim kerak."
+      },
+      "followUp": {
+        "title": "Mijozlarga eslatish",
+        "prompt": "Telegramda o‘ylab ko‘rishini yoki keyinroq javob berishini aytgan va 2 kun yoki undan ko‘p yozmagan odamlarni top. Har biriga qisqa va xushmuomala eslatma tayyorla."
+      },
+      "deals": {
+        "title": "Bitimlar hisoboti",
+        "prompt": "Bitrix24dagi bugungi bitimlar bo‘yicha hisobot tayyorla: yangi bitimlar, bosqichi o‘zgargan bitimlar va summalari bilan muvaffaqiyatli bitimlar."
+      }
+    }
   }
 }

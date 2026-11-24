@@ -7,6 +7,7 @@ import { Button } from '@/components/Button';
 import { Skeleton } from '@/components/Skeleton';
 import { Avatar, Card, Separator } from '@/components/ui';
 import { useAuth, useDeleteAccount, type AuthProviderId, type User } from '@/features/auth';
+import { useNotificationPermission } from '@/features/notifications';
 import { errorMessage } from '@/lib/api';
 import { API_URL, APP_VERSION } from '@/lib/config';
 import { currentLanguage, LANGUAGES, setLanguage } from '@/lib/i18n';
@@ -24,6 +25,7 @@ export function ProfilePage() {
   const { userQuery, signOut } = useAuth();
   const deleteAccount = useDeleteAccount();
   const language = currentLanguage();
+  const notifications = useNotificationPermission();
 
   const confirmSignOut = () =>
     Alert.alert(t('profile.signOutConfirm'), undefined, [
@@ -63,6 +65,24 @@ export function ProfilePage() {
       <Card style={{ paddingVertical: 4 }}>
         <TouchableOpacity onPress={pickLanguage} accessibilityRole="button">
           <Row label={t('profile.language')} value={t(`languages.${language}`)} chevron />
+        </TouchableOpacity>
+        <Separator />
+        <TouchableOpacity
+          onPress={() => void notifications.enable()}
+          accessibilityRole="button"
+          accessibilityHint={notifications.enabled ? undefined : t('profile.notificationsEnableHint')}
+        >
+          <Row
+            label={t('profile.notifications')}
+            value={
+              notifications.state === null
+                ? ''
+                : notifications.enabled
+                  ? t('profile.notificationsOn')
+                  : t('profile.notificationsOff')
+            }
+            chevron
+          />
         </TouchableOpacity>
         <Separator />
         <Row label={t('profile.server')} value={API_URL} />

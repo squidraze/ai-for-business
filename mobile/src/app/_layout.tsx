@@ -5,22 +5,27 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { FadeSwitch } from '@/components/FadeSwitch';
 import { SplashSkeleton } from '@/components/Skeleton';
 import { AuthProvider, useAuth } from '@/features/auth';
+import { usePushNotifications } from '@/features/notifications';
 import { useColors } from '@/lib/theme';
 
 function RootStack() {
   const { status } = useAuth();
   const c = useColors();
+  const { t } = useTranslation();
   const segments = useSegments();
   const router = useRouter();
   const navReady = !!useRootNavigationState()?.key;
   const signedIn = status === 'signedIn';
   const inAuth = segments[0] === '(auth)';
+
+  usePushNotifications({ navReady: navReady && status !== 'loading' });
 
   // Stack.Protected left "/" unmatched when signed out, so route explicitly.
   useEffect(() => {
@@ -60,6 +65,9 @@ function RootStack() {
           <Stack.Screen name="gmail/compose" options={{ title: 'New email' }} />
           <Stack.Screen name="bitrix/index" options={{ title: 'CRM' }} />
           <Stack.Screen name="bitrix/[entity]/[id]" options={{ title: '' }} />
+          <Stack.Screen name="schedules/new" options={{ title: t('schedules.newTitle') }} />
+          <Stack.Screen name="schedules/[id]/index" options={{ title: '' }} />
+          <Stack.Screen name="schedules/[id]/edit" options={{ title: t('schedules.editTitle') }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         </Stack>
       )}

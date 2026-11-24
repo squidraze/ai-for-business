@@ -11,7 +11,7 @@ import { CODE_ERRORS } from './auth.api';
 import { useResetPassword } from './auth.hooks';
 import { AuthLayout, KeyboardTarget } from './components/AuthLayout';
 import { CodeInput } from './components/CodeInput';
-import { FormError } from './components/FormError';
+import { FormError } from '@/components/FormError';
 import { PasswordField } from './components/PasswordField';
 import { PasswordRules } from './components/PasswordRules';
 import { ResendCode } from './components/ResendCode';

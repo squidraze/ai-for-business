@@ -6,8 +6,8 @@ import { Button } from '@/components/Button';
 import { useForgotPassword } from './auth.hooks';
 import { AuthLayout, KeyboardTarget } from './components/AuthLayout';
 import { AuthLink } from './components/AuthLink';
-import { FormError } from './components/FormError';
-import { TextField } from './components/TextField';
+import { FormError } from '@/components/FormError';
+import { TextField } from '@/components/TextField';
 import { useAuthForm } from './useAuthForm';
 import { normalizeEmail, validateEmail } from './validation';
 
