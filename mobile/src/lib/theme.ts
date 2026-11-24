@@ -16,6 +16,10 @@ const light = {
   bubbleOutText: '#ffffff',
   badge: '#1f7bd1',
   skeleton: '#e4e4e7',
+  skeletonHighlight: 'rgba(255,255,255,0.75)',
+  success: '#16a34a',
+  successBg: 'rgba(34,197,94,0.15)',
+  dangerBg: 'rgba(220,38,38,0.08)',
 };
 
 const dark: typeof light = {
@@ -34,6 +38,10 @@ const dark: typeof light = {
   bubbleOutText: '#ffffff',
   badge: '#3b8fe0',
   skeleton: '#27272a',
+  skeletonHighlight: 'rgba(255,255,255,0.07)',
+  success: '#4ade80',
+  successBg: 'rgba(74,222,128,0.15)',
+  dangerBg: 'rgba(248,113,113,0.12)',
 };
 
 export type Colors = typeof light;

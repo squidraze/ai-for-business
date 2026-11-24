@@ -29,6 +29,16 @@ docker compose logs -f backend # логи
 docker compose down            # остановить
 ```
 
+Вход в приложение — почта + пароль с кодом подтверждения на почту, Google или Apple.
+Письма с кодами уходят только через Gmail SMTP (`SMTP_USER` и пароль приложения Google в `SMTP_PASSWORD`, как получить — в `.env.example`).
+Пока они пустые, письма не отправляются, а код виден в логах бэкенда:
+
+```bash
+docker compose logs -f backend | grep "dev mail"   # [dev mail] to=you@example.com purpose=verify code=123456
+```
+
+Вход через Google: в Google Cloud Console к Web-клиенту (он уже есть для Gmail) добавить Android-клиент (пакет `ai.forbusiness.demo` + SHA-1 из `cd mobile/android && ./gradlew signingReport`) и iOS-клиент (bundle `ai.forbusiness.demo`), их Client ID через запятую — в `GOOGLE_SIGNIN_CLIENT_IDS`. Вход через Apple проверяет токен по `APPLE_BUNDLE_ID` (по умолчанию `ai.forbusiness.demo`).
+
 ### 3. Мобилка
 
 ```bash
@@ -38,6 +48,14 @@ adb reverse tcp:8000 tcp:8000  # телефон видит бэкенд как l
 adb reverse tcp:8001 tcp:8001  # повторять после каждого переподключения телефона
 npx expo run:android           # соберёт и поставит приложение на телефон
 ```
+
+Настройки мобилки — в `mobile/.env` (образец и комментарии в `mobile/.env.example`):
+
+- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` — Web client ID из Google Cloud Console (тот же, что `GOOGLE_CLIENT_ID` бэкенда). Без него кнопка «Продолжить с Google» неактивна. Для Android в той же консоли нужен ещё клиент типа Android: пакет `ai.forbusiness.demo` + SHA-1 отладочного ключа (`cd android && ./gradlew signingReport`).
+- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` — только для iOS-сборки (`mobile/app.config.js` добавляет плагин Google Sign-In, только если схема задана). Вход через Apple есть только на iOS.
+- `EXPO_PUBLIC_STATE_FADE_MS` (800) и `EXPO_PUBLIC_SKELETON_SHIMMER_MS` (1200) — длительность перехода между состояниями экрана и период «блика» скелетона.
+
+В приложении появились нативные модули (Google Sign-In, Apple Authentication, expo-linear-gradient, expo-localization), поэтому старая dev-сборка с ними не заработает — пересобери: `npx expo run:android` (если сборка падает на старых нативных файлах — сначала `npx expo prebuild --clean`). Переменные `EXPO_PUBLIC_*` вшиваются при сборке JS: после их изменения перезапусти Metro с `npx expo start -c`.
 
 ### 4. Telegram
 

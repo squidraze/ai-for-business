@@ -2,6 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
@@ -13,7 +14,9 @@ import {
 } from 'react-native';
 
 import { StagePill } from '@/components/bitrix';
-import { Button, EmptyView, ErrorView, Field, ListSkeleton, Separator } from '@/components/ui';
+import { AsyncState } from '@/components/AsyncState';
+import { SkeletonList } from '@/components/Skeleton';
+import { Button, EmptyView, Field, Separator } from '@/components/ui';
 import {
   api,
   errorMessage,
@@ -35,6 +38,7 @@ const TABS: { key: BitrixEntity; label: string }[] = [
 
 export default function BitrixCrmScreen() {
   const c = useColors();
+  const { t } = useTranslation();
   const [entity, setEntity] = useState<BitrixEntity>('deals');
   const [search, setSearch] = useState('');
   const debounced = useDebounced(search.trim(), 400);
@@ -54,8 +58,6 @@ export default function BitrixCrmScreen() {
   });
 
   const items = query.data?.pages.flatMap((p) => p.items ?? []) ?? [];
-  const notConnected =
-    axios.isAxiosError(query.error) && query.error.response?.status === 409 && items.length === 0;
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -67,6 +69,36 @@ export default function BitrixCrmScreen() {
   };
 
   const noun = entity === 'deals' ? 'deals' : 'leads';
+
+  const empty = (
+    <EmptyView
+      icon={entity === 'deals' ? 'briefcase-outline' : 'person-add-outline'}
+      title={
+        debounced
+          ? t('common.nothingFound')
+          : entity === 'deals'
+            ? t('bitrix.noDeals')
+            : t('bitrix.noLeads')
+      }
+      description={
+        debounced
+          ? t(entity === 'deals' ? 'bitrix.noDealsMatch' : 'bitrix.noLeadsMatch', { query: debounced })
+          : undefined
+      }
+    />
+  );
+
+  // 409 = the portal isn't connected: offer the Connectors tab instead of "retry".
+  const notConnected = (error: unknown) =>
+    axios.isAxiosError(error) && error.response?.status === 409 ? (
+      <EmptyView icon="briefcase-outline" title={t('bitrix.notConnected')} description={errorMessage(error)}>
+        <Button
+          title={t('bitrix.openConnectors')}
+          onPress={() => router.navigate('/connectors')}
+          style={{ marginTop: 16, minWidth: 180 }}
+        />
+      </EmptyView>
+    ) : null;
 
   return (
     <View style={{ flex: 1 }}>
@@ -102,23 +134,16 @@ export default function BitrixCrmScreen() {
           clearButtonMode="while-editing"
         />
       </View>
-      {query.isLoading || pending ? (
-        <ListSkeleton avatar={false} />
-      ) : notConnected ? (
-        <EmptyView
-          icon="briefcase-outline"
-          title="Bitrix24 isn't connected"
-          description={errorMessage(query.error)}
-        >
-          <Button
-            title="Open Connectors"
-            onPress={() => router.navigate('/connectors')}
-            style={{ marginTop: 16, minWidth: 180 }}
-          />
-        </EmptyView>
-      ) : query.isError && items.length === 0 ? (
-        <ErrorView message={errorMessage(query.error)} onRetry={() => void query.refetch()} />
-      ) : (
+      <AsyncState
+        query={query}
+        loading={pending}
+        isEmpty={items.length === 0}
+        skeleton={<SkeletonList avatar={false} />}
+        empty={empty}
+        error={notConnected}
+        refreshing={refreshing}
+        onRefresh={() => void onRefresh()}
+      >
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
@@ -142,13 +167,6 @@ export default function BitrixCrmScreen() {
             ) : undefined
           }
           ItemSeparatorComponent={() => <Separator inset={16} />}
-          ListEmptyComponent={
-            <EmptyView
-              icon={entity === 'deals' ? 'briefcase-outline' : 'person-add-outline'}
-              title={debounced ? 'Nothing found' : `No ${noun} yet`}
-              description={debounced ? `No ${noun} match "${debounced}".` : undefined}
-            />
-          }
           renderItem={({ item }) => (
             <TouchableOpacity
               activeOpacity={0.6}
@@ -168,7 +186,7 @@ export default function BitrixCrmScreen() {
             </TouchableOpacity>
           )}
         />
-      )}
+      </AsyncState>
     </View>
   );
 }

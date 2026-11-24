@@ -4,14 +4,17 @@ import base64
 import hashlib
 import hmac
 import json
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
-from app.ai.models import Attachment, Conversation, Message, utcnow
+from app.ai.models import Attachment, Conversation, Message, PendingAction, Run, ToolPermission, utcnow
 from app.config import settings
+from app.db import SessionLocal
+from app.lib.user_data import on_user_delete
 
 TEXT_TYPES = ("text/", "application/json", "application/xml", "application/csv", "application/x-yaml")
 TEXT_EXT = (".txt", ".md", ".csv", ".json", ".xml", ".yaml", ".yml", ".log", ".html", ".py", ".js", ".ts")
@@ -262,3 +265,24 @@ def parse_args(raw) -> dict:
         return v if isinstance(v, dict) else {}
     except (json.JSONDecodeError, TypeError):
         return {}
+
+
+# ---------------------------------------------------------------- account deletion
+
+
+@on_user_delete
+def delete_user_data(user_id: int) -> None:
+    """All chat data of a user: conversations, messages, runs, approvals, permissions, files."""
+    with SessionLocal() as db:
+        paths = list(db.scalars(select(Attachment.path).where(Attachment.user_id == user_id)))
+        conv_ids = select(Conversation.id).where(Conversation.user_id == user_id)
+        db.execute(delete(Message).where(Message.conversation_id.in_(conv_ids)))
+        db.execute(delete(PendingAction).where(PendingAction.conversation_id.in_(conv_ids)))
+        db.execute(delete(Run).where(or_(Run.user_id == user_id, Run.conversation_id.in_(conv_ids))))
+        db.execute(delete(ToolPermission).where(ToolPermission.user_id == user_id))
+        db.execute(delete(Attachment).where(Attachment.user_id == user_id))
+        db.execute(delete(Conversation).where(Conversation.user_id == user_id))
+        db.commit()
+    for p in paths:
+        Path(p).unlink(missing_ok=True)
+    shutil.rmtree(settings.data_path / "attachments" / str(user_id), ignore_errors=True)

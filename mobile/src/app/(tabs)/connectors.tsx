@@ -14,7 +14,9 @@ import {
   View,
 } from 'react-native';
 
-import { Button, Card, ErrorView, Field, ListSkeleton } from '@/components/ui';
+import { AsyncState } from '@/components/AsyncState';
+import { SkeletonList } from '@/components/Skeleton';
+import { Button, Card, Field } from '@/components/ui';
 import {
   api,
   CONNECTORS_KEY,
@@ -152,154 +154,152 @@ export default function ConnectorsScreen() {
     }
   };
 
-  if (query.isLoading) return <ListSkeleton count={3} />;
-  if (query.isError && !query.data)
-    return <ErrorView message={errorMessage(query.error)} onRetry={() => void query.refetch()} />;
-
   const tg = (telegram?.account ?? null) as TelegramAccount | null;
   const tgName = tg ? [tg.first_name, tg.last_name].filter(Boolean).join(' ') : '';
   const gmailEmail = (gmail?.account as { email?: string } | null)?.email;
   const bx = (bitrix?.account ?? null) as BitrixAccount | null;
 
   return (
-    <ScrollView
-      ref={scrollRef}
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: 16, gap: 16 }}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => void onRefresh()}
-          tintColor={c.primary}
-          colors={[c.primary]}
-        />
-      }
-    >
-      <Text style={{ color: c.muted, fontSize: 14 }}>
-        Connected apps are available to you here and to the AI assistant in chats.
-      </Text>
+    <AsyncState query={query} skeleton={<SkeletonList count={3} />}>
+      <ScrollView
+        ref={scrollRef}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ padding: 16, gap: 16 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void onRefresh()}
+            tintColor={c.primary}
+            colors={[c.primary]}
+          />
+        }
+      >
+        <Text style={{ color: c.muted, fontSize: 14 }}>
+          Connected apps are available to you here and to the AI assistant in chats.
+        </Text>
 
-      <Card>
-        <Header
-          icon="paper-plane"
-          tint="#29a9eb"
-          title="Telegram"
-          connected={!!telegram?.connected}
-        />
-        {telegram?.connected ? (
-          <>
-            <View style={styles.account}>
-              <Text style={[styles.accountName, { color: c.text }]}>{tgName || 'Telegram account'}</Text>
-              {tg?.username ? (
-                <Text style={[styles.accountLine, { color: c.muted }]}>@{tg.username}</Text>
-              ) : null}
-              {tg?.phone ? (
-                <Text style={[styles.accountLine, { color: c.muted }]}>
-                  {tg.phone.startsWith('+') ? tg.phone : `+${tg.phone}`}
-                </Text>
-              ) : null}
-            </View>
-            <Button title="Open chats" icon="chatbubbles-outline" onPress={() => router.push('/telegram')} />
-            <Button
-              title="Disconnect"
-              variant="danger"
-              onPress={() => confirmDisconnect('telegram')}
-              loading={disconnect.isPending && disconnect.variables === 'telegram'}
-              style={{ marginTop: 10 }}
-            />
-          </>
-        ) : (
-          <>
-            <Text style={[styles.description, { color: c.muted }]}>
-              Sign in with your Telegram account to read and send messages.
-            </Text>
-            <Button title="Connect Telegram" onPress={() => router.push('/telegram/connect')} />
-          </>
-        )}
-      </Card>
+        <Card>
+          <Header
+            icon="paper-plane"
+            tint="#29a9eb"
+            title="Telegram"
+            connected={!!telegram?.connected}
+          />
+          {telegram?.connected ? (
+            <>
+              <View style={styles.account}>
+                <Text style={[styles.accountName, { color: c.text }]}>{tgName || 'Telegram account'}</Text>
+                {tg?.username ? (
+                  <Text style={[styles.accountLine, { color: c.muted }]}>@{tg.username}</Text>
+                ) : null}
+                {tg?.phone ? (
+                  <Text style={[styles.accountLine, { color: c.muted }]}>
+                    {tg.phone.startsWith('+') ? tg.phone : `+${tg.phone}`}
+                  </Text>
+                ) : null}
+              </View>
+              <Button title="Open chats" icon="chatbubbles-outline" onPress={() => router.push('/telegram')} />
+              <Button
+                title="Disconnect"
+                variant="danger"
+                onPress={() => confirmDisconnect('telegram')}
+                loading={disconnect.isPending && disconnect.variables === 'telegram'}
+                style={{ marginTop: 10 }}
+              />
+            </>
+          ) : (
+            <>
+              <Text style={[styles.description, { color: c.muted }]}>
+                Sign in with your Telegram account to read and send messages.
+              </Text>
+              <Button title="Connect Telegram" onPress={() => router.push('/telegram/connect')} />
+            </>
+          )}
+        </Card>
 
-      <Card>
-        <Header icon="mail" tint="#ea4335" title="Gmail" connected={!!gmail?.connected} />
-        {gmail?.connected ? (
-          <>
-            <View style={styles.account}>
-              <Text style={[styles.accountName, { color: c.text }]}>{gmailEmail || 'Gmail account'}</Text>
-            </View>
-            <Button title="Open inbox" icon="mail-open-outline" onPress={() => router.push('/gmail')} />
-            <Button
-              title="Disconnect"
-              variant="danger"
-              onPress={() => confirmDisconnect('gmail')}
-              loading={disconnect.isPending && disconnect.variables === 'gmail'}
-              style={{ marginTop: 10 }}
-            />
-          </>
-        ) : (
-          <>
-            <Text style={[styles.description, { color: c.muted }]}>
-              Connect your Google account to read, send and reply to email.
-            </Text>
-            <Button title="Connect Gmail" onPress={() => void connectGmail()} loading={gmailBusy} />
-          </>
-        )}
-      </Card>
+        <Card>
+          <Header icon="mail" tint="#ea4335" title="Gmail" connected={!!gmail?.connected} />
+          {gmail?.connected ? (
+            <>
+              <View style={styles.account}>
+                <Text style={[styles.accountName, { color: c.text }]}>{gmailEmail || 'Gmail account'}</Text>
+              </View>
+              <Button title="Open inbox" icon="mail-open-outline" onPress={() => router.push('/gmail')} />
+              <Button
+                title="Disconnect"
+                variant="danger"
+                onPress={() => confirmDisconnect('gmail')}
+                loading={disconnect.isPending && disconnect.variables === 'gmail'}
+                style={{ marginTop: 10 }}
+              />
+            </>
+          ) : (
+            <>
+              <Text style={[styles.description, { color: c.muted }]}>
+                Connect your Google account to read, send and reply to email.
+              </Text>
+              <Button title="Connect Gmail" onPress={() => void connectGmail()} loading={gmailBusy} />
+            </>
+          )}
+        </Card>
 
-      <Card>
-        <Header icon="briefcase" tint={BITRIX_TINT} title="Bitrix24" connected={!!bitrix?.connected} />
-        {bitrix?.connected ? (
-          <>
-            <View style={styles.account}>
-              <Text style={[styles.accountName, { color: c.text }]}>{bx?.portal || 'Bitrix24 portal'}</Text>
-              {bx?.user_name ? (
-                <Text style={[styles.accountLine, { color: c.muted }]}>{bx.user_name}</Text>
-              ) : null}
-            </View>
-            <Button title="Open CRM" icon="briefcase-outline" onPress={() => router.push('/bitrix')} />
-            <Button
-              title="Disconnect"
-              variant="danger"
-              onPress={() => confirmDisconnect('bitrix24')}
-              loading={disconnect.isPending && disconnect.variables === 'bitrix24'}
-              style={{ marginTop: 10 }}
-            />
-          </>
-        ) : (
-          <>
-            <Text style={[styles.description, { color: c.muted }]}>
-              Connect your Bitrix24 portal to browse deals and leads and add comments.
-            </Text>
-            <View style={[styles.steps, { backgroundColor: c.inputBg }]}>
-              <Text style={[styles.stepsTitle, { color: c.text }]}>How to connect</Text>
-              {BITRIX_STEPS.map((step, index) => (
-                <View key={step} style={styles.step}>
-                  <Text style={[styles.stepNumber, { color: c.muted }]}>{index + 1}.</Text>
-                  <Text style={[styles.stepText, { color: c.text }]}>{step}</Text>
-                </View>
-              ))}
-            </View>
-            <Field
-              value={webhookUrl}
-              onChangeText={setWebhookUrl}
-              placeholder="https://yourportal.bitrix24.com/rest/1/…/"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="url"
-              textContentType="URL"
-              returnKeyType="done"
-              editable={!connectBitrix.isPending}
-              onSubmitEditing={submitWebhook}
-              onFocus={revealWebhookField}
-            />
-            <Button
-              title="Connect"
-              onPress={submitWebhook}
-              disabled={!webhookUrl.trim()}
-              loading={connectBitrix.isPending}
-            />
-          </>
-        )}
-      </Card>
-    </ScrollView>
+        <Card>
+          <Header icon="briefcase" tint={BITRIX_TINT} title="Bitrix24" connected={!!bitrix?.connected} />
+          {bitrix?.connected ? (
+            <>
+              <View style={styles.account}>
+                <Text style={[styles.accountName, { color: c.text }]}>{bx?.portal || 'Bitrix24 portal'}</Text>
+                {bx?.user_name ? (
+                  <Text style={[styles.accountLine, { color: c.muted }]}>{bx.user_name}</Text>
+                ) : null}
+              </View>
+              <Button title="Open CRM" icon="briefcase-outline" onPress={() => router.push('/bitrix')} />
+              <Button
+                title="Disconnect"
+                variant="danger"
+                onPress={() => confirmDisconnect('bitrix24')}
+                loading={disconnect.isPending && disconnect.variables === 'bitrix24'}
+                style={{ marginTop: 10 }}
+              />
+            </>
+          ) : (
+            <>
+              <Text style={[styles.description, { color: c.muted }]}>
+                Connect your Bitrix24 portal to browse deals and leads and add comments.
+              </Text>
+              <View style={[styles.steps, { backgroundColor: c.inputBg }]}>
+                <Text style={[styles.stepsTitle, { color: c.text }]}>How to connect</Text>
+                {BITRIX_STEPS.map((step, index) => (
+                  <View key={step} style={styles.step}>
+                    <Text style={[styles.stepNumber, { color: c.muted }]}>{index + 1}.</Text>
+                    <Text style={[styles.stepText, { color: c.text }]}>{step}</Text>
+                  </View>
+                ))}
+              </View>
+              <Field
+                value={webhookUrl}
+                onChangeText={setWebhookUrl}
+                placeholder="https://yourportal.bitrix24.com/rest/1/…/"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                textContentType="URL"
+                returnKeyType="done"
+                editable={!connectBitrix.isPending}
+                onSubmitEditing={submitWebhook}
+                onFocus={revealWebhookField}
+              />
+              <Button
+                title="Connect"
+                onPress={submitWebhook}
+                disabled={!webhookUrl.trim()}
+                loading={connectBitrix.isPending}
+              />
+            </>
+          )}
+        </Card>
+      </ScrollView>
+    </AsyncState>
   );
 }
 

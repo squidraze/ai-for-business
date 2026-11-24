@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -20,7 +21,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StagePill } from '@/components/bitrix';
-import { Avatar, Button, Card, ErrorView, ListSkeleton, Separator } from '@/components/ui';
+import { AsyncState } from '@/components/AsyncState';
+import { SkeletonList } from '@/components/Skeleton';
+import { Avatar, Button, Card, ErrorView, Separator } from '@/components/ui';
 import {
   api,
   errorMessage,
@@ -68,6 +71,7 @@ function leadRows(l: BitrixLeadDetail): FieldRow[] {
 
 export default function BitrixDetailScreen() {
   const c = useColors();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ entity: string; id: string }>();
   const entity = isEntity(params.entity) ? params.entity : null;
@@ -121,156 +125,149 @@ export default function BitrixDetailScreen() {
     return (
       <>
         {header}
-        <ErrorView message="Unknown CRM record type." />
-      </>
-    );
-  if (query.isLoading)
-    return (
-      <>
-        {header}
-        <ListSkeleton count={4} avatar={false} />
-      </>
-    );
-  if (query.isError && !query.data)
-    return (
-      <>
-        {header}
-        <ErrorView message={errorMessage(query.error)} onRetry={() => void query.refetch()} />
+        <ErrorView message={t('bitrix.unknownType')} />
       </>
     );
 
-  const record = query.data;
-  if (!record) return header;
+  const renderDetail = (record: Detail) => {
+    const isDeal = entity === 'deals';
+    const rows = (isDeal ? dealRows(record as BitrixDealDetail) : leadRows(record as BitrixLeadDetail)).filter(
+      (row) => !!row.value,
+    );
+    const stageLabel = isDeal
+      ? (record as BitrixDealDetail).stage_name || (record as BitrixDealDetail).stage_id
+      : (record as BitrixLeadDetail).status_name || (record as BitrixLeadDetail).status_id;
+    const amount = formatMoney(record.opportunity, record.currency);
+    const comments = record.comments ?? [];
 
-  const isDeal = entity === 'deals';
-  const rows = (isDeal ? dealRows(record as BitrixDealDetail) : leadRows(record as BitrixLeadDetail)).filter(
-    (row) => !!row.value,
-  );
-  const stageLabel = isDeal
-    ? (record as BitrixDealDetail).stage_name || (record as BitrixDealDetail).stage_id
-    : (record as BitrixLeadDetail).status_name || (record as BitrixLeadDetail).status_id;
-  const amount = formatMoney(record.opportunity, record.currency);
-  const comments = record.comments ?? [];
+    return (
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: c.bg }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 44 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={{ padding: 16, gap: 12 }}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => void onRefresh()}
+              tintColor={c.primary}
+              colors={[c.primary]}
+            />
+          }
+        >
+          <View>
+            <Text style={[styles.kind, { color: c.muted }]}>
+              {isDeal ? 'Deal' : 'Lead'} #{record.id}
+            </Text>
+            <Text style={[styles.title, { color: c.text }]} selectable>
+              {record.title || (isDeal ? '(untitled deal)' : '(untitled lead)')}
+            </Text>
+            <View style={styles.headline}>
+              <View style={{ flexShrink: 1, marginRight: 8 }}>
+                <StagePill label={stageLabel} />
+              </View>
+              {amount ? <Text style={[styles.amount, { color: c.text }]}>{amount}</Text> : null}
+            </View>
+          </View>
+
+          <Card style={{ paddingVertical: 4 }}>
+            {rows.map((row, index) => (
+              <View key={row.label}>
+                {index > 0 ? <Separator /> : null}
+                <View style={styles.field}>
+                  <Text style={[styles.fieldLabel, { color: c.muted }]}>{row.label}</Text>
+                  {row.href ? (
+                    <Text
+                      style={[styles.fieldValue, { color: c.primary }]}
+                      onPress={() => void Linking.openURL(row.href!).catch(() => {})}
+                    >
+                      {row.value}
+                    </Text>
+                  ) : (
+                    <Text style={[styles.fieldValue, { color: c.text }]} selectable>
+                      {row.value}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            ))}
+            {record.comments_text ? (
+              <View>
+                {rows.length > 0 ? <Separator /> : null}
+                <View style={styles.notes}>
+                  <Text style={[styles.fieldLabel, { color: c.muted }]}>Notes</Text>
+                  <Text style={[styles.notesText, { color: c.text }]} selectable>
+                    {record.comments_text.trim()}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+          </Card>
+
+          {record.url ? (
+            <Button
+              title="Open in Bitrix24"
+              icon="open-outline"
+              variant="secondary"
+              onPress={() => void openInPortal(record.url)}
+            />
+          ) : null}
+
+          <Text style={[styles.section, { color: c.text }]}>
+            Comments{comments.length ? ` (${comments.length})` : ''}
+          </Text>
+          {comments.length === 0 ? (
+            <Text style={{ color: c.muted, fontSize: 14 }}>No comments yet.</Text>
+          ) : (
+            comments.map((comment) => <CommentCard key={comment.id} comment={comment} />)
+          )}
+        </ScrollView>
+
+        <View
+          style={[
+            styles.composer,
+            {
+              backgroundColor: c.card,
+              borderTopColor: c.border,
+              paddingBottom: Math.max(insets.bottom, 8),
+            },
+          ]}
+        >
+          <TextInput
+            value={draft}
+            onChangeText={setDraft}
+            placeholder="Add a comment"
+            placeholderTextColor={c.muted}
+            multiline
+            editable={!sending}
+            style={[styles.input, { backgroundColor: c.inputBg, color: c.text }]}
+          />
+          <TouchableOpacity
+            onPress={() => void send()}
+            disabled={!draft.trim() || sending}
+            style={[styles.send, { backgroundColor: c.primary, opacity: !draft.trim() || sending ? 0.5 : 1 }]}
+          >
+            {sending ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Ionicons name="arrow-up" size={20} color="#fff" />
+            )}
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    );
+  };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: c.bg }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 44 : 0}
-    >
+    <>
       {header}
-      <ScrollView
-        contentContainerStyle={{ padding: 16, gap: 12 }}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => void onRefresh()}
-            tintColor={c.primary}
-            colors={[c.primary]}
-          />
-        }
-      >
-        <View>
-          <Text style={[styles.kind, { color: c.muted }]}>
-            {isDeal ? 'Deal' : 'Lead'} #{record.id}
-          </Text>
-          <Text style={[styles.title, { color: c.text }]} selectable>
-            {record.title || (isDeal ? '(untitled deal)' : '(untitled lead)')}
-          </Text>
-          <View style={styles.headline}>
-            <View style={{ flexShrink: 1, marginRight: 8 }}>
-              <StagePill label={stageLabel} />
-            </View>
-            {amount ? <Text style={[styles.amount, { color: c.text }]}>{amount}</Text> : null}
-          </View>
-        </View>
-
-        <Card style={{ paddingVertical: 4 }}>
-          {rows.map((row, index) => (
-            <View key={row.label}>
-              {index > 0 ? <Separator /> : null}
-              <View style={styles.field}>
-                <Text style={[styles.fieldLabel, { color: c.muted }]}>{row.label}</Text>
-                {row.href ? (
-                  <Text
-                    style={[styles.fieldValue, { color: c.primary }]}
-                    onPress={() => void Linking.openURL(row.href!).catch(() => {})}
-                  >
-                    {row.value}
-                  </Text>
-                ) : (
-                  <Text style={[styles.fieldValue, { color: c.text }]} selectable>
-                    {row.value}
-                  </Text>
-                )}
-              </View>
-            </View>
-          ))}
-          {record.comments_text ? (
-            <View>
-              {rows.length > 0 ? <Separator /> : null}
-              <View style={styles.notes}>
-                <Text style={[styles.fieldLabel, { color: c.muted }]}>Notes</Text>
-                <Text style={[styles.notesText, { color: c.text }]} selectable>
-                  {record.comments_text.trim()}
-                </Text>
-              </View>
-            </View>
-          ) : null}
-        </Card>
-
-        {record.url ? (
-          <Button
-            title="Open in Bitrix24"
-            icon="open-outline"
-            variant="secondary"
-            onPress={() => void openInPortal(record.url)}
-          />
-        ) : null}
-
-        <Text style={[styles.section, { color: c.text }]}>
-          Comments{comments.length ? ` (${comments.length})` : ''}
-        </Text>
-        {comments.length === 0 ? (
-          <Text style={{ color: c.muted, fontSize: 14 }}>No comments yet.</Text>
-        ) : (
-          comments.map((comment) => <CommentCard key={comment.id} comment={comment} />)
-        )}
-      </ScrollView>
-
-      <View
-        style={[
-          styles.composer,
-          {
-            backgroundColor: c.card,
-            borderTopColor: c.border,
-            paddingBottom: Math.max(insets.bottom, 8),
-          },
-        ]}
-      >
-        <TextInput
-          value={draft}
-          onChangeText={setDraft}
-          placeholder="Add a comment"
-          placeholderTextColor={c.muted}
-          multiline
-          editable={!sending}
-          style={[styles.input, { backgroundColor: c.inputBg, color: c.text }]}
-        />
-        <TouchableOpacity
-          onPress={() => void send()}
-          disabled={!draft.trim() || sending}
-          style={[styles.send, { backgroundColor: c.primary, opacity: !draft.trim() || sending ? 0.5 : 1 }]}
-        >
-          {sending ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <Ionicons name="arrow-up" size={20} color="#fff" />
-          )}
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+      <AsyncState query={query} skeleton={<SkeletonList count={4} avatar={false} />}>
+        {() => (query.data ? renderDetail(query.data) : null)}
+      </AsyncState>
+    </>
   );
 }
 

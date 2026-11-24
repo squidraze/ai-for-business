@@ -1,0 +1,176 @@
+{
+  "common": {
+    "cancel": "Отмена",
+    "retry": "Повторить",
+    "delete": "Удалить",
+    "ok": "OK",
+    "nothingFound": "Ничего не найдено"
+  },
+  "tabs": {
+    "chats": "Чаты",
+    "connectors": "Коннекторы",
+    "profile": "Профиль"
+  },
+  "states": {
+    "errorTitle": "Не удалось загрузить",
+    "emptyTitle": "Здесь пока пусто"
+  },
+  "errors": {
+    "generic": "Что-то пошло не так. Попробуйте ещё раз.",
+    "network": "Нет связи с сервером. Проверьте интернет.",
+    "timeout": "Сервер долго не отвечает. Попробуйте ещё раз.",
+    "unauthorized": "Сессия истекла. Войдите снова.",
+    "internal_error": "Ошибка сервера. Попробуйте позже.",
+    "validation_error": "Проверьте отмеченные поля.",
+    "email_taken": "Аккаунт с этим email уже существует.",
+    "invalid_code": "Неверный код.",
+    "invalid_code_attempts": "Неверный код. Осталось попыток: {{n}}.",
+    "code_expired": "Срок действия кода истёк. Запросите новый.",
+    "too_many_attempts": "Слишком много попыток. Запросите новый код.",
+    "already_verified": "Этот email уже подтверждён. Войдите в аккаунт.",
+    "resend_cooldown": "Подождите немного перед повторной отправкой кода.",
+    "resend_cooldown_seconds": "Новый код можно запросить через {{n}} с.",
+    "invalid_credentials": "Неверный email или пароль.",
+    "email_not_verified": "Подтвердите email, чтобы войти.",
+    "invalid_google_token": "Не удалось войти через Google. Попробуйте ещё раз.",
+    "google_email_unverified": "Email в аккаунте Google не подтверждён.",
+    "google_not_configured": "Вход через Google сейчас недоступен.",
+    "invalid_apple_token": "Не удалось войти через Apple. Попробуйте ещё раз.",
+    "apple_email_missing": "Apple не передал ваш email. Разрешите доступ к email и попробуйте снова.",
+    "email_send_failed": "Не удалось отправить письмо. Попробуйте позже.",
+    "play_services_unavailable": "На устройстве нет сервисов Google Play или они устарели.",
+    "google_failed": "Не удалось войти через Google. Попробуйте ещё раз.",
+    "apple_failed": "Не удалось войти через Apple. Попробуйте ещё раз.",
+    "google_unavailable": "Google не отвечает. Попробуйте позже.",
+    "apple_unavailable": "Apple не отвечает. Попробуйте позже.",
+    "apple_not_configured": "Вход через Apple сейчас недоступен.",
+    "not_authenticated": "Войдите в аккаунт снова.",
+    "invalid_token": "Сессия истекла. Войдите снова."
+  },
+  "validation": {
+    "required": "Заполните это поле.",
+    "invalid_email": "Введите корректный email.",
+    "password_too_short": "Пароль должен быть не короче 8 символов.",
+    "password_too_long": "Пароль должен быть не длиннее 128 символов.",
+    "password_needs_letter": "В пароле должна быть хотя бы одна буква.",
+    "password_needs_digit": "В пароле должна быть хотя бы одна цифра.",
+    "password_whitespace": "Пароль не может начинаться или заканчиваться пробелом.",
+    "password_equals_email": "Пароль не должен совпадать с email.",
+    "name_too_long": "Имя должно быть не длиннее 100 символов.",
+    "passwords_mismatch": "Пароли не совпадают.",
+    "invalid_code_format": "Введите 6-значный код.",
+    "invalid": "Проверьте это поле."
+  },
+  "auth": {
+    "tagline": "ИИ-ассистент для вашего бизнеса",
+    "or": "или",
+    "server": "Сервер: {{url}}",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
+    "fields": {
+      "name": "Имя",
+      "namePlaceholder": "Иван Иванов",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "password": "Пароль",
+      "passwordPlaceholder": "Ваш пароль",
+      "newPassword": "Новый пароль",
+      "newPasswordPlaceholder": "Не короче 8 символов",
+      "confirmPassword": "Повторите пароль",
+      "confirmPasswordPlaceholder": "Введите пароль ещё раз",
+      "code": "Код"
+    },
+    "rules": {
+      "length": "Не короче 8 символов",
+      "letter": "Хотя бы одна буква",
+      "digit": "Хотя бы одна цифра"
+    },
+    "social": {
+      "google": "Продолжить с Google",
+      "googleUnavailable": "Вход через Google не настроен в этой сборке."
+    },
+    "signIn": {
+      "title": "С возвращением",
+      "subtitle": "Войдите в своего ИИ-ассистента",
+      "submit": "Войти",
+      "forgot": "Забыли пароль?",
+      "noAccount": "Нет аккаунта?",
+      "createOne": "Создать"
+    },
+    "register": {
+      "title": "Создать аккаунт",
+      "subtitle": "Это займёт меньше минуты",
+      "submit": "Создать аккаунт",
+      "haveAccount": "Уже есть аккаунт?",
+      "signIn": "Войти"
+    },
+    "verify": {
+      "title": "Подтвердите email",
+      "subtitle": "Мы отправили 6-значный код на {{email}}",
+      "submit": "Подтвердить",
+      "resend": "Отправить код ещё раз",
+      "resendIn": "Повторно через {{n}} с",
+      "resent": "Новый код уже в пути.",
+      "attemptsLeft": "Осталось попыток: {{n}}",
+      "changeEmail": "Указать другой email"
+    },
+    "forgot": {
+      "title": "Сброс пароля",
+      "subtitle": "Введите email аккаунта, и мы пришлём код.",
+      "submit": "Отправить код",
+      "back": "Вернуться ко входу"
+    },
+    "reset": {
+      "title": "Новый пароль",
+      "subtitle": "Введите код, отправленный на {{email}}, и придумайте новый пароль.",
+      "submit": "Сохранить пароль"
+    }
+  },
+  "profile": {
+    "verified": "Подтверждён",
+    "notVerified": "Не подтверждён",
+    "signInMethods": "Способы входа",
+    "providers": {
+      "password": "Email и пароль",
+      "google": "Google",
+      "apple": "Apple"
+    },
+    "language": "Язык",
+    "server": "Сервер",
+    "appVersion": "Версия приложения",
+    "signOut": "Выйти",
+    "signOutConfirm": "Выйти из аккаунта?",
+    "deleteAccount": "Удалить аккаунт",
+    "deleteConfirmTitle": "Удалить аккаунт?",
+    "deleteConfirmText": "Это действие нельзя отменить. Аккаунт, подключённые сервисы (Telegram, Gmail, Bitrix24) и все чаты будут удалены навсегда.",
+    "deleteFailed": "Не удалось удалить аккаунт"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "uz": "O‘zbekcha"
+  },
+  "chats": {
+    "emptyTitle": "Чатов пока нет",
+    "emptyText": "Спросите ассистента о чём угодно — он умеет читать ваш Telegram и Gmail.",
+    "start": "Начать чат"
+  },
+  "telegram": {
+    "noChats": "Чатов нет",
+    "noMatch": "Нет чатов по запросу «{{query}}».",
+    "noMessages": "Сообщений пока нет"
+  },
+  "gmail": {
+    "empty": "Входящих нет",
+    "noMatch": "Нет писем по запросу «{{query}}»."
+  },
+  "bitrix": {
+    "notConnected": "Bitrix24 не подключён",
+    "openConnectors": "Открыть коннекторы",
+    "noDeals": "Сделок пока нет",
+    "noLeads": "Лидов пока нет",
+    "noDealsMatch": "Нет сделок по запросу «{{query}}».",
+    "noLeadsMatch": "Нет лидов по запросу «{{query}}».",
+    "unknownType": "Неизвестный тип записи CRM."
+  }
+}

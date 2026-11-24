@@ -1,0 +1,176 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "delete": "Delete",
+    "ok": "OK",
+    "nothingFound": "Nothing found"
+  },
+  "tabs": {
+    "chats": "Chats",
+    "connectors": "Connectors",
+    "profile": "Profile"
+  },
+  "states": {
+    "errorTitle": "Couldn't load",
+    "emptyTitle": "Nothing here yet"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Can't reach the server. Check your internet connection.",
+    "timeout": "The server is taking too long to respond. Please try again.",
+    "unauthorized": "Your session has expired. Please sign in again.",
+    "internal_error": "Server error. Please try again later.",
+    "validation_error": "Please check the highlighted fields.",
+    "email_taken": "An account with this email already exists.",
+    "invalid_code": "Wrong code.",
+    "invalid_code_attempts": "Wrong code. Attempts left: {{n}}.",
+    "code_expired": "The code has expired. Request a new one.",
+    "too_many_attempts": "Too many attempts. Request a new code.",
+    "already_verified": "This email is already confirmed. Please sign in.",
+    "resend_cooldown": "Please wait before requesting another code.",
+    "resend_cooldown_seconds": "You can request a new code in {{n}} s.",
+    "invalid_credentials": "Wrong email or password.",
+    "email_not_verified": "Confirm your email to sign in.",
+    "invalid_google_token": "Google sign-in failed. Please try again.",
+    "google_email_unverified": "Your Google email isn't verified.",
+    "google_not_configured": "Google sign-in isn't available right now.",
+    "invalid_apple_token": "Apple sign-in failed. Please try again.",
+    "apple_email_missing": "Apple didn't share your email. Allow email sharing and try again.",
+    "email_send_failed": "We couldn't send the email. Please try again later.",
+    "play_services_unavailable": "Google Play services are missing or out of date on this device.",
+    "google_failed": "Google sign-in failed. Please try again.",
+    "apple_failed": "Apple sign-in failed. Please try again.",
+    "google_unavailable": "Google is not responding. Please try again later.",
+    "apple_unavailable": "Apple is not responding. Please try again later.",
+    "apple_not_configured": "Sign in with Apple isn’t available right now.",
+    "not_authenticated": "Please sign in again.",
+    "invalid_token": "Your session has expired. Please sign in again."
+  },
+  "validation": {
+    "required": "This field is required.",
+    "invalid_email": "Enter a valid email address.",
+    "password_too_short": "Password must be at least 8 characters.",
+    "password_too_long": "Password must be at most 128 characters.",
+    "password_needs_letter": "Password must contain at least one letter.",
+    "password_needs_digit": "Password must contain at least one digit.",
+    "password_whitespace": "Password can't start or end with a space.",
+    "password_equals_email": "Password can't be the same as your email.",
+    "name_too_long": "Name must be at most 100 characters.",
+    "passwords_mismatch": "Passwords don't match.",
+    "invalid_code_format": "Enter the 6-digit code.",
+    "invalid": "Check this field."
+  },
+  "auth": {
+    "tagline": "Your AI assistant for business",
+    "or": "or",
+    "server": "Server: {{url}}",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "Jane Doe",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "password": "Password",
+      "passwordPlaceholder": "Your password",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Repeat password",
+      "confirmPasswordPlaceholder": "Repeat the password",
+      "code": "Code"
+    },
+    "rules": {
+      "length": "At least 8 characters",
+      "letter": "At least one letter",
+      "digit": "At least one digit"
+    },
+    "social": {
+      "google": "Continue with Google",
+      "googleUnavailable": "Google sign-in isn't configured in this build."
+    },
+    "signIn": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your AI assistant",
+      "submit": "Sign in",
+      "forgot": "Forgot password?",
+      "noAccount": "No account?",
+      "createOne": "Create one"
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "It takes less than a minute",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "verify": {
+      "title": "Confirm your email",
+      "subtitle": "We sent a 6-digit code to {{email}}",
+      "submit": "Confirm",
+      "resend": "Send the code again",
+      "resendIn": "Send again in {{n}} s",
+      "resent": "A new code is on its way.",
+      "attemptsLeft": "Attempts left: {{n}}",
+      "changeEmail": "Use another email"
+    },
+    "forgot": {
+      "title": "Reset password",
+      "subtitle": "Enter your account email and we'll send you a code.",
+      "submit": "Send code",
+      "back": "Back to sign in"
+    },
+    "reset": {
+      "title": "New password",
+      "subtitle": "Enter the code we sent to {{email}} and choose a new password.",
+      "submit": "Save password"
+    }
+  },
+  "profile": {
+    "verified": "Verified",
+    "notVerified": "Not verified",
+    "signInMethods": "Sign-in methods",
+    "providers": {
+      "password": "Email and password",
+      "google": "Google",
+      "apple": "Apple"
+    },
+    "language": "Language",
+    "server": "Server",
+    "appVersion": "App version",
+    "signOut": "Sign out",
+    "signOutConfirm": "Sign out?",
+    "deleteAccount": "Delete account",
+    "deleteConfirmTitle": "Delete your account?",
+    "deleteConfirmText": "This can't be undone. Your account, connected apps (Telegram, Gmail, Bitrix24) and all chats will be deleted permanently.",
+    "deleteFailed": "Couldn't delete the account"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "uz": "O‘zbekcha"
+  },
+  "chats": {
+    "emptyTitle": "No chats yet",
+    "emptyText": "Ask the assistant anything — it can read your Telegram and Gmail.",
+    "start": "Start a chat"
+  },
+  "telegram": {
+    "noChats": "No chats",
+    "noMatch": "No chats match “{{query}}”.",
+    "noMessages": "No messages yet"
+  },
+  "gmail": {
+    "empty": "Inbox is empty",
+    "noMatch": "No threads match “{{query}}”."
+  },
+  "bitrix": {
+    "notConnected": "Bitrix24 isn't connected",
+    "openConnectors": "Open Connectors",
+    "noDeals": "No deals yet",
+    "noLeads": "No leads yet",
+    "noDealsMatch": "No deals match “{{query}}”.",
+    "noLeadsMatch": "No leads match “{{query}}”.",
+    "unknownType": "Unknown CRM record type."
+  }
+}

@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import Tabs from 'expo-router/js-tabs';
 
 import { useColors } from '@/lib/theme';
 
 export default function TabsLayout() {
   const c = useColors();
+  const { t } = useTranslation();
   return (
     <Tabs
       screenOptions={{
@@ -22,7 +24,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Chats',
+          title: t('tabs.chats'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubbles-outline" color={color as string} size={size} />
           ),
@@ -31,7 +33,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="connectors"
         options={{
-          title: 'Connectors',
+          title: t('tabs.connectors'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="extension-puzzle-outline" color={color as string} size={size} />
           ),
@@ -40,7 +42,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('tabs.profile'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-circle-outline" color={color as string} size={size} />
           ),

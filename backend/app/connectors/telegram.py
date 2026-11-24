@@ -21,6 +21,7 @@ from app.config import settings
 from app.connectors.errors import ConnectorError, NotConnected
 from app.connectors.models import TelegramSession
 from app.db import SessionLocal
+from app.lib.user_data import on_user_delete
 
 log = logging.getLogger("connectors.telegram")
 
@@ -306,6 +307,12 @@ async def logout(user_id: int) -> None:
     except Exception as e:  # noqa: BLE001
         log.warning("telegram logout for user %s failed: %s", user_id, e)
     await _drop(user_id, delete=True)
+
+
+@on_user_delete
+async def _delete_user_data(user_id: int) -> None:
+    """Account deletion: log the session out of Telegram and drop it (best effort)."""
+    await logout(user_id)
 
 
 # --------------------------------------------------------------------------- read API

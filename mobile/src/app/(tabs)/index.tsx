@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect, useNavigation } from 'expo-router';
 import { useCallback, useLayoutEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -13,7 +14,9 @@ import {
   View,
 } from 'react-native';
 
-import { Button, EmptyView, ErrorView, ListSkeleton, Separator } from '@/components/ui';
+import { AsyncState } from '@/components/AsyncState';
+import { SkeletonList } from '@/components/Skeleton';
+import { Button, EmptyView, Separator } from '@/components/ui';
 import { api, CONVERSATIONS_KEY, errorMessage, type AIConversation } from '@/lib/api';
 import { relativeTime } from '@/lib/format';
 import { useColors } from '@/lib/theme';
@@ -25,6 +28,7 @@ type Page = { items: AIConversation[]; total: number };
 
 export default function ChatsScreen() {
   const c = useColors();
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
@@ -88,83 +92,85 @@ export default function ChatsScreen() {
       { text: 'Delete', style: 'destructive', onPress: () => remove.mutate(item.uuid) },
     ]);
 
-  if (query.isLoading) return <ListSkeleton avatar={false} />;
-  if (query.isError && items.length === 0)
-    return <ErrorView message={errorMessage(query.error)} onRetry={() => void query.refetch()} />;
+  const empty = (
+    <EmptyView icon="chatbubbles-outline" title={t('chats.emptyTitle')} description={t('chats.emptyText')}>
+      <Button title={t('chats.start')} icon="add" onPress={newChat} style={{ marginTop: 16 }} />
+    </EmptyView>
+  );
 
   return (
-    <View style={{ flex: 1 }}>
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.uuid}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 96 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => void onRefresh()}
-            tintColor={c.primary}
-            colors={[c.primary]}
-          />
-        }
-        ItemSeparatorComponent={() => <Separator inset={68} />}
-        onEndReached={() => {
-          if (query.hasNextPage && !query.isFetchingNextPage) void query.fetchNextPage();
-        }}
-        onEndReachedThreshold={0.4}
-        ListFooterComponent={
-          query.isFetchingNextPage ? (
-            <ActivityIndicator style={{ margin: 16 }} color={c.primary} />
-          ) : undefined
-        }
-        ListEmptyComponent={
-          <EmptyView
-            icon="chatbubbles-outline"
-            title="No chats yet"
-            description="Ask the assistant anything — it can read your Telegram and Gmail."
-          >
-            <Button title="Start a chat" icon="add" onPress={newChat} style={{ marginTop: 16 }} />
-          </EmptyView>
-        }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            activeOpacity={0.6}
-            onPress={() =>
-              router.push({
-                pathname: '/chat/[id]',
-                params: { id: item.uuid, title: item.title ?? '' },
-              })
-            }
-            onLongPress={() => confirmDelete(item)}
-            style={[styles.row, { backgroundColor: c.bg }]}
-          >
-            <View style={[styles.icon, { backgroundColor: c.inputBg }]}>
-              <Ionicons name="sparkles-outline" size={20} color={c.primary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.title, { color: c.text }]} numberOfLines={1}>
-                {item.title || 'New chat'}
-              </Text>
-              <Text style={[styles.time, { color: c.muted }]}>
-                {relativeTime(item.last_message_at ?? item.updated_at ?? item.created_at)}
-              </Text>
-            </View>
-            <TouchableOpacity onPress={() => confirmDelete(item)} hitSlop={10}>
-              <Ionicons name="trash-outline" size={20} color={c.muted} />
+    <AsyncState
+      query={query}
+      isEmpty={items.length === 0}
+      skeleton={<SkeletonList avatar={false} />}
+      empty={empty}
+      refreshing={refreshing}
+      onRefresh={() => void onRefresh()}
+    >
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.uuid}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 96 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => void onRefresh()}
+              tintColor={c.primary}
+              colors={[c.primary]}
+            />
+          }
+          ItemSeparatorComponent={() => <Separator inset={68} />}
+          onEndReached={() => {
+            if (query.hasNextPage && !query.isFetchingNextPage) void query.fetchNextPage();
+          }}
+          onEndReachedThreshold={0.4}
+          ListFooterComponent={
+            query.isFetchingNextPage ? (
+              <ActivityIndicator style={{ margin: 16 }} color={c.primary} />
+            ) : undefined
+          }
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              activeOpacity={0.6}
+              onPress={() =>
+                router.push({
+                  pathname: '/chat/[id]',
+                  params: { id: item.uuid, title: item.title ?? '' },
+                })
+              }
+              onLongPress={() => confirmDelete(item)}
+              style={[styles.row, { backgroundColor: c.bg }]}
+            >
+              <View style={[styles.icon, { backgroundColor: c.inputBg }]}>
+                <Ionicons name="sparkles-outline" size={20} color={c.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.title, { color: c.text }]} numberOfLines={1}>
+                  {item.title || 'New chat'}
+                </Text>
+                <Text style={[styles.time, { color: c.muted }]}>
+                  {relativeTime(item.last_message_at ?? item.updated_at ?? item.created_at)}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => confirmDelete(item)} hitSlop={10}>
+                <Ionicons name="trash-outline" size={20} color={c.muted} />
+              </TouchableOpacity>
             </TouchableOpacity>
+          )}
+        />
+        {items.length > 0 ? (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={newChat}
+            style={[styles.fab, { backgroundColor: c.primary }]}
+          >
+            <Ionicons name="add" size={22} color="#fff" />
+            <Text style={styles.fabText}>New chat</Text>
           </TouchableOpacity>
-        )}
-      />
-      {items.length > 0 ? (
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={newChat}
-          style={[styles.fab, { backgroundColor: c.primary }]}
-        >
-          <Ionicons name="add" size={22} color="#fff" />
-          <Text style={styles.fabText}>New chat</Text>
-        </TouchableOpacity>
-      ) : null}
-    </View>
+        ) : null}
+      </View>
+    </AsyncState>
   );
 }
 

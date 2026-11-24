@@ -36,11 +36,44 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
 
+    # auth: email codes (sent only via Gmail SMTP; empty user/password = dev mode, code goes to the log)
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_NAME: str = "forBusiness"
+    EMAIL_CODE_TTL_MINUTES: int = 15
+    EMAIL_CODE_RESEND_SECONDS: int = 60
+    EMAIL_CODE_MAX_ATTEMPTS: int = 5
+
+    # auth: Google / Apple sign-in
+    GOOGLE_SIGNIN_CLIENT_IDS: str = ""  # comma-separated ID-token audiences; empty = GOOGLE_CLIENT_ID
+    APPLE_BUNDLE_ID: str = "ai.forbusiness.demo"
+
     @field_validator("TELEGRAM_API_ID", mode="before")
     @classmethod
     def _empty_int(cls, v):
         # an empty `TELEGRAM_API_ID=` line in .env means "not set"
         return 0 if v in ("", None) else v
+
+    @field_validator(
+        "SMTP_PORT", "EMAIL_CODE_TTL_MINUTES", "EMAIL_CODE_RESEND_SECONDS", "EMAIL_CODE_MAX_ATTEMPTS", mode="before"
+    )
+    @classmethod
+    def _empty_default(cls, v, info):
+        # an empty line in .env means "use the default"
+        return cls.model_fields[info.field_name].default if v in ("", None) else v
+
+    @property
+    def smtp_enabled(self) -> bool:
+        return bool(self.SMTP_USER and self.SMTP_PASSWORD)
+
+    @property
+    def google_signin_audiences(self) -> list[str]:
+        ids = [x.strip() for x in self.GOOGLE_SIGNIN_CLIENT_IDS.split(",") if x.strip()]
+        if not ids and self.GOOGLE_CLIENT_ID:
+            ids = [self.GOOGLE_CLIENT_ID.strip()]
+        return ids
 
     @property
     def data_path(self) -> Path:
