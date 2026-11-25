@@ -13,6 +13,7 @@ import { FadeSwitch } from '@/components/FadeSwitch';
 import { SplashSkeleton } from '@/components/Skeleton';
 import { AuthProvider, useAuth } from '@/features/auth';
 import { usePushNotifications } from '@/features/notifications';
+import { RETRY_DELAY_MS, shouldRetryRequest } from '@/lib/api';
 import { useColors } from '@/lib/theme';
 
 function RootStack() {
@@ -83,7 +84,10 @@ export default function RootLayout() {
   const [queryClient] = useState(
     () =>
       new QueryClient({
-        defaultOptions: { queries: { retry: 1, staleTime: 10_000 } },
+        defaultOptions: {
+          queries: { retry: shouldRetryRequest, retryDelay: RETRY_DELAY_MS, staleTime: 10_000 },
+          mutations: { retry: false },
+        },
       }),
   );
   const c = useColors();

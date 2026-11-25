@@ -24,7 +24,7 @@ import { Alert } from 'react-native';
 
 import { api, CONVERSATIONS_KEY, errorMessage, getToken, isAbortError } from '@/lib/api';
 import { useAuth } from '@/features/auth';
-import { APP_VERSION, COMPANY_ID } from '@/lib/config';
+import { APP_VERSION, COMPANY_ID, UPLOAD_TIMEOUT_MS } from '@/lib/config';
 import { createLogger } from '@/lib/log';
 import { useThemeName } from '@/lib/theme';
 
@@ -407,6 +407,7 @@ export function useWebChatHandlers(options: WebChatHandlerOptions) {
           form,
           {
             headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: UPLOAD_TIMEOUT_MS,
             signal: controller.signal,
             transformRequest: (body) => body,
           },

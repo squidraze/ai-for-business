@@ -71,7 +71,7 @@ async def _call_url(base: str, method: str, params: dict | None = None) -> dict:
     async with _sem:
         for attempt in range(3):
             try:
-                async with httpx.AsyncClient(timeout=20) as http:
+                async with httpx.AsyncClient(timeout=15) as http:
                     r = await http.post(url, json=params or {})
             except httpx.HTTPError as e:
                 raise ConnectorError(502, f"Bitrix24 is unreachable: {type(e).__name__}") from e

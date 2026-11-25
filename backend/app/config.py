@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     # core
     JWT_SECRET: str = "dev-secret-change-me"
     JWT_TTL_DAYS: int = 30
+    # hard ceiling for one HTTP request (504 request_timeout after it); 0 = off
+    REQUEST_TIMEOUT_SECONDS: int = 30
     DATA_DIR: str = str(BACKEND_DIR / "data")
     BACKEND_PUBLIC_URL: str = "http://localhost:8000"
 

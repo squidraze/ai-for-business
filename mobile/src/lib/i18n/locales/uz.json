@@ -14,7 +14,9 @@
   },
   "states": {
     "errorTitle": "Yuklab bo‘lmadi",
-    "emptyTitle": "Hozircha bo‘sh"
+    "emptyTitle": "Hozircha bo‘sh",
+    "slow": "Yuklash odatdagidan uzoqroq davom etmoqda… Urinib ko‘ryapmiz.",
+    "refreshFailed": "Yangilab bo‘lmadi."
   },
   "errors": {
     "generic": "Nimadir xato ketdi. Qaytadan urinib ko‘ring.",
@@ -60,7 +62,8 @@
     "invalid_time": "To‘g‘ri vaqtni tanlang.",
     "weekdays_required": "Kamida bitta kunni tanlang.",
     "interval_too_short": "Interval juda qisqa.",
-    "interval_too_long": "Interval 24 soatdan oshmasligi kerak."
+    "interval_too_long": "Interval 24 soatdan oshmasligi kerak.",
+    "request_timeout": "Server o‘z vaqtida javob bermadi. Qaytadan urinib ko‘ring."
   },
   "validation": {
     "required": "Bu maydonni to‘ldiring.",

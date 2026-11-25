@@ -8,12 +8,15 @@ from app.ai import router as ai_router
 from app.ai import runner
 from app.db import create_all
 from app.lib.errors import install_error_handlers
+from app.lib.timeouts import install_request_timeout
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logging.getLogger("httpx").setLevel(logging.WARNING)
 log = logging.getLogger("app")
 
 app = FastAPI(title="forBusiness backend")
+# added first = innermost: CORS (added next) also wraps the 504 this returns
+install_request_timeout(app)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"], expose_headers=["*"])
 install_error_handlers(app)
 
