@@ -141,6 +141,11 @@ def _new_client(session: str = "") -> TelegramClient:
         app_version="0.1",
         lang_code="en",
         system_lang_code="en",
+        # fail fast instead of Telethon's default 5 reconnect attempts (~a minute of a hung screen)
+        timeout=10,
+        connection_retries=2,
+        retry_delay=1,
+        request_retries=2,
     )
 
 

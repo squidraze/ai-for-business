@@ -14,7 +14,9 @@
   },
   "states": {
     "errorTitle": "Couldn't load",
-    "emptyTitle": "Nothing here yet"
+    "emptyTitle": "Nothing here yet",
+    "slow": "Taking longer than usual… Still trying.",
+    "refreshFailed": "Couldn't refresh."
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -60,7 +62,8 @@
     "invalid_time": "Pick a valid time.",
     "weekdays_required": "Pick at least one day.",
     "interval_too_short": "The interval is too short.",
-    "interval_too_long": "The interval can't be longer than 24 hours."
+    "interval_too_long": "The interval can't be longer than 24 hours.",
+    "request_timeout": "The server didn't respond in time. Please try again."
   },
   "validation": {
     "required": "This field is required.",

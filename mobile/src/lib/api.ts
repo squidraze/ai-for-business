@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-import { API_URL, COMPANY_ID } from './config';
+import { API_TIMEOUT_MS, API_URL, COMPANY_ID } from './config';
 import i18n from './i18n';
 
 const TOKEN_KEY = 'forbusiness_token';
@@ -39,7 +39,7 @@ export function setOnUnauthorized(handler: (() => void) | null) {
 
 export const api = axios.create({
   baseURL: API_URL,
-  timeout: 60_000,
+  timeout: API_TIMEOUT_MS,
 });
 
 api.interceptors.request.use((config) => {
@@ -319,3 +319,17 @@ export function dialogPhotoSource(chatId: string) {
     headers: { Authorization: `Bearer ${token ?? ''}` },
   };
 }
+
+/**
+ * TanStack Query retry policy: one quick retry for a dropped connection or a
+ * 502/503, nothing else. A timeout or a 4xx is not retried — retrying only
+ * doubles how long the user stares at a skeleton before seeing Retry.
+ */
+export function shouldRetryRequest(failureCount: number, error: unknown): boolean {
+  if (failureCount >= 1 || isAbortError(error)) return false;
+  const { status, code } = parseApiError(error);
+  if (code === 'timeout') return false;
+  return status === null || status === 502 || status === 503;
+}
+
+export const RETRY_DELAY_MS = 1_000;

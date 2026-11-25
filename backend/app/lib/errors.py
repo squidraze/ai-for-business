@@ -18,6 +18,7 @@ log = logging.getLogger("app.errors")
 MESSAGES: dict[str, str] = {
     "validation_error": "Some fields are invalid",
     "internal_error": "Internal server error",
+    "request_timeout": "The server did not respond in time",
     "not_authenticated": "Not authenticated",
     "invalid_token": "Invalid or expired token",
     "email_taken": "An account with this email already exists",

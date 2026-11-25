@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { FadeSwitch } from '@/components/FadeSwitch';
 import { SkeletonList } from '@/components/Skeleton';
+import { SlowLoadingHint } from '@/components/SlowLoadingHint';
+import { StaleDataBanner } from '@/components/StaleDataBanner';
 import { ErrorView } from '@/components/StateView';
 import { errorMessage } from '@/lib/api';
 import { useColors } from '@/lib/theme';
@@ -12,6 +14,8 @@ export type QueryLike = {
   isLoading?: boolean;
   isPending?: boolean;
   isError: boolean;
+  /** A request is in flight (initial load or refetch). */
+  isFetching?: boolean;
   error: unknown;
   data?: unknown;
   refetch: () => unknown;
@@ -89,12 +93,30 @@ export function AsyncState({
     );
 
   let body: ReactNode;
-  if (state === 'loading') body = skeleton ?? <SkeletonList />;
+  if (state === 'loading')
+    body = (
+      <View style={styles.fill}>
+        {skeleton ?? <SkeletonList />}
+        <SlowLoadingHint />
+      </View>
+    );
   else if (state === 'error') {
     const custom = typeof error === 'function' ? error(query.error, retry) : error;
     body = scrollable(custom ?? <ErrorView message={errorMessage(query.error)} onRetry={retry} />);
   } else if (state === 'empty') body = scrollable(empty);
-  else body = typeof children === 'function' ? children() : children;
+  else {
+    const content = typeof children === 'function' ? children() : children;
+    // A refetch failed but older data is still shown: say so, don't fail silently.
+    const stale = query.isError && !query.isFetching && query.data !== undefined;
+    body = stale ? (
+      <View style={styles.fill}>
+        <StaleDataBanner message={errorMessage(query.error)} onRetry={retry} />
+        <View style={styles.fill}>{content}</View>
+      </View>
+    ) : (
+      content
+    );
+  }
 
   return (
     <FadeSwitch stateKey={state} style={style}>
@@ -105,4 +127,5 @@ export function AsyncState({
 
 const styles = StyleSheet.create({
   grow: { flexGrow: 1 },
+  fill: { flex: 1 },
 });
