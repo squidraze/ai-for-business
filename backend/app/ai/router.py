@@ -482,7 +482,7 @@ async def connections(status: str | None = None, user: User = Depends(get_curren
             "provider_display_name": label,
             "status": "active" if state.get(cid) else "disconnected",
         }
-        for cid, label in tools.CONNECTORS.items()
+        for cid, label in tools.connector_titles().items()
     ]
     if status:
         items = [i for i in items if i["status"] == status]

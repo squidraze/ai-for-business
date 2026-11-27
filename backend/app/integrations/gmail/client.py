@@ -1,4 +1,4 @@
-"""Gmail connector: Google OAuth 2 web flow + Gmail REST API.
+"""Gmail integration client: Google OAuth 2 web flow + Gmail REST API.
 
 Talks to Google over httpx directly (async, no google client libraries needed): the auth URL
 and the token exchange/refresh are plain OAuth 2 endpoints, and the Gmail API is JSON over
@@ -23,12 +23,14 @@ import jwt
 from sqlalchemy import select
 
 from app.config import settings
-from app.connectors.errors import ConnectorError, NotConnected
-from app.connectors.models import GmailCredential
 from app.db import SessionLocal
+from app.integrations.base import UserLocks, http_client
+from app.integrations.errors import IntegrationError, NotConnected, common_messages, register_messages
+from app.integrations.gmail.models import GmailCredential
 
-log = logging.getLogger("connectors.gmail")
+log = logging.getLogger("integrations.gmail")
 
+ID = "gmail"
 NOT_CONNECTED = "Gmail is not connected"
 AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -43,14 +45,24 @@ SCOPES = [
 APP_REDIRECT = "forbusiness://connectors"
 STATE_TTL = timedelta(minutes=15)
 
-_locks: dict[int, asyncio.Lock] = {}
+register_messages({
+    **common_messages(ID, "Gmail"),
+    "gmail_state_expired": "The sign-in link has expired, start again from the app",
+    "gmail_invalid_state": "Invalid OAuth state",
+    "gmail_auth_failed": "Google refused the sign-in",
+    "gmail_recipient_required": "Recipient address is required",
+    "gmail_empty_message": "Reply text is empty",
+})
+
+_lock = UserLocks()
 
 
-def _lock(user_id: int) -> asyncio.Lock:
-    lock = _locks.get(user_id)
-    if lock is None:
-        lock = _locks[user_id] = asyncio.Lock()
-    return lock
+def _err(status_code: int, code: str, message: str) -> IntegrationError:
+    return IntegrationError(status_code, f"{ID}_{code}", message)
+
+
+def _not_connected() -> NotConnected:
+    return NotConnected(ID, NOT_CONNECTED)
 
 
 def redirect_uri() -> str:
@@ -60,8 +72,8 @@ def redirect_uri() -> str:
 
 def _require_config() -> None:
     if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
-        raise ConnectorError(503, "Google OAuth is not configured on the server "
-                                  "(GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET)")
+        raise _err(503, "not_configured", "Google OAuth is not configured on the server "
+                                          "(GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET)")
 
 
 # --------------------------------------------------------------------------- db
@@ -107,11 +119,11 @@ def read_state(state: str) -> int:
     try:
         payload = jwt.decode(state, settings.JWT_SECRET, algorithms=["HS256"])
     except jwt.ExpiredSignatureError as e:
-        raise ConnectorError(400, "The sign-in link has expired, start again from the app") from e
+        raise _err(400, "state_expired", "The sign-in link has expired, start again from the app") from e
     except jwt.PyJWTError as e:
-        raise ConnectorError(400, "Invalid OAuth state") from e
+        raise _err(400, "invalid_state", "Invalid OAuth state") from e
     if payload.get("purpose") != "gmail_oauth":
-        raise ConnectorError(400, "Invalid OAuth state")
+        raise _err(400, "invalid_state", "Invalid OAuth state")
     return int(payload["sub"])
 
 
@@ -144,22 +156,28 @@ async def handle_callback(code: str, state: str) -> int:
     """Exchange the code, store tokens and the account email. Returns the user id."""
     _require_config()
     user_id = read_state(state)
-    async with httpx.AsyncClient(timeout=20) as http:
-        r = await http.post(TOKEN_URL, data={
-            "code": code,
-            "client_id": settings.GOOGLE_CLIENT_ID,
-            "client_secret": settings.GOOGLE_CLIENT_SECRET,
-            "redirect_uri": redirect_uri(),
-            "grant_type": "authorization_code",
-        })
+    async with http_client(20) as http:
+        try:
+            r = await http.post(TOKEN_URL, data={
+                "code": code,
+                "client_id": settings.GOOGLE_CLIENT_ID,
+                "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                "redirect_uri": redirect_uri(),
+                "grant_type": "authorization_code",
+            })
+        except httpx.HTTPError as e:
+            raise _err(503, "unavailable", "Can't reach Google, try again") from e
         if r.status_code != 200:
             log.warning("gmail token exchange failed: %s %s", r.status_code, r.text[:500])
-            raise ConnectorError(400, f"Google refused the sign-in: {_google_error(r)}")
+            raise _err(400, "auth_failed", f"Google refused the sign-in: {_google_error(r)}")
         token = _token_from_response(r.json())
         if not token.get("refresh_token"):
             log.warning("gmail: no refresh_token returned for user %s", user_id)
-        p = await http.get(f"{API}/profile", headers={"Authorization": f"Bearer {token['access_token']}"})
-        email = p.json().get("emailAddress") if p.status_code == 200 else None
+        try:
+            p = await http.get(f"{API}/profile", headers={"Authorization": f"Bearer {token['access_token']}"})
+            email = p.json().get("emailAddress") if p.status_code == 200 else None
+        except (httpx.HTTPError, ValueError):
+            email = None  # get_profile fetches it later
     _save(user_id, token, email)
     return user_id
 
@@ -179,29 +197,32 @@ async def _access_token(user_id: int, force_refresh: bool = False) -> str:
     async with _lock(user_id):
         row = _row(user_id)
         if row is None or not (row.token or {}).get("access_token"):
-            raise NotConnected(NOT_CONNECTED)
+            raise _not_connected()
         token = dict(row.token)
         if not force_refresh and int(token.get("expires_at") or 0) - 60 > time.time():
             return token["access_token"]
         if not token.get("refresh_token"):
             if force_refresh:
                 _delete(user_id)
-                raise NotConnected(NOT_CONNECTED)
+                raise _not_connected()
             return token["access_token"]
         _require_config()
-        async with httpx.AsyncClient(timeout=20) as http:
-            r = await http.post(TOKEN_URL, data={
-                "client_id": settings.GOOGLE_CLIENT_ID,
-                "client_secret": settings.GOOGLE_CLIENT_SECRET,
-                "refresh_token": token["refresh_token"],
-                "grant_type": "refresh_token",
-            })
+        try:
+            async with http_client(20) as http:
+                r = await http.post(TOKEN_URL, data={
+                    "client_id": settings.GOOGLE_CLIENT_ID,
+                    "client_secret": settings.GOOGLE_CLIENT_SECRET,
+                    "refresh_token": token["refresh_token"],
+                    "grant_type": "refresh_token",
+                })
+        except httpx.HTTPError as e:
+            raise _err(503, "unavailable", "Can't reach Google, try again") from e
         if r.status_code != 200:
             log.warning("gmail refresh failed for user %s: %s %s", user_id, r.status_code, r.text[:300])
             if r.status_code in (400, 401):  # invalid_grant: revoked / expired refresh token
                 _delete(user_id)
-                raise NotConnected(NOT_CONNECTED)
-            raise ConnectorError(503, "Can't reach Google, try again")
+                raise _not_connected()
+            raise _err(503, "unavailable", "Can't reach Google, try again")
         new = _token_from_response(r.json())
         _save(user_id, new)
         return new["access_token"]
@@ -210,7 +231,7 @@ async def _access_token(user_id: int, force_refresh: bool = False) -> str:
 async def _api(user_id: int, method: str, path: str, *, params: dict | None = None,
                json: dict | None = None, http: httpx.AsyncClient | None = None) -> dict:
     own = http is None
-    http = http or httpx.AsyncClient(timeout=30)
+    http = http or http_client(30)
     try:
         for attempt in (0, 1):
             token = await _access_token(user_id, force_refresh=attempt == 1)
@@ -218,20 +239,21 @@ async def _api(user_id: int, method: str, path: str, *, params: dict | None = No
                 r = await http.request(method, f"{API}{path}", params=params, json=json,
                                        headers={"Authorization": f"Bearer {token}"})
             except httpx.HTTPError as e:
-                raise ConnectorError(503, "Can't reach Gmail, try again") from e
+                raise _err(503, "unavailable", "Can't reach Gmail, try again") from e
             if r.status_code == 401 and attempt == 0:
                 continue
             if r.status_code == 401:
                 _delete(user_id)
-                raise NotConnected(NOT_CONNECTED)
+                raise _not_connected()
             if r.status_code == 404:
-                raise ConnectorError(404, "Not found in Gmail")
+                raise _err(404, "not_found", "Not found in Gmail")
             if r.status_code == 429:
-                raise ConnectorError(429, "Gmail rate limit, try again in a moment")
+                raise _err(429, "rate_limited", "Gmail rate limit, try again in a moment")
             if r.status_code >= 400:
-                raise ConnectorError(400 if r.status_code < 500 else 502, f"Gmail error: {_google_error(r)}")
+                raise (_err(400, "invalid_request", f"Gmail error: {_google_error(r)}") if r.status_code < 500
+                       else _err(502, "unavailable", f"Gmail error: {_google_error(r)}"))
             return r.json() if r.content else {}
-        raise NotConnected(NOT_CONNECTED)
+        raise _not_connected()
     finally:
         if own:
             await http.aclose()
@@ -255,7 +277,7 @@ def account_summary(user_id: int) -> dict | None:
 async def get_profile(user_id: int) -> dict:
     row = _row(user_id)
     if row is None:
-        raise NotConnected(NOT_CONNECTED)
+        raise _not_connected()
     if row.email:
         return {"email": row.email}
     data = await _api(user_id, "GET", "/profile")
@@ -272,7 +294,7 @@ async def disconnect(user_id: int) -> None:
     tok = (row.token or {}).get("refresh_token") or (row.token or {}).get("access_token")
     if tok:
         try:
-            async with httpx.AsyncClient(timeout=10) as http:
+            async with http_client(10) as http:
                 await http.post(REVOKE_URL, data={"token": tok})
         except httpx.HTTPError:
             pass
@@ -305,7 +327,7 @@ async def list_threads(user_id: int, q: str | None = None, max_results: int = 20
         params["pageToken"] = page_token
     if label:
         params["labelIds"] = label
-    async with httpx.AsyncClient(timeout=30) as http:
+    async with http_client(30) as http:
         data = await _api(user_id, "GET", "/threads", params=params, http=http)
         ids = [t["id"] for t in data.get("threads") or []]
         sem = asyncio.Semaphore(10)
@@ -315,7 +337,7 @@ async def list_threads(user_id: int, q: str | None = None, max_results: int = 20
                 try:
                     return await _api(user_id, "GET", f"/threads/{tid}", http=http, params={
                         "format": "metadata", "metadataHeaders": ["Subject", "From", "To", "Date"]})
-                except ConnectorError as e:
+                except IntegrationError as e:
                     if isinstance(e, NotConnected):
                         raise
                     log.info("gmail thread %s metadata failed: %s", tid, e)
@@ -435,7 +457,7 @@ async def send_email(user_id: int, to: str | list[str], subject: str, body: str,
                      cc: str | list[str] | None = None) -> dict:
     to_s = _norm_addrs(to)
     if not to_s or "@" not in to_s:
-        raise ConnectorError(400, "Recipient address is required")
+        raise _err(400, "recipient_required", "Recipient address is required")
     msg = EmailMessage()
     msg["To"] = to_s
     if _norm_addrs(cc):
@@ -451,14 +473,14 @@ async def send_email(user_id: int, to: str | list[str], subject: str, body: str,
 
 async def reply(user_id: int, thread_id: str, body: str) -> dict:
     if not (body or "").strip():
-        raise ConnectorError(400, "Reply text is empty")
+        raise _err(400, "empty_message", "Reply text is empty")
     t = await _api(user_id, "GET", f"/threads/{thread_id}", params={
         "format": "metadata",
         "metadataHeaders": ["Subject", "From", "To", "Cc", "Reply-To", "Message-ID", "References"],
     })
     msgs = t.get("messages") or []
     if not msgs:
-        raise ConnectorError(404, "Thread not found")
+        raise _err(404, "not_found", "Thread not found")
     last = msgs[-1]
     h = _headers(last)
     row = _row(user_id)
@@ -470,7 +492,7 @@ async def reply(user_id: int, thread_id: str, body: str) -> dict:
     else:
         to = h.get("reply-to") or h.get("from", "")
     if not to:
-        raise ConnectorError(400, "Can't tell who to reply to")
+        raise _err(400, "invalid_request", "Can't tell who to reply to")
     subject = _headers(msgs[0]).get("subject") or h.get("subject") or ""
     if not re.match(r"(?i)^re:", subject.strip()):
         subject = f"Re: {subject}".strip()

@@ -2,8 +2,8 @@
 
 `AI_FAKE=1` (or no OPENAI_API_KEY) swaps the model for a canned script so the
 whole pipeline (events, tools, approvals) can be exercised without a key:
-  - "/hitl ..."  → a gated telegram_send_message call, then a closing line
-  - "/tool ..."  → telegram_get_me, then a closing line
+  - "/hitl ..."  → a gated demo call (an integration's `demo_approval`), then a closing line
+  - "/tool ..."  → a plain demo call (an integration's `demo_tool`), then a closing line
   - anything else → a streamed canned reply
 """
 
@@ -117,13 +117,30 @@ async def complete_text(messages: list[dict], max_tokens: int = 30) -> str:
 
 # ---------------------------------------------------------------- fake model
 
-_CANNED = (
-    "This is **fake mode** (no `OPENAI_API_KEY`, or `AI_FAKE=1`). The pipeline works: "
-    "this text was streamed as `ai.token` events over Centrifugo.\n\n"
-    "- Send `/tool` to see a tool call (`telegram_get_me`).\n"
-    "- Send `/hitl` to see an approval card (`telegram_send_message`).\n\n"
-    "You wrote: "
-)
+def _demo_calls() -> tuple:
+    """(demo_tool, demo_approval): the first ones the registered integrations define, or None."""
+    from app.ai.tools import integrations
+
+    found = integrations()
+    return (
+        next((i.demo_tool for i in found if i.demo_tool), None),
+        next((i.demo_approval for i in found if i.demo_approval), None),
+    )
+
+
+def _canned() -> str:
+    demo_tool, demo_approval = _demo_calls()
+    text = (
+        "This is **fake mode** (no `OPENAI_API_KEY`, or `AI_FAKE=1`). The pipeline works: "
+        "this text was streamed as `ai.token` events over Centrifugo.\n\n"
+    )
+    if demo_tool:
+        text += f"- Send `/tool` to see a tool call (`{demo_tool.tool}`).\n"
+    if demo_approval:
+        text += f"- Send `/hitl` to see an approval card (`{demo_approval.tool}`).\n"
+    if demo_tool or demo_approval:
+        text += "\n"
+    return text + "You wrote: "
 
 
 def _last_user_text(messages: list[dict]) -> str:
@@ -150,15 +167,13 @@ async def _fake_step(messages: list[dict], on_delta: OnDelta) -> tuple[str, list
         text = f"Tool finished. Result:\n\n```\n{result}\n```"
         await _stream_text(text, on_delta)
         return text, []
-    if prompt.startswith("/hitl"):
-        intro = "I will send a Telegram message to your Saved Messages — please approve it.\n\n"
-        await _stream_text(intro, on_delta)
-        args = {"chat": "me", "text": prompt[5:].strip() or "Hello from forBusiness (fake mode)"}
-        return intro, [{"id": f"call_fake_{uuid.uuid4().hex[:8]}", "name": "telegram_send_message", "arguments": json.dumps(args)}]
-    if prompt.startswith("/tool"):
-        intro = "Let me check your Telegram account.\n\n"
-        await _stream_text(intro, on_delta)
-        return intro, [{"id": f"call_fake_{uuid.uuid4().hex[:8]}", "name": "telegram_get_me", "arguments": "{}"}]
-    text = _CANNED + prompt
+    demo_tool, demo_approval = _demo_calls()
+    for command, demo in (("/hitl", demo_approval), ("/tool", demo_tool)):
+        if demo and prompt.startswith(command):
+            await _stream_text(demo.intro, on_delta)
+            args = demo.args(prompt[len(command):].strip())
+            call = {"id": f"call_fake_{uuid.uuid4().hex[:8]}", "name": demo.tool, "arguments": json.dumps(args)}
+            return demo.intro, [call]
+    text = _canned() + prompt
     await _stream_text(text, on_delta)
     return text, []

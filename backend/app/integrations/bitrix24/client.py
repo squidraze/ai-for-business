@@ -1,4 +1,4 @@
-"""Bitrix24 CRM connector over an *incoming webhook*.
+"""Bitrix24 CRM integration client over an *incoming webhook*.
 
 The user creates "Inbound webhook" in their portal (Developer resources → Other) and pastes the
 URL `https://<portal>/rest/<user_id>/<token>/`. Every REST method is then
@@ -17,12 +17,14 @@ from urllib.parse import urlparse
 import httpx
 from sqlalchemy import select
 
-from app.connectors.errors import ConnectorError, NotConnected
-from app.connectors.models import BitrixConnection
 from app.db import SessionLocal
+from app.integrations.base import http_client
+from app.integrations.bitrix24.models import BitrixConnection
+from app.integrations.errors import IntegrationError, NotConnected, common_messages, register_messages
 
-log = logging.getLogger("connectors.bitrix")
+log = logging.getLogger("integrations.bitrix24")
 
+ID = "bitrix24"
 NOT_CONNECTED = "Bitrix24 is not connected"
 PAGE = 50
 _WEBHOOK_RE = re.compile(r"^https?://[^/\s]+(/[^\s]*)?/rest/\d+/[A-Za-z0-9_-]+/?$")
@@ -32,6 +34,16 @@ _sem = asyncio.Semaphore(2)
 # stage/status names change rarely — cache per portal
 _dict_cache: dict[tuple[str, str], dict[str, str]] = {}
 _user_cache: dict[tuple[str, str], str] = {}
+
+register_messages({
+    **common_messages(ID, "Bitrix24"),
+    "bitrix24_invalid_webhook": "This doesn't look like a working Bitrix24 webhook URL",
+    "bitrix24_crm_not_allowed": "The webhook has no CRM permission",
+})
+
+
+def _err(status_code: int, code: str, message: str) -> IntegrationError:
+    return IntegrationError(status_code, f"{ID}_{code}", message)
 
 
 # ----------------------------------------------------------------------------- storage
@@ -45,7 +57,7 @@ def _row(user_id: int) -> BitrixConnection | None:
 def _base(user_id: int) -> str:
     row = _row(user_id)
     if row is None or not row.webhook_url:
-        raise NotConnected(NOT_CONNECTED)
+        raise NotConnected(ID, NOT_CONNECTED)
     return row.webhook_url
 
 
@@ -71,16 +83,16 @@ async def _call_url(base: str, method: str, params: dict | None = None) -> dict:
     async with _sem:
         for attempt in range(3):
             try:
-                async with httpx.AsyncClient(timeout=15) as http:
+                async with http_client(15) as http:
                     r = await http.post(url, json=params or {})
             except httpx.HTTPError as e:
-                raise ConnectorError(502, f"Bitrix24 is unreachable: {type(e).__name__}") from e
+                raise _err(502, "unavailable", f"Bitrix24 is unreachable: {type(e).__name__}") from e
             try:
                 data = r.json()
             except ValueError:
                 # not the REST API at all (wrong host, portal gone, a proxy page)
-                raise ConnectorError(
-                    400, f"The portal answered HTTP {r.status_code}, not Bitrix24 REST — check the webhook address"
+                raise _err(
+                    400, "invalid_webhook", f"The portal answered HTTP {r.status_code}, not Bitrix24 REST — check the webhook address"
                 )
             err = data.get("error") if isinstance(data, dict) else None
             if err == "QUERY_LIMIT_EXCEEDED" and attempt < 2:
@@ -89,14 +101,14 @@ async def _call_url(base: str, method: str, params: dict | None = None) -> dict:
             if err or r.status_code >= 400:
                 desc = (data.get("error_description") if isinstance(data, dict) else None) or err or r.text[:200]
                 if r.status_code == 401 or err in ("INVALID_CREDENTIALS", "NO_AUTH_FOUND", "expired_token"):
-                    raise ConnectorError(400, f"Bitrix24 rejected the webhook: {desc}")
+                    raise _err(400, "invalid_webhook", f"Bitrix24 rejected the webhook: {desc}")
                 if err == "insufficient_scope" or r.status_code == 403:
-                    raise ConnectorError(403, f"The webhook lacks a permission (scope) for {method}: {desc}")
+                    raise _err(403, "forbidden", f"The webhook lacks a permission (scope) for {method}: {desc}")
                 if r.status_code == 404 and not err:
-                    raise ConnectorError(400, "That URL is not a Bitrix24 webhook (404)")
-                raise ConnectorError(400, f"Bitrix24 {method}: {desc}")
+                    raise _err(400, "invalid_webhook", "That URL is not a Bitrix24 webhook (404)")
+                raise _err(400, "invalid_request", f"Bitrix24 {method}: {desc}")
             return data
-    raise ConnectorError(429, "Bitrix24 rate limit, try again in a few seconds")
+    raise _err(429, "rate_limited", "Bitrix24 rate limit, try again in a few seconds")
 
 
 async def _call(user_id: int, method: str, params: dict | None = None) -> dict:
@@ -113,8 +125,8 @@ def _normalize(url: str) -> str:
     if not url.endswith("/"):
         url += "/"
     if not _WEBHOOK_RE.match(url):
-        raise ConnectorError(
-            400, "This doesn't look like a Bitrix24 webhook URL. Expected https://<portal>/rest/<id>/<token>/"
+        raise _err(
+            400, "invalid_webhook", "This doesn't look like a Bitrix24 webhook URL. Expected https://<portal>/rest/<id>/<token>/"
         )
     return url
 
@@ -128,8 +140,8 @@ async def connect(user_id: int, webhook_url: str) -> dict:
     # the webhook must be able to read the CRM, or nothing else will work
     try:
         await _call_url(url, "crm.deal.list", {"select": ["ID"], "start": 0})
-    except ConnectorError as e:
-        raise ConnectorError(400, f"Connected, but the CRM is not available — tick the CRM permission on the webhook. ({e})")
+    except IntegrationError as e:
+        raise _err(400, "crm_not_allowed", f"Connected, but the CRM is not available — tick the CRM permission on the webhook. ({e})")
     with SessionLocal() as db:
         row = db.scalar(select(BitrixConnection).where(BitrixConnection.user_id == user_id))
         if row is None:
@@ -159,7 +171,7 @@ async def _statuses(user_id: int, entity_id: str) -> dict[str, str]:
         try:
             data = await _call_url(base, "crm.status.list", {"filter": {"ENTITY_ID": entity_id}})
             _dict_cache[key] = {s["STATUS_ID"]: s["NAME"] for s in data.get("result") or []}
-        except ConnectorError:
+        except IntegrationError:
             _dict_cache[key] = {}
     return _dict_cache[key]
 
@@ -182,7 +194,7 @@ async def _user_name(user_id: int, uid: Any) -> str | None:
             data = await _call_url(base, "user.get", {"ID": str(uid)})
             u = (data.get("result") or [{}])[0]
             _user_cache[key] = " ".join(x for x in (u.get("NAME"), u.get("LAST_NAME")) if x) or f"User {uid}"
-        except ConnectorError:
+        except IntegrationError:
             _user_cache[key] = f"User {uid}"
     return _user_cache[key]
 
@@ -193,7 +205,7 @@ async def _contact_name(user_id: int, cid: Any) -> str | None:
     try:
         c = (await _call(user_id, "crm.contact.get", {"id": cid})).get("result") or {}
         return " ".join(x for x in (c.get("NAME"), c.get("LAST_NAME")) if x) or None
-    except ConnectorError:
+    except IntegrationError:
         return None
 
 
@@ -202,7 +214,7 @@ async def _company_title(user_id: int, cid: Any) -> str | None:
         return None
     try:
         return ((await _call(user_id, "crm.company.get", {"id": cid})).get("result") or {}).get("TITLE")
-    except ConnectorError:
+    except IntegrationError:
         return None
 
 
@@ -311,7 +323,7 @@ async def comments(user_id: int, entity: str, entity_id: str) -> list[dict]:
 async def get_deal(user_id: int, deal_id: str) -> dict:
     d = (await _call(user_id, "crm.deal.get", {"id": deal_id})).get("result")
     if not d:
-        raise ConnectorError(404, f"Deal {deal_id} not found")
+        raise _err(404, "not_found", f"Deal {deal_id} not found")
     view = await _deal_view(user_id, d, full=True)
     view["comments"] = await comments(user_id, "deal", view["id"])
     return view
@@ -320,7 +332,7 @@ async def get_deal(user_id: int, deal_id: str) -> dict:
 async def get_lead(user_id: int, lead_id: str) -> dict:
     d = (await _call(user_id, "crm.lead.get", {"id": lead_id})).get("result")
     if not d:
-        raise ConnectorError(404, f"Lead {lead_id} not found")
+        raise _err(404, "not_found", f"Lead {lead_id} not found")
     view = await _lead_view(user_id, d)
     view["comments"] = await comments(user_id, "lead", view["id"])
     return view
@@ -328,7 +340,7 @@ async def get_lead(user_id: int, lead_id: str) -> dict:
 
 async def add_comment(user_id: int, entity: str, entity_id: str, text: str) -> dict:
     if entity not in ("deal", "lead", "contact", "company"):
-        raise ConnectorError(400, "entity must be deal, lead, contact or company")
+        raise _err(400, "invalid_request", "entity must be deal, lead, contact or company")
     data = await _call(user_id, "crm.timeline.comment.add",
                        {"fields": {"ENTITY_ID": int(entity_id), "ENTITY_TYPE": entity, "COMMENT": text}})
     return {"id": str(data.get("result"))}
@@ -410,7 +422,7 @@ async def update_deal(user_id: int, deal_id: str, fields: dict) -> dict:
                "comments": "COMMENTS", "assigned_by_id": "ASSIGNED_BY_ID"}
     payload = {allowed[k]: v for k, v in (fields or {}).items() if k in allowed and v not in (None, "")}
     if not payload:
-        raise ConnectorError(400, f"Nothing to update; allowed fields: {', '.join(allowed)}")
+        raise _err(400, "invalid_request", f"Nothing to update; allowed fields: {', '.join(allowed)}")
     await _call(user_id, "crm.deal.update", {"id": deal_id, "fields": payload})
     return {"id": str(deal_id), "updated": list(payload)}
 

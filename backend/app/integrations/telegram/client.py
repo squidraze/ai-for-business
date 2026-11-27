@@ -1,4 +1,4 @@
-"""Telegram connector: a real user account over MTProto (Telethon).
+"""Telegram integration client: a real user account over MTProto (Telethon).
 
 One connected TelegramClient per user is cached in memory. The same instance is used between
 send_code and sign_in (Telegram ties the phone_code_hash to the auth key), and the
@@ -18,17 +18,38 @@ from telethon.sessions import StringSession
 from telethon.tl import types as tl
 
 from app.config import settings
-from app.connectors.errors import ConnectorError, NotConnected
-from app.connectors.models import TelegramSession
 from app.db import SessionLocal
+from app.integrations.base import UserLocks
+from app.integrations.errors import IntegrationError, NotConnected, common_messages, register_messages
+from app.integrations.telegram.models import TelegramSession
 from app.lib.user_data import on_user_delete
 
-log = logging.getLogger("connectors.telegram")
+log = logging.getLogger("integrations.telegram")
 
+ID = "telegram"
 NOT_CONNECTED = "Telegram is not connected"
 
+register_messages({
+    **common_messages(ID, "Telegram"),
+    "telegram_invalid_code": "Invalid code",
+    "telegram_code_expired": "The code has expired, request a new one",
+    "telegram_invalid_phone": "Invalid phone number",
+    "telegram_phone_banned": "This phone number is banned by Telegram",
+    "telegram_wrong_password": "Wrong password",
+    "telegram_chat_not_found": "Chat not found or not accessible",
+})
+
+
+def _err(status_code: int, code: str, message: str, **extra) -> IntegrationError:
+    return IntegrationError(status_code, f"{ID}_{code}", message, **extra)
+
+
+def _not_connected() -> NotConnected:
+    return NotConnected(ID, NOT_CONNECTED)
+
+
 _clients: dict[int, TelegramClient] = {}
-_locks: dict[int, asyncio.Lock] = {}
+_lock = UserLocks()
 # user_id -> {dialog_id: (title, entity)} — filled by list_dialogs, used to resolve chat ids/names
 _dialogs: dict[int, dict[int, tuple[str, Any]]] = {}
 
@@ -60,59 +81,52 @@ def _delete_row(user_id: int) -> None:
             db.commit()
 
 
-def _lock(user_id: int) -> asyncio.Lock:
-    lock = _locks.get(user_id)
-    if lock is None:
-        lock = _locks[user_id] = asyncio.Lock()
-    return lock
-
-
 # --------------------------------------------------------------------------- error mapping
 
 
 def _map_error(e: Exception) -> Exception:
-    if isinstance(e, ConnectorError):
+    if isinstance(e, IntegrationError):
         return e
     if isinstance(e, tg_errors.FloodWaitError):
-        return ConnectorError(429, f"Too many requests to Telegram, wait {e.seconds} seconds")
+        return _err(429, "rate_limited", f"Too many requests to Telegram, wait {e.seconds} seconds", retry_after=e.seconds)
     if isinstance(e, (tg_errors.PhoneCodeInvalidError, tg_errors.PhoneCodeEmptyError)):
-        return ConnectorError(400, "Invalid code")
+        return _err(400, "invalid_code", "Invalid code")
     if isinstance(e, tg_errors.PhoneCodeExpiredError):
-        return ConnectorError(400, "The code has expired, request a new one")
+        return _err(400, "code_expired", "The code has expired, request a new one")
     if isinstance(e, (tg_errors.PhoneNumberInvalidError, tg_errors.PhoneNumberUnoccupiedError)):
-        return ConnectorError(400, "Invalid phone number")
+        return _err(400, "invalid_phone", "Invalid phone number")
     if isinstance(e, tg_errors.PhoneNumberBannedError):
-        return ConnectorError(400, "This phone number is banned by Telegram")
+        return _err(400, "phone_banned", "This phone number is banned by Telegram")
     if isinstance(e, tg_errors.PasswordHashInvalidError):
-        return ConnectorError(400, "Wrong password")
+        return _err(400, "wrong_password", "Wrong password")
     if isinstance(e, (tg_errors.AuthKeyUnregisteredError, tg_errors.SessionRevokedError,
                       tg_errors.UserDeactivatedError, tg_errors.AuthKeyDuplicatedError)):
-        return NotConnected(NOT_CONNECTED)
+        return _not_connected()
     if isinstance(e, (tg_errors.ChatWriteForbiddenError, tg_errors.ChatAdminRequiredError,
                       tg_errors.UserBannedInChannelError)):
-        return ConnectorError(403, "You can't write to this chat")
+        return _err(403, "forbidden", "You can't write to this chat")
     if isinstance(e, tg_errors.MessageIdInvalidError):
-        return ConnectorError(400, "Invalid message id")
+        return _err(400, "invalid_request", "Invalid message id")
     if isinstance(e, tg_errors.SearchQueryEmptyError):
-        return ConnectorError(400, "Search query is empty")
+        return _err(400, "empty_query", "Search query is empty")
     if isinstance(e, (tg_errors.PeerIdInvalidError, tg_errors.ChannelPrivateError)):
-        return ConnectorError(404, "Chat not found or not accessible")
+        return _err(404, "chat_not_found", "Chat not found or not accessible")
     if isinstance(e, tg_errors.ApiIdInvalidError):
-        return ConnectorError(503, "TELEGRAM_API_ID / TELEGRAM_API_HASH are invalid (check my.telegram.org)")
+        return _err(503, "not_configured", "TELEGRAM_API_ID / TELEGRAM_API_HASH are invalid (check my.telegram.org)")
     if isinstance(e, tg_errors.RPCError):
         name = type(e).__name__
         if name.endswith("Error") and name not in ("RPCError", "BadRequestError"):
             name = name[:-5]
         else:
             name = e.message or name
-        return ConnectorError(400, f"Telegram error: {name}")
+        return _err(400, "invalid_request", f"Telegram error: {name}")
     if isinstance(e, (ConnectionError, OSError, asyncio.TimeoutError)):
-        return ConnectorError(503, "Can't reach Telegram, try again")
+        return _err(503, "unavailable", "Can't reach Telegram, try again")
     return e
 
 
 async def _guard(user_id: int, coro):
-    """Await a Telethon coroutine, turning its errors into clean ConnectorErrors.
+    """Await a Telethon coroutine, turning its errors into clean IntegrationErrors.
     A revoked session drops the cached client and the db row."""
     try:
         return await coro
@@ -130,8 +144,8 @@ async def _guard(user_id: int, coro):
 
 def _new_client(session: str = "") -> TelegramClient:
     if not settings.TELEGRAM_API_ID or not settings.TELEGRAM_API_HASH:
-        raise ConnectorError(503, "Telegram API credentials are not configured on the server "
-                                  "(TELEGRAM_API_ID / TELEGRAM_API_HASH)")
+        raise _err(503, "not_configured", "Telegram API credentials are not configured on the server "
+                                          "(TELEGRAM_API_ID / TELEGRAM_API_HASH)")
     return TelegramClient(
         StringSession(session or None),
         int(settings.TELEGRAM_API_ID),
@@ -183,7 +197,7 @@ async def _get_client(user_id: int, authorized: bool = True) -> TelegramClient:
         if client is None:
             row = _row(user_id)
             if row is None or not row.session or (authorized and not row.authorized):
-                raise NotConnected(NOT_CONNECTED)
+                raise _not_connected()
             client = _new_client(row.session)
             try:
                 await client.connect()
@@ -197,7 +211,7 @@ async def _get_client(user_id: int, authorized: bool = True) -> TelegramClient:
                 raise _map_error(e) from e
             if not ok:
                 await _drop(user_id, delete=True)
-                raise NotConnected(NOT_CONNECTED)
+                raise _not_connected()
             _persist_session(user_id, client)
         return client
 
@@ -226,7 +240,7 @@ async def _finish_login(user_id: int, client: TelegramClient) -> dict:
 async def send_code(user_id: int, phone: str) -> dict:
     phone = (phone or "").strip().replace(" ", "")
     if not phone:
-        raise ConnectorError(400, "Phone is required")
+        raise _err(400, "phone_required", "Phone is required")
     async with _lock(user_id):
         # a new login always starts from a clean session (drop any previous client; we don't
         # log the old one out — sign_in will replace it)
@@ -259,12 +273,12 @@ async def send_code(user_id: int, phone: str) -> dict:
 async def sign_in(user_id: int, phone: str, code: str, phone_code_hash: str | None = None) -> dict:
     row = _row(user_id)
     if row is None or not row.session:
-        raise ConnectorError(400, "Request a code first")
+        raise _err(400, "code_not_requested", "Request a code first")
     phone = (phone or row.phone or "").strip().replace(" ", "")
     phone_code_hash = phone_code_hash or row.phone_code_hash
     code = (code or "").strip()
     if not code:
-        raise ConnectorError(400, "Code is required")
+        raise _err(400, "code_required", "Code is required")
     client = await _get_client(user_id, authorized=False)
     try:
         await client.sign_in(phone=phone, code=code, phone_code_hash=phone_code_hash)
@@ -282,10 +296,10 @@ async def sign_in(user_id: int, phone: str, code: str, phone_code_hash: str | No
 
 async def check_password(user_id: int, password: str) -> dict:
     if not password:
-        raise ConnectorError(400, "Password is required")
+        raise _err(400, "password_missing", "Password is required")
     row = _row(user_id)
     if row is None or not row.session:
-        raise ConnectorError(400, "Request a code first")
+        raise _err(400, "code_not_requested", "Request a code first")
     client = await _get_client(user_id, authorized=False)
     try:
         await client.sign_in(password=password)
@@ -454,7 +468,7 @@ async def _resolve(user_id: int, client: TelegramClient, chat_id: str) -> tuple[
     """chat_id: numeric (marked) id string, '@username', 'me', or a dialog title (fragment)."""
     raw = str(chat_id or "").strip()
     if not raw:
-        raise ConnectorError(400, "chat_id is required")
+        raise _err(400, "invalid_request", "chat_id is required")
     if raw.lower() in ("me", "self", "saved", "saved messages"):
         me = await _guard(user_id, client.get_me())
         return me, "Saved Messages"
@@ -470,7 +484,7 @@ async def _resolve(user_id: int, client: TelegramClient, chat_id: str) -> tuple[
         try:
             entity = await client.get_entity(pid)
         except Exception as e:  # noqa: BLE001
-            raise ConnectorError(404, f"Chat {raw} not found") from e
+            raise _err(404, "chat_not_found", f"Chat {raw} not found") from e
         return entity, tg_utils.get_display_name(entity)
 
     if raw.startswith("@"):
@@ -479,7 +493,7 @@ async def _resolve(user_id: int, client: TelegramClient, chat_id: str) -> tuple[
         except tg_errors.FloodWaitError as e:
             raise _map_error(e) from e
         except Exception as e:  # noqa: BLE001
-            raise ConnectorError(404, f"Chat {raw} not found") from e
+            raise _err(404, "chat_not_found", f"Chat {raw} not found") from e
         return entity, tg_utils.get_display_name(entity)
 
     entity = _match_title(cache, raw) if cache else None
@@ -487,7 +501,7 @@ async def _resolve(user_id: int, client: TelegramClient, chat_id: str) -> tuple[
         await _load_dialogs(user_id, client, 200)
         entity = _match_title(_dialogs.get(user_id) or {}, raw)
     if entity is None:
-        raise ConnectorError(404, f"Chat '{raw}' not found")
+        raise _err(404, "chat_not_found", f"Chat '{raw}' not found")
     return entity, tg_utils.get_display_name(entity)
 
 
@@ -501,7 +515,7 @@ async def get_messages(user_id: int, chat_id: str, limit: int = 50, offset_id: i
 
 async def send_message(user_id: int, chat_id: str, text: str, reply_to_id: int | None = None) -> dict:
     if not (text or "").strip():
-        raise ConnectorError(400, "Message text is empty")
+        raise _err(400, "empty_message", "Message text is empty")
     client = await _get_client(user_id)
     entity, title = await _resolve(user_id, client, chat_id)
     msg = await _guard(user_id, client.send_message(entity, text, reply_to=int(reply_to_id) if reply_to_id else None))
@@ -520,7 +534,7 @@ async def mark_read(user_id: int, chat_id: str) -> None:
 async def search_messages(user_id: int, query: str, chat_id: str | None = None, limit: int = 30) -> list[dict]:
     q = (query or "").strip()
     if not q:
-        raise ConnectorError(400, "Search query is empty")
+        raise _err(400, "empty_query", "Search query is empty")
     client = await _get_client(user_id)
     limit = max(1, min(int(limit or 30), 100))
     if chat_id:
@@ -552,6 +566,6 @@ async def get_photo(user_id: int, chat_id: str) -> bytes | None:
 
 
 async def shutdown() -> None:
-    """Disconnect every cached client (call from app shutdown if wanted)."""
+    """Disconnect every cached client (the integration's on_shutdown hook)."""
     for uid in list(_clients):
         await _drop(uid)

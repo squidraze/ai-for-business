@@ -7,6 +7,8 @@ from app import auth, notifications, realtime, schedules
 from app.ai import router as ai_router
 from app.ai import runner
 from app.db import create_all
+from app.integrations import INTEGRATIONS
+from app.integrations.base import summary_router
 from app.lib.errors import install_error_handlers
 from app.lib.timeouts import install_request_timeout
 
@@ -27,12 +29,11 @@ app.include_router(ai_router.integrations_router)
 app.include_router(schedules.router)
 app.include_router(notifications.router)
 
-try:
-    from app.connectors.router import router as connectors_router
-
-    app.include_router(connectors_router)
-except ImportError as e:  # connectors not written yet
-    log.warning("connectors router not loaded: %s", e)
+# integrations: GET /api/v1/connectors plus each one's /api/v1/connectors/<name>/...
+app.include_router(summary_router(INTEGRATIONS))
+for integration in INTEGRATIONS:
+    if integration.router is not None:
+        app.include_router(integration.router)
 
 
 @app.on_event("startup")
@@ -43,6 +44,12 @@ async def _startup():
     create_all()
     runner.mark_stale_runs()
     schedules.start_scheduler()
+    for integration in INTEGRATIONS:
+        if integration.on_startup is not None:
+            try:
+                await integration.on_startup()
+            except Exception as e:  # one integration must not keep the app from starting
+                log.warning("%s startup: %s", integration.id, e)
     from app.ai import llm
 
     log.info("AI model: %s%s", llm.model_name(), " (fake mode)" if llm.fake_mode() else "")
@@ -56,9 +63,9 @@ def health():
 @app.on_event("shutdown")
 async def _shutdown():
     await schedules.stop_scheduler()
-    try:
-        from app.connectors import telegram
-
-        await telegram.shutdown()
-    except Exception as e:
-        log.warning("telegram shutdown: %s", e)
+    for integration in INTEGRATIONS:
+        if integration.on_shutdown is not None:
+            try:
+                await integration.on_shutdown()
+            except Exception as e:
+                log.warning("%s shutdown: %s", integration.id, e)
