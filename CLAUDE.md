@@ -113,14 +113,13 @@ mobile/src/
 превью письма, карточка сделки), он лежит в `webview/src/integrations/<name>/`,
 а не в общих файлах `chat/`.
 
-### Переход
+### Текущее состояние
 
-Сейчас код ещё в старом виде: `backend/app/connectors/` (по файлу на
-интеграцию, общий `router.py` и `models.py`), инструменты всех интеграций в
-`backend/app/ai/tools.py`, экраны с логикой прямо в `mobile/src/app/<name>/`,
-методы всех интеграций в `mobile/src/lib/api.ts`, чат в `mobile/src/webchat/`. **Новые интеграции сразу пишем по новой схеме.**
-Существующие (Telegram, Gmail, Bitrix24) переносим отдельной задачей, по одной
-интеграции за раз, без изменения поведения.
+Telegram, Gmail и Bitrix24 уже перенесены на новую схему: бэкенд —
+`backend/app/integrations/{telegram,gmail,bitrix24}/`, мобилка —
+`mobile/src/features/connectors/integrations/{telegram,gmail,bitrix24}/`, чат —
+`mobile/src/features/chat/`. Старых `backend/app/connectors/` и
+`mobile/src/webchat/` и `mobile/src/components/ui.tsx` больше нет.
 
 ## Состояния экрана: loading / error / empty / content
 
@@ -332,8 +331,9 @@ mobile/src/
 - Новые папки с `className` должны попадать в `content` в
   `mobile/tailwind.config.js` (сейчас `./src/**`), иначе в прод-сборке классы
   вырежутся, а в dev всё будет выглядеть нормально.
-- `dark:` следует системной теме — тому же, что `useColors()`. Каждый класс
-  цвета пишем парой `light dark:…` или берём токен из `src/lib/screen.ts`.
+- `dark:` следует теме из «Профиль → Тема» (`src/lib/themeMode.ts`: система /
+  тёмная / светлая, `darkMode: 'class'`) — тому же, что `useColors()`. Каждый
+  класс цвета пишем парой `light dark:…` или берём токен из `src/lib/screen.ts`.
 - Где класс не доходит (цвет иконки, `placeholderTextColor`, анимированный
   стиль) — значения из `useLabelColors()` / `useColors()`, не хекс в компоненте.
 - Для `style` с функцией `({ pressed }) => …` бери `TouchableOpacity`:

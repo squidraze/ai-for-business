@@ -22,11 +22,11 @@
 
 ## Этап 0. Общий слой (спринт 1)
 
-Сейчас каждый коннектор устроен по-своему: своя таблица в [connectors/models.py](../../backend/app/connectors/models.py), свой семафор в [connectors/bitrix.py](../../backend/app/connectors/bitrix.py), жёсткий список в `connector_status` в [ai/tools.py](../../backend/app/ai/tools.py). Шесть новых систем так не потянуть.
+Каждая интеграция уже лежит в своей папке [backend/app/integrations/](../../backend/app/integrations/) и подключается одной строкой в реестре [integrations/\_\_init\_\_.py](../../backend/app/integrations/__init__.py); общий контракт, `UserLocks` и `http_client()` — в [integrations/base.py](../../backend/app/integrations/base.py). Но у каждой по-прежнему своя таблица в `<name>/models.py` (например, [bitrix24/models.py](../../backend/app/integrations/bitrix24/models.py)), секреты лежат открытым текстом, а лимитов на провайдера и повторов на 429 нет. Шесть новых систем так не потянуть.
 
 1. **Одна таблица для подключений по ключу или OAuth:** `provider`, `user_id`, `credentials` (JSON, **зашифрован**), `account`, `status`, `updated_at`. `BitrixConnection` переносим туда же миграцией.
 2. **Шифрование секретов:** симметричный ключ из `.env` (например, Fernet). Сейчас вебхуки и токены лежат открытым текстом. Это обязательно для прода и дёшево сделать сейчас.
-3. **Реестр коннекторов** вместо кортежа `(("telegram", _tg), …)`: у модуля есть `ID`, `TITLE`, `is_connected`, `account_summary`, `connect`, `disconnect`, `TOOLS`. Тогда `CONNECTORS`, `connector_status` и роуты собираются из реестра.
+3. ~~**Реестр коннекторов**~~ — сделано: объект `Integration` в [integrations/base.py](../../backend/app/integrations/base.py) (`id`, `title`, `is_connected`, `account_summary`, `router`, `tools`, куски промпта, `on_startup`/`on_shutdown`), статус, инструменты ИИ и роуты собираются из реестра. Осталось добавить в контракт общие `connect`/`disconnect` для подключения по ключу.
 4. **Общий HTTP-клиент:** лимит запросов на каждый аккаунт (token bucket с параметрами из коннектора), повторы с задержкой на 429, 503 и сетевых ошибках, таймауты, единый `ConnectorError`. Для провайдеров, которые считают лимит или блокируют по IP (amoCRM/Kommo, RetailCRM), ещё **общий лимит на провайдера** для всего сервера и **circuit breaker**: после серии 429 останавливаем запросы к провайдеру для всех клиентов, а не продолжаем повторять. На 403 от amoCRM не повторяем вообще.
 5. **Обновление токенов:** общий помощник для схемы «access + refresh» с блокировкой на аккаунт. Это нужно для BILLZ (одноразовый refresh) и amoCRM, Bitrix OAuth.
 6. **Кэш справочников:** этапы, поля, магазины, типы оплат. TTL порядка часа, чтобы не тратить лимит API.

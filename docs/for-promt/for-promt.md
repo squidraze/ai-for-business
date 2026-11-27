@@ -78,7 +78,7 @@ Google $25 разово) и бюджет продвижения (таргет в
   разрешения), `app/ai/tools.py` (инструменты коннекторов). Стрим ответа идёт
   через **Centrifugo** (`centrifugo/`, `app/realtime.py`). Всё поднимается
   `docker compose up`.
-- **Коннекторы** (`backend/app/connectors/`):
+- **Коннекторы** (`backend/app/integrations/<name>/`, реестр в `integrations/__init__.py`):
   - Telegram — **аккаунт пользователя через MTProto** (Telethon): вход по
     номеру, код, 2FA; видны все чаты, поиск, отправка. Бот не нужен.
   - Gmail — Google OAuth: входящие, поиск, чтение, ответ, новое письмо.
