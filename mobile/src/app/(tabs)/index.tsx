@@ -21,6 +21,8 @@ import { api, CONVERSATIONS_KEY, errorMessage, type AIConversation } from '@/lib
 import { relativeTime } from '@/lib/format';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 const PAGE = 30;
 
 

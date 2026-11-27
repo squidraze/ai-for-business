@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { useChatState } from '@/chat/useChat';
 import { MessageList } from '@/ui/chat';
 import { Composer } from '@/ui/composer';
+import { ErrorBoundary } from '@/ui/primitives';
 
 /**
  * The whole screen: transcript above, composer below, nothing else.
@@ -63,7 +64,10 @@ export function ChatScreen() {
         // sizes itself: it owns its own scrolling, this only gives it the space.
         className="flex min-h-0 flex-1 flex-col [&>*]:min-h-0 [&>*]:flex-1"
       >
-        <MessageList />
+        {/* Transcript and composer fail apart: a crash in one keeps the other. */}
+        <ErrorBoundary name="chat/transcript" fullScreen>
+          <MessageList />
+        </ErrorBoundary>
       </div>
 
       {/*
@@ -75,7 +79,9 @@ export function ChatScreen() {
       <div className="shrink-0">
         {/* A conversation with a custom agent cannot go to voice yet (the web
             client hides it for the same reason), so the slot stays send. */}
-        <Composer showVoice={!agent} />
+        <ErrorBoundary name="chat/composer">
+          <Composer showVoice={!agent} />
+        </ErrorBoundary>
       </div>
     </div>
   );

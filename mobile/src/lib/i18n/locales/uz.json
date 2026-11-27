@@ -16,7 +16,9 @@
     "errorTitle": "Yuklab bo‘lmadi",
     "emptyTitle": "Hozircha bo‘sh",
     "slow": "Yuklash odatdagidan uzoqroq davom etmoqda… Urinib ko‘ryapmiz.",
-    "refreshFailed": "Yangilab bo‘lmadi."
+    "refreshFailed": "Yangilab bo‘lmadi.",
+    "crashTitle": "Nimadir xato ketdi",
+    "crashMessage": "Bu ekranda kutilmagan xato yuz berdi. Qayta urinib ko‘ring, takrorlansa, ilovani qayta ishga tushiring."
   },
   "errors": {
     "generic": "Nimadir xato ketdi. Qaytadan urinib ko‘ring.",

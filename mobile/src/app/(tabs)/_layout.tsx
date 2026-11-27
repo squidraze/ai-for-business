@@ -5,6 +5,8 @@ import Tabs from 'expo-router/js-tabs';
 import { usePendingCount } from '@/features/schedules';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 export default function TabsLayout() {
   const c = useColors();
   const { t } = useTranslation();

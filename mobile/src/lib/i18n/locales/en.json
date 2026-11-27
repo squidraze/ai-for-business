@@ -16,7 +16,9 @@
     "errorTitle": "Couldn't load",
     "emptyTitle": "Nothing here yet",
     "slow": "Taking longer than usual… Still trying.",
-    "refreshFailed": "Couldn't refresh."
+    "refreshFailed": "Couldn't refresh.",
+    "crashTitle": "Something went wrong",
+    "crashMessage": "This screen hit an unexpected error. Try again — if it keeps happening, restart the app."
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

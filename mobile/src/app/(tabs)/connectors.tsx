@@ -27,6 +27,8 @@ import {
 } from '@/lib/api';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 const GMAIL_REDIRECT = 'forbusiness://connectors';
 const BITRIX_TINT = '#2fc6f6';
 

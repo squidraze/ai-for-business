@@ -24,6 +24,8 @@ import { api, dialogPhotoSource, errorMessage, type TelegramMessage } from '@/li
 import { timeOfDay } from '@/lib/format';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 const PAGE = 50;
 
 const MEDIA: Record<NonNullable<TelegramMessage['media']>, { icon: IconName; label: string }> = {

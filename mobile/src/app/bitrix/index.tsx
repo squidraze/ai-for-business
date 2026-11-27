@@ -29,6 +29,8 @@ import { formatMoney, relativeTime } from '@/lib/format';
 import { useDebounced } from '@/lib/useDebounced';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 type Row = BitrixDeal | BitrixLead;
 
 const TABS: { key: BitrixEntity; label: string }[] = [

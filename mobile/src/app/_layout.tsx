@@ -16,6 +16,8 @@ import { usePushNotifications } from '@/features/notifications';
 import { RETRY_DELAY_MS, shouldRetryRequest } from '@/lib/api';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 function RootStack() {
   const { status } = useAuth();
   const c = useColors();
