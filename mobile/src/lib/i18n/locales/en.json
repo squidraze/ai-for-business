@@ -4,7 +4,8 @@
     "retry": "Retry",
     "delete": "Delete",
     "ok": "OK",
-    "nothingFound": "Nothing found"
+    "nothingFound": "Nothing found",
+    "goBack": "Go back"
   },
   "tabs": {
     "chats": "Chats",
@@ -322,6 +323,15 @@
         "title": "Daily deals report",
         "prompt": "Make a report on Bitrix24 deals for today: new deals, deals that changed stage, and won deals with their amounts."
       }
+    }
+  },
+  "shared": {
+    "search": {
+      "placeholder": "Search...",
+      "clear": "Clear search"
+    },
+    "permission": {
+      "notNow": "Not now"
     }
   }
 }

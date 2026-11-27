@@ -4,7 +4,8 @@
     "retry": "Qayta urinish",
     "delete": "O‘chirish",
     "ok": "OK",
-    "nothingFound": "Hech narsa topilmadi"
+    "nothingFound": "Hech narsa topilmadi",
+    "goBack": "Orqaga"
   },
   "tabs": {
     "chats": "Chatlar",
@@ -322,6 +323,15 @@
         "title": "Bitimlar hisoboti",
         "prompt": "Bitrix24dagi bugungi bitimlar bo‘yicha hisobot tayyorla: yangi bitimlar, bosqichi o‘zgargan bitimlar va summalari bilan muvaffaqiyatli bitimlar."
       }
+    }
+  },
+  "shared": {
+    "search": {
+      "placeholder": "Qidirish...",
+      "clear": "Qidiruvni tozalash"
+    },
+    "permission": {
+      "notNow": "Hozir emas"
     }
   }
 }

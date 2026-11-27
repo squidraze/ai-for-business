@@ -86,7 +86,9 @@ Google $25 разово) и бюджет продвижения (таргет в
     задачи, комментарии, создание и изменение.
   - Instagram, другие сервисы Google, 1С и остальные CRM — ещё нет.
 - **mobile/** — Expo (SDK 58), React Native 0.88, expo-router, TanStack Query,
-  axios, expo-secure-store. Вкладки: чаты, коннекторы, профиль; отдельные экраны
+  axios, expo-secure-store; NativeWind, reanimated и gesture-handler для общих
+  UI-компонентов (`src/components/`, перенесены из rooler mobile-apps, правила в
+  `CLAUDE.md`). Вкладки: чаты, коннекторы, профиль; отдельные экраны
   Telegram, Gmail, Bitrix24. Тема — свой `src/lib/theme.ts` (светлая и тёмная),
   i18n в мобилке пока нет. Bundle id `ai.forbusiness.demo`. Пока проверялось
   только на Android.

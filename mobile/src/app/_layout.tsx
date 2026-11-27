@@ -1,3 +1,4 @@
+import '../../global.css';
 import '@/lib/i18n';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { FadeSwitch } from '@/components/FadeSwitch';
@@ -79,6 +81,7 @@ function RootStack() {
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
   logo: { width: 60, height: 60, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
 });
 
@@ -96,6 +99,7 @@ export default function RootLayout() {
   const navTheme = c.scheme === 'dark' ? DarkTheme : DefaultTheme;
 
   return (
+    <GestureHandlerRootView style={styles.root}>
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider
@@ -118,5 +122,6 @@ export default function RootLayout() {
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

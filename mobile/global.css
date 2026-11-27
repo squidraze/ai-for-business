@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Brand colours for `bg-primary` / `text-primary`. Keep in sync with
+   `primary` / `primaryText` in src/lib/theme.ts. */
+:root {
+  --primary: 31 123 209;
+  --primary-foreground: 255 255 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: 59 143 224;
+    --primary-foreground: 255 255 255;
+  }
+}
