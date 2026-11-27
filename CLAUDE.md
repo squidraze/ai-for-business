@@ -179,7 +179,11 @@ mobile/src/
 - Длительности анимаций не хардкодим — берём из env (см.
   `mobile/.env.example`, читаются в `src/lib/config.ts`):
   - `EXPO_PUBLIC_STATE_FADE_MS` — кросс-фейд между состояниями (по умолчанию 800);
-  - `EXPO_PUBLIC_SKELETON_SHIMMER_MS` — один проход мерцания скелетона (по умолчанию 1200).
+  - `EXPO_PUBLIC_SKELETON_SHIMMER_MS` — один проход мерцания скелетона (по умолчанию 1200);
+  - `EXPO_PUBLIC_SHEET_OPEN_MS` / `EXPO_PUBLIC_SHEET_CLOSE_MS` — шторка (300 / 250);
+  - `EXPO_PUBLIC_DIALOG_FADE_MS` — диалог `PermissionDialog` (180);
+  - `EXPO_PUBLIC_SEGMENT_SLIDE_MS` — «таблетка» `SegmentedSwitch` (260);
+  - `EXPO_PUBLIC_SWITCH_TOGGLE_MS` — тумблер `AnimatedSwitch` (300).
   Новое значение анимации — новая переменная в `.env.example` с комментарием
   и дефолтом в `config.ts`.
 - Все состояния — в светлой и тёмной теме.
@@ -197,6 +201,150 @@ mobile/src/
   компонент из `src/components/ErrorBoundary`). Fallback boundary — экран
   ошибки с кнопкой Retry (сбросить boundary и перезапросить данные), в обеих
   темах, тексты через переводы.
+
+- **Секции тоже под boundary.** Каждый блок экрана, который рисует данные с
+  бэкенда, оборачивается в `FeatureBoundary` (`src/components/FeatureBoundary`):
+  `name="feature/section"`, `onReset={query.refetch}`, `resetKey` — когда ошибка
+  должна сбрасываться при смене данных (выбранный id), `fullScreen` — когда
+  обёрнутое дерево занимает весь экран. Boundary маршрута — последний рубеж, он
+  теряет весь экран.
+- **Boundary не заменяет `isError`.** Он ловит только исключения при рендере.
+  Упавший запрос — это значение, а не throw: ветки loading → error → empty →
+  content остаются. Обработчики (`onPress`), таймеры и async-код — обычный
+  try/catch + `reportError`.
+- **Не вызывай методы строк/массивов/чисел прямо на полях из API**
+  (`name.charAt(0)`, `items.map`, `amount.toFixed`). Поле, которое бэкенд
+  перестал присылать, роняет рендер. Только через null-safe помощники из
+  `src/lib/format.ts` (`initials`, `relativeTime`, `fullDate`, `formatMoney`…),
+  которые рисуют `—`. Нужен новый — добавь туда, а не копию в фичу.
+
+### Поиск и фильтры
+
+- Со сменой запроса скелетон возвращается, и сразу с первого символа, а не когда
+  уйдёт запрос. Флаг ожидания считаем от debounce (`useDebounced` из
+  `src/lib/useDebounced.ts`):
+
+  ```tsx
+  const debouncedSearch = useDebounced(search, SEARCH_DEBOUNCE_MS);
+  const isSearchPending = search.trim() !== debouncedSearch.trim();
+  const showSkeleton = isLoading || isSearchPending;
+  ```
+
+### Pull-to-refresh: с первого дня, только нативный
+
+- Любой экран с данными с бэкенда тянется для обновления сразу, не только
+  списки, но и `ScrollView` из нескольких секций. Обработчик — прямо `refetch`;
+  несколько запросов на экране — свой флаг `refreshing` и
+  `await Promise.all([a.refetch(), b.refetch()])`, спиннер держим, пока не
+  закончатся все.
+- **Только нативный `RefreshControl` на обеих ОС** (`tintColor` и `colors` из
+  `useColors()`, не захардкоженным цветом). Своих жестовых «пуллов» нет. Поэтому
+  страницы с табами — только на нативном пейджере (`PagerTabsView` на
+  `react-native-pager-view`), а не на ряду, сдвинутом через transform: под
+  transform-предком Android-овский SwipeRefreshLayout ломается.
+- Пустой экран тоже тянется: `EmptyView` — это `ListEmptyComponent` списка с
+  `contentContainerStyle={{ flexGrow: 1 }}`, а не ранний `return` над списком.
+  loading и error могут оставаться ранним `return`.
+
+## Мобилка: общие UI-компоненты
+
+Общие компоненты перенесены из `D:\rooler\mobile-apps\packages\ui` и лежат в
+`mobile/src/components/<Name>/`. Стиль — **NativeWind** (`className`, Tailwind 3),
+анимации и жесты — **react-native-reanimated** и
+**react-native-gesture-handler**, иконки — **lucide-react-native** (в пропсы
+передаётся компонент иконки: `icon={Plus}`). Токены классов и цветов для них —
+`src/lib/screen.ts` (`LABEL_TEXT`, `INSET_SURFACE`, `CARD_SURFACE`,
+`useLabelColors()` …), бренд — `bg-primary` (CSS-переменные в
+`mobile/global.css`, те же значения, что `primary` в `src/lib/theme.ts`).
+Если меняешь бренд — меняй в обоих местах.
+
+- **Любая кнопка-действие — `PrimaryButton`**: и плавающая «добавить», и
+  «Готово»/«Отправить» в шторке. Свою `Pressable`-кнопку не собираем. Нейтральная
+  или вторичная кнопка — тот же компонент с переопределениями под тему
+  (`colorClassName`, `textClassName`, `iconColor`, у каждого пара `dark:`), чтобы
+  совпадали высота, радиус и отклик на нажатие. Пропсы описаны в файле.
+- **Обычные поля ввода — `AppTextInput`**, длинный текст — он же с `multiline`.
+  Радиус, отступы, заливка и обе темы зашиты и не переопределяются; снаружи
+  настраиваются только внешние отступы (`containerClassName`). Сырой `TextInput`
+  допустим только в композере чата и в OTP.
+- **Любое поле поиска — `SearchInput`**: 44px, радиус 16, кнопка очистки и
+  смена приглушённого цвета на основной при вводе. Внешний вид не
+  переопределяется (нет `iconSize`, `iconColor`, заливки) — именно через такие
+  пропсы раньше вырастали пять разных полей поиска. `containerClassName` — только
+  внешние отступы.
+- **Сегментный переключатель — `PagerTabs`** (дорожка с радиусом 16, сегменты
+  36px с радиусом 12, брендовая «таблетка», которая едет за позицией, волосяные
+  разделители). Вид зафиксирован, `containerClassName` — только отступы. Два
+  входа, один вид:
+  - **переключает, что показывает экран** → `PagerTabsView`: табы над нативным
+    пейджером. Это по умолчанию и без исключений: если по обе стороны контент,
+    контент свайпается (тап по табу и свайп двигают одну и ту же позицию);
+  - **задаёт значение** (фильтр в шторке, настройка) → `SegmentedSwitch`, тот же
+    `PagerTabs` с позицией из `value`. Свайпать нечего — только поэтому он.
+- **Тумблер вкл/выкл — `AnimatedSwitch`** (reanimated, цвета по умолчанию под
+  обе темы, длительность из env). Не RN `Switch` и не свой.
+- **Шапок ровно две, и выбор зависит от того, чем является экран:**
+  - **`ScreenHeader`** — корень вкладки. Заголовок 28px, справа плитки
+    `HeaderIconButton` 44px, без кнопки «назад». Safe-area не добавляет: корень
+    вкладки уже лежит в своём `SafeAreaView edges={['top', …]}`.
+  - **`PageHeader`** — всё, куда переходят. Шеврон «назад», заголовок 24px,
+    необязательный приглушённый `subtitle`, максимум одно голое `action` 24px,
+    `children` под заголовком (поиск, табы). `inlineTitle` ставит заголовок в
+    строку с кнопками (без `subtitle`, это проверяет тип). Сам отступает от
+    статус-бара, поэтому экран под ним **не** кладём в
+    `SafeAreaView edges={['top']}` — иначе двойной отступ. Такой экран
+    скрывает нативную шапку стека (`headerShown: false`).
+  - Третью не пишем. Если не хватает — расширяем одну из двух.
+
+### Шторки и выпадающие панели: всегда `SwipeableBottomSheet`
+
+- **Любая шторка, bottom sheet и пикер в виде шторки — на
+  `SwipeableBottomSheet`** (`@/components/SwipeableBottomSheet`). Не берём
+  `@gorhom/bottom-sheet`, голый RN `Modal`, action sheet или самописную
+  анимированную панель: одна реализация — одинаковые жесты, клавиатура,
+  safe-area и темы.
+- Флаг `isOpen` у родителя, в `onClose` родитель шторку размонтирует. Render-функция
+  даёт `close`, который проигрывает анимацию закрытия:
+
+  ```tsx
+  <SwipeableBottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
+    {({ close }) => <MyContent onDone={close} />}
+  </SwipeableBottomSheet>
+  ```
+
+- Длинный контент или контент с полями ввода открываем с `fullHeight`.
+- **Прокрутка внутри шторки — только через `useSheetScrollView()`.** Обычный
+  `ScrollView` не прокрутится: жест шторки забирает каждое вертикальное
+  движение. Прочитай
+  [SwipeableBottomSheet.md](mobile/src/components/SwipeableBottomSheet/SwipeableBottomSheet.md),
+  прежде чем класть список в шторку.
+- Выбор одного варианта из короткого списка названий — `PickerSheet` (уже на
+  `SwipeableBottomSheet`).
+- **Запрос системного разрешения — не шторка**, а `PermissionDialog`: карточка
+  с отступом 12px от нижних углов, круг 120px с иконкой (или картинкой через
+  `image`), две строки текста и две равные `PrimaryButton size="xs"` —
+  «Не сейчас» и «Разрешить». Это диалог, а не шторка намеренно: его нельзя
+  смахнуть, потому что случайно смахнутый запрос повторяется при следующем
+  запуске.
+
+### NativeWind: что помнить
+
+- Новые папки с `className` должны попадать в `content` в
+  `mobile/tailwind.config.js` (сейчас `./src/**`), иначе в прод-сборке классы
+  вырежутся, а в dev всё будет выглядеть нормально.
+- `dark:` следует системной теме — тому же, что `useColors()`. Каждый класс
+  цвета пишем парой `light dark:…` или берём токен из `src/lib/screen.ts`.
+- Где класс не доходит (цвет иконки, `placeholderTextColor`, анимированный
+  стиль) — значения из `useLabelColors()` / `useColors()`, не хекс в компоненте.
+- Для `style` с функцией `({ pressed }) => …` бери `TouchableOpacity`:
+  NativeWind оборачивает `Pressable` и может терять функциональную форму `style`.
+- Ширину рамки между темами не меняем (`border border-transparent
+  dark:border-zinc-800`, а не голый `dark:border`): на Android у обрезанного
+  (`overflow: hidden`) блока со скруглением при живой смене темы пропадают
+  дочерние элементы.
+- После изменения `babel.config.js`, `metro.config.js`, `tailwind.config.js`
+  или `global.css` перезапускай Metro с `--clear`. Новые нативные библиотеки —
+  только через `npx expo install` и пересборку (`npm run android`).
 
 ## Git
 

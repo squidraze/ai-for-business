@@ -22,6 +22,32 @@ export const STATE_FADE_MS = positiveInt(process.env.EXPO_PUBLIC_STATE_FADE_MS, 
 /** One pass of the skeleton shimmer, in ms. */
 export const SKELETON_SHIMMER_MS = positiveInt(process.env.EXPO_PUBLIC_SKELETON_SHIMMER_MS, 1200);
 
+/** Bottom sheet slide-in, in ms. */
+export const SHEET_OPEN_MS = positiveInt(process.env.EXPO_PUBLIC_SHEET_OPEN_MS, 300);
+
+/** Bottom sheet slide-out (close button, backdrop tap, swipe past the threshold), in ms. */
+export const SHEET_CLOSE_MS = positiveInt(process.env.EXPO_PUBLIC_SHEET_CLOSE_MS, 250);
+
+/** Centred dialog (PermissionDialog) fade + lift, in ms. */
+export const DIALOG_FADE_MS = positiveInt(process.env.EXPO_PUBLIC_DIALOG_FADE_MS, 180);
+
+/** Segmented switch pill slide, in ms. Short on purpose: a control lagging its own tap reads as broken. */
+export const SEGMENT_SLIDE_MS = positiveInt(process.env.EXPO_PUBLIC_SEGMENT_SLIDE_MS, 260);
+
+/** On/off toggle (AnimatedSwitch) thumb slide and track colour fade, in ms. */
+export const SWITCH_TOGGLE_MS = positiveInt(process.env.EXPO_PUBLIC_SWITCH_TOGGLE_MS, 300);
+
+/**
+ * Spring a pager tab row settles on after a drag. Physics, not a duration,
+ * so it is a constant rather than an env value.
+ */
+export const PAGE_SETTLE_SPRING = {
+  damping: 28,
+  stiffness: 260,
+  mass: 1,
+  overshootClamping: true,
+} as const;
+
 /**
  * Max wait for one API request, in ms. A hung connection (server down, dev
  * tunnel dropped) turns into an error with Retry instead of an endless skeleton.
