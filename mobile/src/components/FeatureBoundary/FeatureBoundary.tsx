@@ -1,3 +1,4 @@
+import { TriangleAlert } from 'lucide-react-native';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
@@ -71,7 +72,7 @@ function BoundaryFallback({ error, fullScreen, onRetry }: { error: Error; fullSc
   return (
     <View style={fullScreen ? styles.fullScreen : styles.inline}>
       <ErrorView
-        icon="warning-outline"
+        icon={TriangleAlert}
         title={t('states.crashTitle')}
         message={__DEV__ && error.message ? error.message : t('states.crashMessage')}
         onRetry={onRetry}

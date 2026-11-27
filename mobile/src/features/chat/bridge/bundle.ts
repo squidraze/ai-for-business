@@ -31,7 +31,7 @@ export const WEBCHAT_MISSING_MESSAGE =
 
 let bundleModule: number | null = null;
 try {
-  bundleModule = require('../../assets/webchat/index.html') as number;
+  bundleModule = require('../../../../assets/webchat/index.html') as number;
 } catch {
   bundleModule = null;
 }

@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/Button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { parseApiError } from '@/lib/api';
 
 import { useSignIn } from './auth.hooks';
@@ -98,11 +98,12 @@ export function SignInPage() {
         }
       />
       <KeyboardTarget>
-        <Button
-          title={t('auth.signIn.submit')}
+        <PrimaryButton
+          label={t('auth.signIn.submit')}
+          size="base"
           onPress={submit}
           loading={signIn.isPending}
-          style={{ marginTop: 20 }}
+          className="mt-5"
         />
       </KeyboardTarget>
       <OrDivider />

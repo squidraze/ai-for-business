@@ -1,3 +1,4 @@
+import { TriangleAlert } from 'lucide-react-native';
 import { QueryClientContext, useQueryErrorResetBoundary } from '@tanstack/react-query';
 import type { ErrorBoundaryProps } from 'expo-router';
 import { useCallback, useContext, useEffect } from 'react';
@@ -41,7 +42,7 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   return (
     <View style={[styles.root, { backgroundColor: c.bg }]}>
       <ErrorView
-        icon="warning-outline"
+        icon={TriangleAlert}
         title={t('states.crashTitle')}
         message={__DEV__ && error?.message ? error.message : t('states.crashMessage')}
         onRetry={onRetry}

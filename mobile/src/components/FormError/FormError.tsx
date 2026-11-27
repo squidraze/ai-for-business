@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { CircleAlert } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useColors } from '@/lib/theme';
@@ -13,7 +13,7 @@ export function FormError({ message }: { message: string | null | undefined }) {
       accessibilityRole="alert"
       accessibilityLiveRegion="assertive"
     >
-      <Ionicons name="alert-circle" size={18} color={c.danger} />
+      <CircleAlert size={18} color={c.danger} />
       <Text style={[styles.text, { color: c.danger }]}>{message}</Text>
     </View>
   );

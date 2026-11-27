@@ -22,7 +22,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 
-import { api, CONVERSATIONS_KEY, errorMessage, getToken, isAbortError } from '@/lib/api';
+import { api, errorMessage, getToken, isAbortError } from '@/lib/api';
+
+import { CONVERSATIONS_KEY } from '../chat.api';
 import { useAuth } from '@/features/auth';
 import { APP_VERSION, COMPANY_ID, UPLOAD_TIMEOUT_MS } from '@/lib/config';
 import { createLogger } from '@/lib/log';

@@ -1,8 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  // `dark:` follows the system theme, the same source `useColors()` reads
-  // (app.json `userInterfaceStyle: automatic`).
-  darkMode: 'media',
+  // 'class' lets Profile → Theme force a scheme (NativeWind `colorScheme.set`,
+  // see src/lib/themeMode.ts); with 'system' `dark:` still follows the device,
+  // the same source `useColors()` reads.
+  darkMode: 'class',
   // Every folder with `className` must be listed, or Tailwind strips its
   // classes from the production bundle (dev still looks fine).
   content: ['./src/**/*.{ts,tsx}'],

@@ -11,18 +11,16 @@ import Animated, {
 import { SWITCH_TOGGLE_MS } from '@/lib/config';
 import { useColors } from '@/lib/theme';
 
-// iOS system switch colours; the off track has a dark-mode pair.
-const TRACK_COLORS = {
-  light: { on: '#34C759', off: '#E9E9EA' },
-  dark: { on: '#30D158', off: '#39393D' },
-} as const;
+// Off-track colours as in rooler mobile-apps (`SettingsRow`): the same inset
+// step as a row's icon tile (zinc-100 / zinc-700). "On" is the brand fill.
+const OFF_TRACK = { light: '#f4f4f5', dark: '#3f3f46' } as const;
 
 type AnimatedSwitchProps = {
   /** Current on/off state. */
   value: boolean;
   /** Called with the next value when the switch is pressed. */
   onValueChange: (value: boolean) => void;
-  /** Track colours for the off / on states. Defaults to the iOS pair for the running theme. */
+  /** Track colours for the off / on states. Defaults to the brand fill (on) and zinc (off) for the running theme. */
   trackColors?: { on: string; off: string };
   /** Thumb colour. */
   thumbColor?: string;
@@ -30,6 +28,8 @@ type AnimatedSwitchProps = {
   duration?: number;
   /** Greys out and blocks interaction. */
   disabled?: boolean;
+  /** Screen-reader label, e.g. the setting the switch controls. */
+  accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -49,9 +49,10 @@ export function AnimatedSwitch({
   duration = SWITCH_TOGGLE_MS,
   disabled = false,
   style,
+  accessibilityLabel,
 }: AnimatedSwitchProps) {
-  const { scheme } = useColors();
-  const trackColors = trackColorsProp ?? TRACK_COLORS[scheme];
+  const { scheme, primary } = useColors();
+  const trackColors = trackColorsProp ?? { on: primary, off: OFF_TRACK[scheme] };
   // Captured from onLayout so the geometry adapts to whatever size the track
   // is given via `style`, instead of being hard-coded.
   const height = useSharedValue(0);
@@ -78,6 +79,7 @@ export function AnimatedSwitch({
   return (
     <Pressable
       accessibilityRole="switch"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked: value, disabled }}
       disabled={disabled}
       hitSlop={8}
@@ -101,8 +103,8 @@ export function AnimatedSwitch({
 
 const styles = StyleSheet.create({
   track: {
-    width: 52,
-    height: 32,
+    width: 48,
+    height: 30,
     padding: 2,
     justifyContent: 'center',
     alignItems: 'flex-start',

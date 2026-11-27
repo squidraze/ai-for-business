@@ -1,7 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
+import type { LucideIcon } from 'lucide-react-native';
 import { StyleSheet, Text, TouchableOpacity, type StyleProp, type ViewStyle } from 'react-native';
 
-import type { IconName } from '@/components/Button';
 import { useColors } from '@/lib/theme';
 
 /** A pill toggle / suggestion: selected chips are filled with the primary color. */
@@ -9,7 +8,7 @@ export function Chip({
   label,
   selected = false,
   onPress,
-  icon,
+  icon: Icon,
   disabled,
   invalid,
   style,
@@ -18,7 +17,7 @@ export function Chip({
   label: string;
   selected?: boolean;
   onPress: () => void;
-  icon?: IconName;
+  icon?: LucideIcon;
   disabled?: boolean;
   /** Red border (the group has a validation error). */
   invalid?: boolean;
@@ -45,7 +44,7 @@ export function Chip({
         style,
       ]}
     >
-      {icon ? <Ionicons name={icon} size={15} color={selected ? fg : c.primary} style={styles.icon} /> : null}
+      {Icon ? <Icon size={15} color={selected ? fg : c.primary} style={styles.icon} /> : null}
       <Text style={[styles.text, { color: fg }]} numberOfLines={1}>
         {label}
       </Text>

@@ -72,3 +72,15 @@ export function displayFrom(from?: string | null): string {
   const match = /^\s*"?([^"<]*?)"?\s*<[^>]+>\s*$/.exec(from);
   return (match && match[1].trim()) || from.replace(/[<>]/g, '');
 }
+
+/** "998901234567" -> "+998901234567"; anything that isn't a non-empty string -> "". */
+export function formatPhone(phone?: unknown): string {
+  if (typeof phone !== 'string' || !phone.trim()) return '';
+  const value = phone.trim();
+  return value.startsWith('+') ? value : `+${value}`;
+}
+
+/** Non-empty strings joined with `separator`; null / undefined / non-strings are skipped. */
+export function joinParts(parts: unknown[], separator = ' '): string {
+  return parts.filter((part): part is string => typeof part === 'string' && part.trim() !== '').join(separator);
+}

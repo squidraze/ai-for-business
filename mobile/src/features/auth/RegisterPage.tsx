@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/Button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 
 import { useRegister } from './auth.hooks';
 import { AuthLayout, KeyboardTarget } from './components/AuthLayout';
@@ -101,11 +101,12 @@ export function RegisterPage() {
       />
       <PasswordRules password={form.values.password} />
       <KeyboardTarget>
-        <Button
-          title={t('auth.register.submit')}
+        <PrimaryButton
+          label={t('auth.register.submit')}
+          size="base"
           onPress={submit}
           loading={register.isPending}
-          style={{ marginTop: 6 }}
+          className="mt-1.5"
         />
       </KeyboardTarget>
       <OrDivider />

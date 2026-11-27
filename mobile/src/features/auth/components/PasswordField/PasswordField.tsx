@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Eye, EyeOff } from 'lucide-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity } from 'react-native';
@@ -26,7 +26,7 @@ export function PasswordField(props: Omit<TextFieldProps, 'secureTextEntry' | 'r
           accessibilityRole="button"
           accessibilityLabel={visible ? t('auth.hidePassword') : t('auth.showPassword')}
         >
-          <Ionicons name={visible ? 'eye-off-outline' : 'eye-outline'} size={20} color={c.muted} />
+          {visible ? <EyeOff size={20} color={c.muted} /> : <Eye size={20} color={c.muted} />}
         </TouchableOpacity>
       }
     />

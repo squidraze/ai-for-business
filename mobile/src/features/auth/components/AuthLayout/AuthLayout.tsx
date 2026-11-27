@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { ChevronLeft, Sparkles } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -38,7 +38,7 @@ export function AuthLayout({
                 accessibilityRole="button"
                 accessibilityLabel={backLabel}
               >
-                <Ionicons name="chevron-back" size={26} color={c.text} />
+                <ChevronLeft size={26} color={c.text} />
               </TouchableOpacity>
             </View>
           ) : null
@@ -46,7 +46,7 @@ export function AuthLayout({
         contentContainerStyle={[styles.container, onBack ? styles.containerWithHeader : null]}
       >
         <View style={[styles.logo, { backgroundColor: c.primary }]}>
-          <Ionicons name="sparkles" size={30} color="#fff" />
+          <Sparkles size={30} color="#fff" />
         </View>
         <Text style={[styles.title, { color: c.text }]} accessibilityRole="header">
           {title}

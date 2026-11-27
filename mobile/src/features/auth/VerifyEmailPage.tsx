@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { errorCodeMessage, parseApiError } from '@/lib/api';
 import { useColors } from '@/lib/theme';
 
@@ -96,12 +96,13 @@ export function VerifyEmailPage() {
         autoFocus
       />
       {alreadyVerified ? (
-        <Button title={t('auth.register.signIn')} onPress={() => router.replace('/sign-in')} />
+        <PrimaryButton label={t('auth.register.signIn')} size="base" onPress={() => router.replace('/sign-in')} />
       ) : (
         <>
           <KeyboardTarget>
-            <Button
-              title={t('auth.verify.submit')}
+            <PrimaryButton
+              label={t('auth.verify.submit')}
+              size="base"
               onPress={() => submit()}
               loading={verify.isPending}
               disabled={code.length === 0}

@@ -1,28 +1,36 @@
-import { Ionicons } from '@expo/vector-icons';
+import {
+  Ban,
+  ChevronRight,
+  CircleCheck,
+  CircleX,
+  Hand,
+  RefreshCw,
+  SkipForward,
+  type LucideIcon,
+} from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import type { IconName } from '@/components/Button';
 import { useColors, type Colors } from '@/lib/theme';
 
 import type { RunStatus } from '../../schedules.api';
 
-type Look = { icon: IconName; fg: string; bg: string };
+type Look = { icon: LucideIcon; fg: string; bg: string };
 
 export function statusLook(status: RunStatus, c: Colors): Look {
   switch (status) {
     case 'running':
-      return { icon: 'sync', fg: c.primary, bg: c.primaryBg };
+      return { icon: RefreshCw, fg: c.primary, bg: c.primaryBg };
     case 'awaiting_approval':
-      return { icon: 'hand-left-outline', fg: c.warning, bg: c.warningBg };
+      return { icon: Hand, fg: c.warning, bg: c.warningBg };
     case 'completed':
-      return { icon: 'checkmark-circle', fg: c.success, bg: c.successBg };
+      return { icon: CircleCheck, fg: c.success, bg: c.successBg };
     case 'failed':
-      return { icon: 'close-circle', fg: c.danger, bg: c.dangerBg };
+      return { icon: CircleX, fg: c.danger, bg: c.dangerBg };
     case 'skipped':
-      return { icon: 'play-skip-forward-outline', fg: c.muted, bg: c.inputBg };
+      return { icon: SkipForward, fg: c.muted, bg: c.inputBg };
     default:
-      return { icon: 'ban-outline', fg: c.muted, bg: c.inputBg };
+      return { icon: Ban, fg: c.muted, bg: c.inputBg };
   }
 }
 
@@ -32,13 +40,14 @@ export function StatusChip({ status, onPress }: { status: RunStatus; onPress?: (
   const { t } = useTranslation();
   const look = statusLook(status, c);
   const label = t(`schedules.status.${status}`);
+  const Icon = look.icon;
   const body = (
     <View style={[styles.chip, { backgroundColor: look.bg }]}>
-      <Ionicons name={look.icon} size={14} color={look.fg} />
+      <Icon size={14} color={look.fg} />
       <Text style={[styles.text, { color: look.fg }]} numberOfLines={1}>
         {label}
       </Text>
-      {onPress ? <Ionicons name="chevron-forward" size={13} color={look.fg} /> : null}
+      {onPress ? <ChevronRight size={13} color={look.fg} /> : null}
     </View>
   );
   if (!onPress) return body;

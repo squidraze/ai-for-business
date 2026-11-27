@@ -6,7 +6,7 @@ const config = getDefaultConfig(__dirname);
 
 // The AI chat page is a single self-contained `assets/webchat/index.html`
 // (built by `npm run sync` in webview/). Metro treats it as an asset so it can
-// be `require`d and resolved to a real file:// URI at runtime (src/webchat/bundle.ts).
+// be `require`d and resolved to a real file:// URI at runtime (src/features/chat/bridge/bundle.ts).
 config.resolver.assetExts = [...config.resolver.assetExts, 'html'];
 
 module.exports = withNativeWind(config, { input: './global.css', inlineRem: 16 });

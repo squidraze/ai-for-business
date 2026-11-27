@@ -66,7 +66,13 @@
     "weekdays_required": "Kamida bitta kunni tanlang.",
     "interval_too_short": "Interval juda qisqa.",
     "interval_too_long": "Interval 24 soatdan oshmasligi kerak.",
-    "request_timeout": "Server o‘z vaqtida javob bermadi. Qaytadan urinib ko‘ring."
+    "request_timeout": "Server o‘z vaqtida javob bermadi. Qaytadan urinib ko‘ring.",
+    "telegram_not_connected": "Telegram ulanmagan",
+    "telegram_unavailable": "Telegramga ulanib bo‘lmadi, qayta urinib ko‘ring",
+    "gmail_not_connected": "Gmail ulanmagan",
+    "gmail_unavailable": "Gmailga ulanib bo‘lmadi, qayta urinib ko‘ring",
+    "bitrix24_not_connected": "Bitrix24 ulanmagan",
+    "bitrix24_unavailable": "Bitrix24 ga ulanib bo‘lmadi, qayta urinib ko‘ring"
   },
   "validation": {
     "required": "Bu maydonni to‘ldiring.",
@@ -174,7 +180,11 @@
     "notifications": "Bildirishnomalar",
     "notificationsOn": "Yoqilgan",
     "notificationsOff": "O‘chirilgan",
-    "notificationsEnableHint": "Bildirishnomalarni yoqadi yoki tizim sozlamalarini ochadi"
+    "notificationsEnableHint": "Bildirishnomalarni yoqadi yoki tizim sozlamalarini ochadi",
+    "theme": "Mavzu",
+    "themeSystem": "Tizim bo‘yicha",
+    "themeDark": "Qorong‘i",
+    "themeLight": "Yorug‘"
   },
   "languages": {
     "en": "English",
@@ -184,25 +194,140 @@
   "chats": {
     "emptyTitle": "Hozircha chatlar yo‘q",
     "emptyText": "Yordamchidan istalgan narsani so‘rang — u Telegram va Gmail xabarlaringizni o‘qiy oladi.",
-    "start": "Chat boshlash"
+    "start": "Chat boshlash",
+    "title": "Chatlar",
+    "newChat": "Yangi chat",
+    "untitled": "Yangi chat",
+    "integrations": "Integratsiyalar",
+    "rowHint": "Nomini o‘zgartirish yoki o‘chirish uchun bosib turing",
+    "rename": "Nomini o‘zgartirish",
+    "save": "Saqlash",
+    "deleteTitle": "Chat o‘chirilsinmi?",
+    "deleteText": "«{{title}}» butunlay o‘chiriladi.",
+    "renameFailed": "Chat nomini o‘zgartirib bo‘lmadi.",
+    "deleteFailed": "Chatni o‘chirib bo‘lmadi."
   },
   "telegram": {
     "noChats": "Chatlar yo‘q",
     "noMatch": "«{{query}}» bo‘yicha chatlar topilmadi.",
-    "noMessages": "Hozircha xabarlar yo‘q"
+    "noMessages": "Hozircha xabarlar yo‘q",
+    "searchPlaceholder": "Chatlarni qidirish",
+    "unnamed": "Nomsiz",
+    "you": "Siz: ",
+    "mediaPreview": "Media",
+    "chatFallback": "Chat",
+    "messagePlaceholder": "Xabar",
+    "notSent": "Yuborilmadi",
+    "media": {
+      "photo": "Rasm",
+      "video": "Video",
+      "document": "Fayl",
+      "voice": "Ovozli xabar",
+      "sticker": "Stiker"
+    },
+    "card": {
+      "description": "Xabarlarni o‘qish va yuborish uchun Telegram akkauntingizga kiring.",
+      "account": "Telegram akkaunti",
+      "open": "Chatlarni ochish",
+      "connect": "Telegramni ulash"
+    },
+    "connect": {
+      "title": "Telegramni ulash",
+      "phoneTitle": "Telefon raqamingiz",
+      "phoneText": "Telegram kirish kodini Telegram ilovangizga yuboradi.",
+      "phonePlaceholder": "+998 90 123 45 67",
+      "sendCode": "Kod yuborish",
+      "codeTitle": "Kodni kiriting",
+      "codeText": "Kodni boshqa qurilmalaringizdagi Telegram ilovasiga yubordik ({{phone}}).",
+      "codePlaceholder": "12345",
+      "signIn": "Kirish",
+      "changeNumber": "Raqamni o‘zgartirish",
+      "passwordTitle": "Ikki bosqichli tekshiruv",
+      "passwordText": "Akkauntingiz qo‘shimcha parol bilan himoyalangan.",
+      "passwordPlaceholder": "Bulutli parol",
+      "confirm": "Tasdiqlash"
+    }
   },
   "gmail": {
     "empty": "Kiruvchi xatlar yo‘q",
-    "noMatch": "«{{query}}» bo‘yicha xatlar topilmadi."
+    "noMatch": "«{{query}}» bo‘yicha xatlar topilmadi.",
+    "title": "Kiruvchi",
+    "searchPlaceholder": "Xatlarni qidirish (Gmail so‘rovi, masalan from:bob)",
+    "compose": "Yozish",
+    "unknownSender": "(noma’lum)",
+    "noSubject": "(mavzusiz)",
+    "to": "kimga: {{to}}",
+    "cc": ", nusxa: {{cc}}",
+    "reply": "Javob berish",
+    "replyPlaceholder": "Javob yozing…",
+    "replyNotSent": "Javob yuborilmadi",
+    "send": "Yuborish",
+    "notSent": "Yuborilmadi",
+    "newEmail": {
+      "title": "Yangi xat",
+      "to": "Kimga",
+      "toPlaceholder": "name@example.com",
+      "cc": "Nusxa",
+      "subject": "Mavzu",
+      "body": "Xabar",
+      "bodyPlaceholder": "Xat matni"
+    },
+    "card": {
+      "description": "Xatlarni o‘qish, yuborish va ularga javob berish uchun Google akkauntingizni ulang.",
+      "account": "Gmail akkaunti",
+      "open": "Kiruvchilarni ochish",
+      "connect": "Gmailni ulash",
+      "signInFailed": "Google orqali kirishni boshlab bo‘lmadi"
+    }
   },
   "bitrix": {
-    "notConnected": "Bitrix24 ulanmagan",
-    "openConnectors": "Ulanishlarni ochish",
     "noDeals": "Hozircha bitimlar yo‘q",
     "noLeads": "Hozircha lidlar yo‘q",
     "noDealsMatch": "«{{query}}» bo‘yicha bitimlar topilmadi.",
     "noLeadsMatch": "«{{query}}» bo‘yicha lidlar topilmadi.",
-    "unknownType": "CRM yozuvining turi noma’lum."
+    "unknownType": "CRM yozuvining turi noma’lum.",
+    "title": "CRM",
+    "deals": "Bitimlar",
+    "leads": "Lidlar",
+    "searchDeals": "Bitimlarni nomi bo‘yicha qidirish",
+    "searchLeads": "Lidlarni nomi bo‘yicha qidirish",
+    "untitledDeal": "(nomsiz bitim)",
+    "untitledLead": "(nomsiz lid)",
+    "deal": "Bitim #{{id}}",
+    "lead": "Lid #{{id}}",
+    "fields": {
+      "stage": "Bosqich",
+      "status": "Holat",
+      "amount": "Summa",
+      "contact": "Kontakt",
+      "company": "Kompaniya",
+      "name": "Ism",
+      "phone": "Telefon",
+      "email": "Email",
+      "source": "Manba",
+      "responsible": "Mas’ul",
+      "created": "Yaratilgan",
+      "modified": "O‘zgartirilgan",
+      "notes": "Izohlar"
+    },
+    "openInPortal": "Bitrix24 da ochish",
+    "openFailed": "Havolani ochib bo‘lmadi",
+    "comments": "Izohlar",
+    "commentsCount": "Izohlar ({{count}})",
+    "noComments": "Hozircha izoh yo‘q.",
+    "commentPlaceholder": "Izoh qo‘shish",
+    "commentNotAdded": "Izoh qo‘shilmadi",
+    "unknownUser": "Bitrix24 foydalanuvchisi",
+    "card": {
+      "description": "Bitim va lidlarni ko‘rish hamda izoh qo‘shish uchun Bitrix24 portalingizni ulang.",
+      "account": "Bitrix24 portali",
+      "open": "CRMni ochish",
+      "step1": "Bitrix24 da: Dasturchilar uchun → Boshqa → Kiruvchi vebhuk.",
+      "step2": "CRM ruxsatini belgilang (xohlasangiz Vazifalar, Foydalanuvchilar ham).",
+      "step3": "Vebhuk URL manzilini nusxalab, shu yerga qo‘ying.",
+      "webhookPlaceholder": "https://yourportal.bitrix24.com/rest/1/…/",
+      "connectFailed": "Portalni ulab bo‘lmadi"
+    }
   },
   "notifications": {
     "channelName": "Vazifa natijalari",
@@ -333,5 +458,19 @@
     "permission": {
       "notNow": "Hozir emas"
     }
+  },
+  "connectors": {
+    "intro": "Ulangan ilovalar shu yerda sizga va chatlarda AI yordamchiga ochiq.",
+    "connected": "Ulangan",
+    "notConnected": "Ulanmagan",
+    "connect": "Ulash",
+    "disconnect": "Uzish",
+    "disconnectConfirm": "{{name}} uzilsinmi?",
+    "disconnectFailed": "Uzib bo‘lmadi",
+    "notConnectedTitle": "{{name}} ulanmagan",
+    "notConnectedText": "Ma’lumotlaringizni shu yerda ko‘rish uchun uni «Konnektorlar» bo‘limida ulang.",
+    "openConnectors": "Konnektorlarni ochish",
+    "howToConnect": "Qanday ulanadi",
+    "send": "Yuborish"
   }
 }

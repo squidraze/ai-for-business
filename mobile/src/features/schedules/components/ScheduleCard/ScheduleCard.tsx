@@ -1,7 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
+import { CirclePause, Clock, Repeat } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { AnimatedSwitch } from '@/components/AnimatedSwitch';
 import { Skeleton } from '@/components/Skeleton';
 import { errorMessage } from '@/lib/api';
 import { useColors } from '@/lib/theme';
@@ -36,23 +37,21 @@ export function ScheduleCard({ schedule }: { schedule: Schedule }) {
         <Text style={[styles.title, { color: schedule.enabled ? c.text : c.muted }]} numberOfLines={2}>
           {schedule.title}
         </Text>
-        <Switch
+        <AnimatedSwitch
           value={schedule.enabled}
           onValueChange={(enabled) => toggle.mutate({ uuid: schedule.uuid, enabled })}
-          trackColor={{ true: c.primary, false: c.border }}
-          thumbColor="#ffffff"
           accessibilityLabel={t('schedules.fields.enabled')}
         />
       </View>
 
       <View style={styles.line}>
-        <Ionicons name="repeat" size={15} color={c.muted} />
+        <Repeat size={15} color={c.muted} />
         <Text style={[styles.lineText, { color: c.muted }]} numberOfLines={1}>
           {formatRecurrence(schedule, t)}
         </Text>
       </View>
       <View style={styles.line}>
-        <Ionicons name={schedule.enabled ? 'time-outline' : 'pause-circle-outline'} size={15} color={c.muted} />
+        {schedule.enabled ? <Clock size={15} color={c.muted} /> : <CirclePause size={15} color={c.muted} />}
         <Text style={[styles.lineText, { color: c.muted }]} numberOfLines={1}>
           {nextRunLabel(schedule, t)}
         </Text>

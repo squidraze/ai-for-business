@@ -4,9 +4,9 @@
  * overlay until `init` is delivered, the bridge, insets/theme deltas, the
  * Android back button (`nav.back` -> `nav.consumed`) and crash recovery.
  */
-import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import { ChevronLeft, SquarePen } from 'lucide-react-native';
 import {
   useCallback,
   useEffect,
@@ -34,11 +34,11 @@ import WebView, {
   type WebViewProps,
 } from 'react-native-webview';
 
-import { ErrorView } from '@/components/ui';
+import { ErrorView } from '@/components/StateView';
 import { createLogger } from '@/lib/log';
 import { useColors, useThemeName } from '@/lib/theme';
 
-import { createBridgePost, parseWebMessage } from './bridge';
+import { createBridgePost, parseWebMessage } from '../../bridge/bridge';
 import {
   WEBCHAT_MISSING_MESSAGE,
   WEBCHAT_READY_TIMEOUT_MS,
@@ -46,9 +46,9 @@ import {
   navigationBaseOf,
   originWhitelistOf,
   useWebchatSource,
-} from './bundle';
-import { useWebChatHandlers } from './handlers';
-import type { Insets, ThemeName, ThreadTarget } from './protocol';
+} from '../../bridge/bundle';
+import { useWebChatHandlers } from '../../bridge/handlers';
+import type { Insets, ThemeName, ThreadTarget } from '../../bridge/protocol';
 
 // react-native-webview 14's `index.d.ts` declares `WebView<P = undefined>` with
 // props `WebViewProps & P`, which collapses to `never`. Re-type it for JSX.
@@ -327,13 +327,13 @@ export function WebChatScreen({
         ]}
       >
         <TouchableOpacity onPress={onOpenList} hitSlop={10} style={styles.headerButton}>
-          <Ionicons name="chevron-back" size={26} color={c.text} />
+          <ChevronLeft size={26} color={c.text} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: c.text }]} numberOfLines={1}>
           {title}
         </Text>
         <TouchableOpacity onPress={handleNewChat} hitSlop={10} style={styles.headerButton}>
-          <Ionicons name="create-outline" size={24} color={c.text} />
+          <SquarePen size={24} color={c.text} />
         </TouchableOpacity>
       </View>
 

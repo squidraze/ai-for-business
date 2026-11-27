@@ -1,12 +1,13 @@
 import '../../global.css';
 import '@/lib/i18n';
+import '@/lib/themeMode';
 
-import { Ionicons } from '@expo/vector-icons';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Sparkles } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -46,7 +47,7 @@ function RootStack() {
         <SplashSkeleton
           logo={
             <View style={[styles.logo, { backgroundColor: c.primary }]}>
-              <Ionicons name="sparkles" size={30} color="#fff" />
+              <Sparkles size={30} color="#fff" />
             </View>
           }
         />
@@ -58,22 +59,27 @@ function RootStack() {
             headerTitleStyle: { color: c.text },
             contentStyle: { backgroundColor: c.bg },
             headerShadowVisible: false,
+            // A screen you navigate into slides in from the right, natively (with
+            // the back swipe on iOS), as in rooler business.
+            animation: 'slide_from_right',
           }}
         >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          {/* Swapping the app's root (signed out ⇄ in) is not a navigation: cross-fade. */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
           <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="telegram/connect" options={{ title: 'Connect Telegram' }} />
-          <Stack.Screen name="telegram/index" options={{ title: 'Telegram' }} />
-          <Stack.Screen name="telegram/[chatId]" options={{ title: '' }} />
-          <Stack.Screen name="gmail/index" options={{ title: 'Inbox' }} />
-          <Stack.Screen name="gmail/[threadId]" options={{ title: '' }} />
-          <Stack.Screen name="gmail/compose" options={{ title: 'New email' }} />
-          <Stack.Screen name="bitrix/index" options={{ title: 'CRM' }} />
-          <Stack.Screen name="bitrix/[entity]/[id]" options={{ title: '' }} />
+          {/* Integration screens draw their own PageHeader. */}
+          <Stack.Screen name="telegram/connect" options={{ headerShown: false }} />
+          <Stack.Screen name="telegram/index" options={{ headerShown: false }} />
+          <Stack.Screen name="telegram/[chatId]" options={{ headerShown: false }} />
+          <Stack.Screen name="gmail/index" options={{ headerShown: false }} />
+          <Stack.Screen name="gmail/[threadId]" options={{ headerShown: false }} />
+          <Stack.Screen name="gmail/compose" options={{ headerShown: false }} />
+          <Stack.Screen name="bitrix/index" options={{ headerShown: false }} />
+          <Stack.Screen name="bitrix/[entity]/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="schedules/new" options={{ title: t('schedules.newTitle') }} />
           <Stack.Screen name="schedules/[id]/index" options={{ title: '' }} />
           <Stack.Screen name="schedules/[id]/edit" options={{ title: t('schedules.editTitle') }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade' }} />
         </Stack>
       )}
     </FadeSwitch>

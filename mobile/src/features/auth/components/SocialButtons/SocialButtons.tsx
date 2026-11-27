@@ -1,14 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import type { LucideIcon } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { errorMessage } from '@/lib/api';
+import { useLabelColors } from '@/lib/screen';
 import { useColors } from '@/lib/theme';
 
 import { useAppleSignIn, useGoogleSignIn } from '../../auth.hooks';
 import { isAppleSignInAvailable, isGoogleConfigured } from '../../social';
+
+// Lucide has no brand logos, so the Google mark comes from Ionicons, wrapped
+// to the `size` / `color` shape PrimaryButton passes to a Lucide icon.
+const GoogleGlyph = (({ size, color }: { size?: number | string; color?: string }) => (
+  <Ionicons name="logo-google" size={typeof size === 'number' ? size : 18} color={color} />
+)) as unknown as LucideIcon;
 
 /**
  * "Continue with Google" (both platforms) and "Sign in with Apple" (iOS only).
@@ -22,6 +31,7 @@ export function SocialButtons({
   disabled?: boolean;
 }) {
   const c = useColors();
+  const labelColors = useLabelColors();
   const { t } = useTranslation();
   const google = useGoogleSignIn();
   const apple = useAppleSignIn();
@@ -53,31 +63,17 @@ export function SocialButtons({
 
   return (
     <View style={styles.wrap}>
-      <TouchableOpacity
-        activeOpacity={0.75}
+      <PrimaryButton
+        label={t('auth.social.google')}
+        icon={GoogleGlyph}
+        size="base"
         onPress={signInWithGoogle}
         disabled={googleDisabled}
-        accessibilityRole="button"
-        accessibilityLabel={t('auth.social.google')}
-        accessibilityState={{ disabled: googleDisabled, busy: google.isPending }}
-        style={[
-          styles.google,
-          {
-            backgroundColor: c.card,
-            borderColor: c.border,
-            opacity: !isGoogleConfigured || (disabled && !google.isPending) ? 0.5 : 1,
-          },
-        ]}
-      >
-        {google.isPending ? (
-          <ActivityIndicator color={c.text} />
-        ) : (
-          <>
-            <Ionicons name="logo-google" size={18} color={c.text} />
-            <Text style={[styles.googleText, { color: c.text }]}>{t('auth.social.google')}</Text>
-          </>
-        )}
-      </TouchableOpacity>
+        loading={google.isPending}
+        colorClassName="border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+        textClassName="text-black dark:text-white"
+        iconColor={labelColors.label}
+      />
       {!isGoogleConfigured ? (
         <Text style={[styles.hint, { color: c.muted }]}>{t('auth.social.googleUnavailable')}</Text>
       ) : null}
@@ -91,7 +87,7 @@ export function SocialButtons({
                 ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
                 : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
             }
-            cornerRadius={12}
+            cornerRadius={16}
             onPress={signInWithApple}
             style={styles.apple}
           />
@@ -103,15 +99,6 @@ export function SocialButtons({
 
 const styles = StyleSheet.create({
   wrap: { gap: 10 },
-  google: {
-    height: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleText: { fontSize: 16, fontWeight: '600', marginLeft: 10 },
   hint: { fontSize: 12, textAlign: 'center', marginTop: -4 },
   apple: { height: 48, width: '100%' },
 });

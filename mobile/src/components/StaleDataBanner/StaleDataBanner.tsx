@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { CloudOff } from 'lucide-react-native';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, StyleSheet, Text, TouchableOpacity } from 'react-native';
@@ -30,7 +30,7 @@ export function StaleDataBanner({ message, onRetry }: { message: string; onRetry
         accessibilityLabel={`${t('states.refreshFailed')} ${t('common.retry')}`}
         style={[styles.banner, { backgroundColor: c.card, borderColor: c.danger }]}
       >
-        <Ionicons name="cloud-offline-outline" size={18} color={c.danger} />
+        <CloudOff size={18} color={c.danger} />
         <Text style={[styles.text, { color: c.text }]} numberOfLines={2}>
           {t('states.refreshFailed')} <Text style={{ color: c.muted }}>{message}</Text>
         </Text>
