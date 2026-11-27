@@ -35,6 +35,8 @@ import {
 import { formatMoney, fullDate } from '@/lib/format';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 type Detail = BitrixDealDetail | BitrixLeadDetail;
 
 type FieldRow = { label: string; value?: string | null; href?: string };

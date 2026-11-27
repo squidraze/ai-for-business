@@ -23,16 +23,18 @@ export function ErrorView({
   message,
   onRetry,
   title,
+  icon = 'cloud-offline-outline',
 }: {
   message: string;
   onRetry?: () => void;
   title?: string;
+  icon?: IconName;
 }) {
   const c = useColors();
   const { t } = useTranslation();
   return (
     <CenterView>
-      <Ionicons name="cloud-offline-outline" size={44} color={c.muted} />
+      <Ionicons name={icon} size={44} color={c.muted} />
       <Text style={[styles.title, { color: c.text }]}>{title ?? t('states.errorTitle')}</Text>
       <Text style={[styles.text, { color: c.muted }]}>{message}</Text>
       {onRetry ? (

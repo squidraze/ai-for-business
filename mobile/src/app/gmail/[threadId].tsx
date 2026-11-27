@@ -24,6 +24,8 @@ import { api, errorMessage, type GmailThread } from '@/lib/api';
 import { displayFrom, fullDate } from '@/lib/format';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 export default function GmailThreadScreen() {
   const c = useColors();
   const insets = useSafeAreaInsets();

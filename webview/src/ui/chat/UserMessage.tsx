@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { useBranchInfo } from '@/chat/branches';
 import type { UserMessage as UserMessageModel } from '@/chat/types';
 import { useTranslation } from '@/i18n';
-import { ErrorState, Fade, useLongPress } from '@/ui/primitives';
+import { ErrorBoundary, ErrorState, Fade, useLongPress } from '@/ui/primitives';
 
 import { BranchSwitcher } from './BranchSwitcher';
 import { ExpandableText } from './ExpandableText';
@@ -93,7 +93,9 @@ function UserMessageBase({
            the empty column beside a short message is not pressing the message. */
         <div {...longPress} className="flex max-w-[85%] flex-col items-end gap-1">
           {hasAttachments ? (
-            <MessageAttachments attachments={attachments} caption={hasText ? text : undefined} />
+            <ErrorBoundary name="chat/attachments">
+              <MessageAttachments attachments={attachments} caption={hasText ? text : undefined} />
+            </ErrorBoundary>
           ) : null}
 
           {!hasAttachments && hasText ? (

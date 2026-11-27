@@ -3,6 +3,8 @@ import { useCallback } from 'react';
 
 import { WebChatScreen } from '@/webchat/WebChatScreen';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 export default function ChatScreen() {
   const { id, title } = useLocalSearchParams<{ id: string; title?: string }>();
 

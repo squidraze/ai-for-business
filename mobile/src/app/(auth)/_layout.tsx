@@ -2,6 +2,8 @@ import { Stack } from 'expo-router';
 
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 export default function AuthLayout() {
   const c = useColors();
   return (

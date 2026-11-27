@@ -169,10 +169,18 @@ def set_loop(loop: asyncio.AbstractEventLoop) -> None:
 def spawn(run_uuid: str, resume: dict | None = None) -> None:
     """Start the run on the main event loop (Telethon clients live there), from any thread."""
 
+    def _done(task: asyncio.Task) -> None:
+        if TASKS.get(run_uuid) is task:
+            TASKS.pop(run_uuid, None)
+        # _run_task handles its own failures; this only catches one before it
+        # could (e.g. the run row failed to load) instead of a late GC warning.
+        if not task.cancelled() and task.exception() is not None:
+            log.error("run task %s crashed", run_uuid, exc_info=task.exception())
+
     def _start() -> None:
         task = asyncio.ensure_future(_run_task(run_uuid, resume))
         TASKS[run_uuid] = task
-        task.add_done_callback(lambda _t: TASKS.pop(run_uuid, None) if TASKS.get(run_uuid) is _t else None)
+        task.add_done_callback(_done)
 
     try:
         running = asyncio.get_running_loop()
@@ -294,16 +302,21 @@ async def _run_task(run_uuid: str, resume: dict | None) -> None:
     except Exception as e:
         log.exception("run %s failed", run_uuid)
         msg = _error_message(e)
-        with SessionLocal() as db:
-            run = db.scalar(select(Run).where(Run.uuid == run_uuid))
-            run.status = "error"
-            run.error = msg
-            run.finished_at = utcnow()
-            db.commit()
+        # Saving the status can fail too (the DB may be what broke); the client
+        # still has to hear about it, or its stream just goes quiet.
+        try:
+            with SessionLocal() as db:
+                run = db.scalar(select(Run).where(Run.uuid == run_uuid))
+                run.status = "error"
+                run.error = msg
+                run.finished_at = utcnow()
+                db.commit()
+        except Exception:
+            log.exception("could not mark run %s as failed", run_uuid)
         try:
             await em.emit("ai.run.error", {"message": msg})
         except Exception:
-            pass
+            log.exception("could not publish ai.run.error for run %s", run_uuid)
         await _fire_run_hooks(run_uuid, "error", conversation_id, user_id)
 
 
@@ -470,7 +483,7 @@ async def _loop(run_uuid: str, user_id: int, em: Emitter, partial: dict) -> None
                 if not allowed:
                     gated.append(c)
                     continue
-                title, detail = tool.summarize(c["args"])
+                title, detail = tool.describe(c["args"])
                 await em.emit(
                     "ai.action.auto_approved",
                     {"tool": tool.name, "summary": f"{title}: {detail[:200]}", "tool_call_id": c["id"]},
@@ -481,7 +494,7 @@ async def _loop(run_uuid: str, user_id: int, em: Emitter, partial: dict) -> None
             actions = []
             allow_options = {}
             for c in gated:
-                title, detail = (await tools.get_tool(user_id, c["name"])).summarize(c["args"])
+                title, detail = (await tools.get_tool(user_id, c["name"])).describe(c["args"])
                 actions.append({"tool": c["name"], "title": title, "description": detail})
                 allow_options[c["name"]] = ["session", "always"]
             with SessionLocal() as db:

@@ -5,7 +5,7 @@ import type { AssistantMessage as AssistantMessageModel } from '@/chat/types';
 import { messageText } from '@/chat/types';
 import { renderToolBlock } from '@/generative';
 import { useTranslation } from '@/i18n';
-import { ErrorState, Fade, useLongPress } from '@/ui/primitives';
+import { ErrorBoundary, ErrorState, Fade, useLongPress } from '@/ui/primitives';
 
 import { BranchSwitcher } from './BranchSwitcher';
 import { MessageAttachments } from './MessageAttachments';
@@ -137,12 +137,16 @@ function AssistantMessageBase({
           than inside it. */}
       {todos && todos.length > 0 ? (
         <Fade enterMs={250} className="w-full">
-          <TodoList todos={todos} live={isStreaming} />
+          <ErrorBoundary name="chat/todos">
+            <TodoList todos={todos} live={isStreaming} />
+          </ErrorBoundary>
         </Fade>
       ) : null}
       {toolCalls && toolCalls.length > 0 ? (
         <Fade enterMs={250} className="w-full">
-          <ToolCallsGroup calls={toolCalls} live={isStreaming} />
+          <ErrorBoundary name="chat/tool-calls">
+            <ToolCallsGroup calls={toolCalls} live={isStreaming} />
+          </ErrorBoundary>
         </Fade>
       ) : null}
 
@@ -160,7 +164,11 @@ function AssistantMessageBase({
           ) : null
         ) : (
           <Fade key={part.toolCallId} enterMs={250} className="w-full">
-            {renderToolBlock(part)}
+            {/* A block draws model-written args; one bad block must not take
+                the prose of the reply down with it. */}
+            <ErrorBoundary name={`generative/${part.toolName}`}>
+              {renderToolBlock(part)}
+            </ErrorBoundary>
           </Fade>
         ),
       )}
@@ -172,7 +180,9 @@ function AssistantMessageBase({
           own prose is right above it. */}
       {attachments.length > 0 ? (
         <Fade enterMs={250}>
-          <MessageAttachments attachments={attachments} align="start" />
+          <ErrorBoundary name="chat/attachments">
+            <MessageAttachments attachments={attachments} align="start" />
+          </ErrorBoundary>
         </Fade>
       ) : null}
 

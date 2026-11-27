@@ -7,6 +7,8 @@ import { Button, Field } from '@/components/ui';
 import { api, CONNECTORS_KEY, errorMessage } from '@/lib/api';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 type Step = 'phone' | 'code' | 'password';
 
 export default function TelegramConnectScreen() {

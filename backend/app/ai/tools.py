@@ -110,6 +110,18 @@ class Tool:
         self.gated = gated
         self.summarize = summarize
 
+    def describe(self, args: dict) -> tuple[str, str]:
+        """Title and detail for the approval card. Never raises: the args were
+        written by the model, and a summary that trips over them must not take
+        the whole run down — the card falls back to the raw arguments."""
+        if self.summarize is not None:
+            try:
+                title, detail = self.summarize(args)
+                return str(title), str(detail)
+            except Exception:
+                log.exception("summary for tool %s failed", self.name)
+        return self.name, _to_text(args)[:2000]
+
 
 def _sum_tg_send(a: dict) -> tuple[str, str]:
     return (f"Send a Telegram message to {a.get('chat', '?')}", str(a.get("text", "")))

@@ -18,6 +18,8 @@ import { Separator } from '@/components/ui';
 import { api, errorMessage } from '@/lib/api';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 export default function GmailComposeScreen() {
   const c = useColors();
   const queryClient = useQueryClient();

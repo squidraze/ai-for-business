@@ -18,6 +18,8 @@ import { relativeTime } from '@/lib/format';
 import { useDebounced } from '@/lib/useDebounced';
 import { useColors } from '@/lib/theme';
 
+export { ErrorBoundary } from '@/components/ErrorBoundary';
+
 export default function TelegramDialogsScreen() {
   const c = useColors();
   const { t } = useTranslation();
