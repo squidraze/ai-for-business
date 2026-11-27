@@ -1,31 +1,50 @@
-import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Bell, LogOut, Server, UserX } from 'lucide-react-native';
 
-import { AsyncState } from '@/components/AsyncState';
-import { Button } from '@/components/Button';
-import { Skeleton } from '@/components/Skeleton';
-import { Avatar, Card, Separator } from '@/components/ui';
-import { useAuth, useDeleteAccount, type AuthProviderId, type User } from '@/features/auth';
+import { FadeSwitch } from '@/components/FadeSwitch';
+import { FeatureBoundary } from '@/components/FeatureBoundary';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { useAuth, useDeleteAccount } from '@/features/auth';
 import { useNotificationPermission } from '@/features/notifications';
 import { errorMessage } from '@/lib/api';
 import { API_URL, APP_VERSION } from '@/lib/config';
-import { currentLanguage, LANGUAGES, setLanguage } from '@/lib/i18n';
+import { reportError } from '@/lib/reportError';
+import { SCREEN_PADDING_X, TERTIARY_LABEL_TEXT } from '@/lib/screen';
 import { useColors } from '@/lib/theme';
 
-const PROVIDER_ICONS: Record<AuthProviderId, 'mail-outline' | 'logo-google' | 'logo-apple'> = {
-  password: 'mail-outline',
-  google: 'logo-google',
-  apple: 'logo-apple',
-};
+import { CardRows, ProfileCard, ROWS_CARD_RADIUS } from './components/ProfileCard';
+import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { ThemeSwitcher } from './components/ThemeSwitcher';
+import { ProfileRow } from './components/ProfileRow';
+import { SettingsRow } from './components/SettingsRow';
+import { SignInMethods } from './components/SignInMethods';
+import { UserCard, UserCardError, UserCardSkeleton } from './components/UserCard';
 
+/**
+ * The profile tab, after rooler business's profile screen: the title row over a
+ * stack of cards — who you are (with sign-in methods), preferences
+ * (notifications, language), app info, then sign out and delete account, and
+ * the version at the bottom.
+ */
 export function ProfilePage() {
   const c = useColors();
   const { t } = useTranslation();
   const { userQuery, signOut } = useAuth();
   const deleteAccount = useDeleteAccount();
-  const language = currentLanguage();
   const notifications = useNotificationPermission();
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([userQuery.refetch(), notifications.refresh()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [userQuery, notifications]);
 
   const confirmSignOut = () =>
     Alert.alert(t('profile.signOutConfirm'), undefined, [
@@ -47,154 +66,109 @@ export function ProfilePage() {
       },
     ]);
 
-  const pickLanguage = () =>
-    Alert.alert(t('profile.language'), undefined, [
-      ...LANGUAGES.map((code) => ({
-        text: `${t(`languages.${code}`)}${code === language ? '  ✓' : ''}`,
-        onPress: () => void setLanguage(code),
-      })),
-      { text: t('common.cancel'), style: 'cancel' as const },
-    ]);
+  // The OS owns the permission: "on" asks for it (or opens the settings when it
+  // can't be asked again), "off" can only be done in the system settings.
+  const toggleNotifications = () => {
+    notifications.enable().catch((error: unknown) => reportError(error, { source: 'profile/notifications' }));
+  };
+
+  const user = userQuery.data;
+  const userState = userQuery.isPending ? 'loading' : user ? 'content' : 'error';
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-      <AsyncState query={userQuery} skeleton={<UserCardSkeleton />}>
-        {() => (userQuery.data ? <UserCards user={userQuery.data} /> : null)}
-      </AsyncState>
+    // A style, not a class: SafeAreaView comes from a library NativeWind doesn't wrap.
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.bg }}>
+      <View className="pt-5">
+        <ScreenHeader title={t('tabs.profile')} />
+      </View>
 
-      <Card style={{ paddingVertical: 4 }}>
-        <TouchableOpacity onPress={pickLanguage} accessibilityRole="button">
-          <Row label={t('profile.language')} value={t(`languages.${language}`)} chevron />
-        </TouchableOpacity>
-        <Separator />
-        <TouchableOpacity
-          onPress={() => void notifications.enable()}
-          accessibilityRole="button"
-          accessibilityHint={notifications.enabled ? undefined : t('profile.notificationsEnableHint')}
-        >
-          <Row
-            label={t('profile.notifications')}
-            value={
-              notifications.state === null
-                ? ''
-                : notifications.enabled
-                  ? t('profile.notificationsOn')
-                  : t('profile.notificationsOff')
-            }
-            chevron
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: SCREEN_PADDING_X, paddingTop: 12, paddingBottom: 24 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void onRefresh()}
+            tintColor={c.primary}
+            colors={[c.primary]}
+            progressBackgroundColor={c.card}
           />
-        </TouchableOpacity>
-        <Separator />
-        <Row label={t('profile.server')} value={API_URL} />
-        <Separator />
-        <Row label={t('profile.appVersion')} value={APP_VERSION} />
-      </Card>
+        }
+      >
+        <View className="gap-2">
+          {/* Only this card reads the user, so only it shows a failed read: someone
+              whose profile won't load still has to be able to sign out. A user in
+              hand stays on screen when a refetch over it fails. */}
+          <FeatureBoundary name="profile/user" onReset={() => void userQuery.refetch()}>
+            <FadeSwitch stateKey={userState}>
+              {userState === 'loading' ? (
+                <UserCardSkeleton />
+              ) : user ? (
+                <UserCard user={user} footer={<SignInMethods providers={user.providers} />} />
+              ) : (
+                <UserCardError
+                  message={errorMessage(userQuery.error)}
+                  onRetry={() => void userQuery.refetch()}
+                />
+              )}
+            </FadeSwitch>
+          </FeatureBoundary>
 
-      <Button
-        title={t('profile.signOut')}
-        variant="secondary"
-        icon="log-out-outline"
-        onPress={confirmSignOut}
-        disabled={deleteAccount.isPending}
-      />
-      <Button
-        title={t('profile.deleteAccount')}
-        variant="danger"
-        icon="trash-outline"
-        onPress={confirmDelete}
-        loading={deleteAccount.isPending}
-      />
-    </ScrollView>
-  );
-}
+          <ProfileCard radius={ROWS_CARD_RADIUS}>
+            <CardRows>
+              {/* Language and theme read no backend data, so it sits outside the boundary:
+                  a crash in the notifications row must never hide them. */}
+              <LanguageSwitcher />
+              <ThemeSwitcher />
+              <FeatureBoundary name="profile/notifications">
+                <SettingsRow
+                  icon={Bell}
+                  label={t('profile.notifications')}
+                  subtitle={
+                    notifications.state === null
+                      ? undefined
+                      : notifications.enabled
+                        ? t('profile.notificationsOn')
+                        : t('profile.notificationsOff')
+                  }
+                  value={notifications.enabled}
+                  onChange={toggleNotifications}
+                  disabled={notifications.state === null}
+                />
+              </FeatureBoundary>
+            </CardRows>
+          </ProfileCard>
 
-function UserCards({ user }: { user: User }) {
-  const c = useColors();
-  const { t } = useTranslation();
-  const providers = user.providers ?? [];
-  return (
-    <View style={{ gap: 16 }}>
-      <Card style={{ alignItems: 'center', paddingVertical: 24 }}>
-        <Avatar name={user.name || user.email} size={72} />
-        <Text style={[styles.name, { color: c.text }]}>{user.name}</Text>
-        <Text style={{ color: c.muted, fontSize: 15 }}>{user.email}</Text>
-        <View style={[styles.badge, { backgroundColor: user.email_verified ? c.successBg : c.inputBg }]}>
-          <Ionicons
-            name={user.email_verified ? 'checkmark-circle' : 'alert-circle-outline'}
-            size={14}
-            color={user.email_verified ? c.success : c.muted}
-          />
-          <Text style={[styles.badgeText, { color: user.email_verified ? c.success : c.muted }]}>
-            {user.email_verified ? t('profile.verified') : t('profile.notVerified')}
+          <ProfileCard radius={ROWS_CARD_RADIUS}>
+            <ProfileRow icon={Server} label={t('profile.server')} subtitle={API_URL} />
+          </ProfileCard>
+
+          <ProfileCard radius={ROWS_CARD_RADIUS}>
+            <CardRows>
+              <ProfileRow
+                icon={LogOut}
+                label={t('profile.signOut')}
+                destructive
+                onPress={confirmSignOut}
+                disabled={deleteAccount.isPending}
+              />
+              <ProfileRow
+                icon={UserX}
+                label={t('profile.deleteAccount')}
+                destructive
+                onPress={confirmDelete}
+                disabled={deleteAccount.isPending}
+                trailing={deleteAccount.isPending ? <ActivityIndicator color={c.danger} /> : undefined}
+              />
+            </CardRows>
+          </ProfileCard>
+
+          <Text className={`pt-2 text-center text-xs ${TERTIARY_LABEL_TEXT}`}>
+            {t('profile.appVersion')} {APP_VERSION}
           </Text>
         </View>
-      </Card>
-
-      {providers.length > 0 ? (
-        <Card style={{ paddingVertical: 4 }}>
-          <Text style={[styles.section, { color: c.muted }]}>{t('profile.signInMethods')}</Text>
-          {providers.map((provider, index) => (
-            <View key={provider}>
-              {index > 0 ? <Separator /> : null}
-              <View style={styles.provider}>
-                <Ionicons name={PROVIDER_ICONS[provider] ?? 'key-outline'} size={18} color={c.text} />
-                <Text style={[styles.providerText, { color: c.text }]}>
-                  {t(`profile.providers.${provider}`, { defaultValue: provider })}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </Card>
-      ) : null}
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-function UserCardSkeleton() {
-  return (
-    <Card style={{ alignItems: 'center', paddingVertical: 24 }}>
-      <Skeleton width={72} height={72} radius={36} />
-      <Skeleton width={140} height={18} radius={9} style={{ marginTop: 14 }} />
-      <Skeleton width={190} height={13} style={{ marginTop: 10 }} />
-      <Skeleton width={90} height={22} radius={11} style={{ marginTop: 12 }} />
-    </Card>
-  );
-}
-
-function Row({ label, value, chevron }: { label: string; value: string; chevron?: boolean }) {
-  const c = useColors();
-  return (
-    <View style={styles.row}>
-      <Text style={{ color: c.text, fontSize: 15 }}>{label}</Text>
-      <View style={styles.rowValue}>
-        <Text style={{ color: c.muted, fontSize: 15, flexShrink: 1 }} numberOfLines={1}>
-          {value}
-        </Text>
-        {chevron ? <Ionicons name="chevron-forward" size={16} color={c.muted} style={{ marginLeft: 4 }} /> : null}
-      </View>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  name: { fontSize: 20, fontWeight: '700', marginTop: 12 },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginTop: 10,
-  },
-  badgeText: { fontSize: 12, fontWeight: '600', marginLeft: 4 },
-  section: { fontSize: 13, fontWeight: '600', paddingTop: 10, paddingBottom: 4 },
-  provider: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
-  providerText: { fontSize: 15, marginLeft: 10 },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  rowValue: { flexDirection: 'row', alignItems: 'center', flexShrink: 1, marginLeft: 12 },
-});

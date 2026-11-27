@@ -37,6 +37,9 @@ export const SEGMENT_SLIDE_MS = positiveInt(process.env.EXPO_PUBLIC_SEGMENT_SLID
 /** On/off toggle (AnimatedSwitch) thumb slide and track colour fade, in ms. */
 export const SWITCH_TOGGLE_MS = positiveInt(process.env.EXPO_PUBLIC_SWITCH_TOGGLE_MS, 300);
 
+/** Fade-in of a tab's content on focus (TabFade) and the auth stack's cross-fade, in ms. */
+export const SCREEN_FADE_MS = positiveInt(process.env.EXPO_PUBLIC_SCREEN_FADE_MS, 800);
+
 /**
  * Spring a pager tab row settles on after a drag. Physics, not a duration,
  * so it is a constant rather than an env value.

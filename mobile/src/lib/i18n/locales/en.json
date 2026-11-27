@@ -66,7 +66,13 @@
     "weekdays_required": "Pick at least one day.",
     "interval_too_short": "The interval is too short.",
     "interval_too_long": "The interval can't be longer than 24 hours.",
-    "request_timeout": "The server didn't respond in time. Please try again."
+    "request_timeout": "The server didn't respond in time. Please try again.",
+    "telegram_not_connected": "Telegram isn't connected",
+    "telegram_unavailable": "Can't reach Telegram, try again",
+    "gmail_not_connected": "Gmail isn't connected",
+    "gmail_unavailable": "Can't reach Gmail, try again",
+    "bitrix24_not_connected": "Bitrix24 isn't connected",
+    "bitrix24_unavailable": "Can't reach Bitrix24, try again"
   },
   "validation": {
     "required": "This field is required.",
@@ -174,7 +180,11 @@
     "notifications": "Notifications",
     "notificationsOn": "Enabled",
     "notificationsOff": "Disabled",
-    "notificationsEnableHint": "Turns notifications on or opens the system settings"
+    "notificationsEnableHint": "Turns notifications on or opens the system settings",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeDark": "Dark",
+    "themeLight": "Light"
   },
   "languages": {
     "en": "English",
@@ -184,25 +194,140 @@
   "chats": {
     "emptyTitle": "No chats yet",
     "emptyText": "Ask the assistant anything — it can read your Telegram and Gmail.",
-    "start": "Start a chat"
+    "start": "Start a chat",
+    "title": "Chats",
+    "newChat": "New chat",
+    "untitled": "New chat",
+    "integrations": "Integrations",
+    "rowHint": "Long press to rename or delete",
+    "rename": "Rename",
+    "save": "Save",
+    "deleteTitle": "Delete chat?",
+    "deleteText": "“{{title}}” will be deleted for good.",
+    "renameFailed": "Couldn't rename the chat.",
+    "deleteFailed": "Couldn't delete the chat."
   },
   "telegram": {
     "noChats": "No chats",
     "noMatch": "No chats match “{{query}}”.",
-    "noMessages": "No messages yet"
+    "noMessages": "No messages yet",
+    "searchPlaceholder": "Search chats",
+    "unnamed": "Unnamed",
+    "you": "You: ",
+    "mediaPreview": "Media",
+    "chatFallback": "Chat",
+    "messagePlaceholder": "Message",
+    "notSent": "Not sent",
+    "media": {
+      "photo": "Photo",
+      "video": "Video",
+      "document": "File",
+      "voice": "Voice message",
+      "sticker": "Sticker"
+    },
+    "card": {
+      "description": "Sign in with your Telegram account to read and send messages.",
+      "account": "Telegram account",
+      "open": "Open chats",
+      "connect": "Connect Telegram"
+    },
+    "connect": {
+      "title": "Connect Telegram",
+      "phoneTitle": "Your phone number",
+      "phoneText": "Telegram will send a login code to your Telegram app.",
+      "phonePlaceholder": "+1 555 123 4567",
+      "sendCode": "Send code",
+      "codeTitle": "Enter the code",
+      "codeText": "We sent a code to the Telegram app on your other devices ({{phone}}).",
+      "codePlaceholder": "12345",
+      "signIn": "Sign in",
+      "changeNumber": "Change number",
+      "passwordTitle": "Two-step verification",
+      "passwordText": "Your account is protected with an additional password.",
+      "passwordPlaceholder": "Cloud password",
+      "confirm": "Confirm"
+    }
   },
   "gmail": {
     "empty": "Inbox is empty",
-    "noMatch": "No threads match “{{query}}”."
+    "noMatch": "No threads match “{{query}}”.",
+    "title": "Inbox",
+    "searchPlaceholder": "Search mail (Gmail query, e.g. from:bob)",
+    "compose": "Compose",
+    "unknownSender": "(unknown)",
+    "noSubject": "(no subject)",
+    "to": "to {{to}}",
+    "cc": ", cc {{cc}}",
+    "reply": "Reply",
+    "replyPlaceholder": "Write a reply…",
+    "replyNotSent": "Reply not sent",
+    "send": "Send",
+    "notSent": "Not sent",
+    "newEmail": {
+      "title": "New email",
+      "to": "To",
+      "toPlaceholder": "name@example.com",
+      "cc": "Cc",
+      "subject": "Subject",
+      "body": "Message",
+      "bodyPlaceholder": "Compose email"
+    },
+    "card": {
+      "description": "Connect your Google account to read, send and reply to email.",
+      "account": "Gmail account",
+      "open": "Open inbox",
+      "connect": "Connect Gmail",
+      "signInFailed": "Could not start Google sign-in"
+    }
   },
   "bitrix": {
-    "notConnected": "Bitrix24 isn't connected",
-    "openConnectors": "Open Connectors",
     "noDeals": "No deals yet",
     "noLeads": "No leads yet",
     "noDealsMatch": "No deals match “{{query}}”.",
     "noLeadsMatch": "No leads match “{{query}}”.",
-    "unknownType": "Unknown CRM record type."
+    "unknownType": "Unknown CRM record type.",
+    "title": "CRM",
+    "deals": "Deals",
+    "leads": "Leads",
+    "searchDeals": "Search deals by title",
+    "searchLeads": "Search leads by title",
+    "untitledDeal": "(untitled deal)",
+    "untitledLead": "(untitled lead)",
+    "deal": "Deal #{{id}}",
+    "lead": "Lead #{{id}}",
+    "fields": {
+      "stage": "Stage",
+      "status": "Status",
+      "amount": "Amount",
+      "contact": "Contact",
+      "company": "Company",
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "source": "Source",
+      "responsible": "Responsible",
+      "created": "Created",
+      "modified": "Modified",
+      "notes": "Notes"
+    },
+    "openInPortal": "Open in Bitrix24",
+    "openFailed": "Could not open the link",
+    "comments": "Comments",
+    "commentsCount": "Comments ({{count}})",
+    "noComments": "No comments yet.",
+    "commentPlaceholder": "Add a comment",
+    "commentNotAdded": "Comment not added",
+    "unknownUser": "Bitrix24 user",
+    "card": {
+      "description": "Connect your Bitrix24 portal to browse deals and leads and add comments.",
+      "account": "Bitrix24 portal",
+      "open": "Open CRM",
+      "step1": "In Bitrix24: Developer resources → Other → Inbound webhook.",
+      "step2": "Tick the CRM permission (optionally Tasks, Users).",
+      "step3": "Copy the webhook URL and paste it here.",
+      "webhookPlaceholder": "https://yourportal.bitrix24.com/rest/1/…/",
+      "connectFailed": "Could not connect the portal"
+    }
   },
   "notifications": {
     "channelName": "Task results",
@@ -333,5 +458,19 @@
     "permission": {
       "notNow": "Not now"
     }
+  },
+  "connectors": {
+    "intro": "Connected apps are available to you here and to the AI assistant in chats.",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "disconnectConfirm": "Disconnect {{name}}?",
+    "disconnectFailed": "Disconnect failed",
+    "notConnectedTitle": "{{name}} isn't connected",
+    "notConnectedText": "Connect it on the Connectors tab to see your data here.",
+    "openConnectors": "Open Connectors",
+    "howToConnect": "How to connect",
+    "send": "Send"
   }
 }

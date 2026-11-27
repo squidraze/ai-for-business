@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Circle, CircleCheck } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -20,11 +20,7 @@ export function PasswordRules({ password }: { password: string }) {
     <View style={styles.wrap}>
       {rules.map((rule) => (
         <View key={rule.key} style={styles.row} accessible accessibilityState={{ checked: rule.ok }}>
-          <Ionicons
-            name={rule.ok ? 'checkmark-circle' : 'ellipse-outline'}
-            size={16}
-            color={rule.ok ? c.success : c.muted}
-          />
+          {rule.ok ? <CircleCheck size={16} color={c.success} /> : <Circle size={16} color={c.muted} />}
           <Text style={[styles.text, { color: rule.ok ? c.success : c.muted }]}>{rule.label}</Text>
         </View>
       ))}

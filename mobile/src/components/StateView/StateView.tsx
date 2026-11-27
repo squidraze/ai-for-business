@@ -1,9 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
+import type { LucideIcon } from 'lucide-react-native';
+import { CloudOff, RotateCw } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
-import { Button, type IconName } from '@/components/Button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { useColors } from '@/lib/theme';
 
 export function CenterView({ children }: { children: ReactNode }) {
@@ -23,26 +24,28 @@ export function ErrorView({
   message,
   onRetry,
   title,
-  icon = 'cloud-offline-outline',
+  icon: Icon = CloudOff,
 }: {
   message: string;
   onRetry?: () => void;
   title?: string;
-  icon?: IconName;
+  /** Lucide icon component, e.g. `icon={TriangleAlert}`. */
+  icon?: LucideIcon;
 }) {
   const c = useColors();
   const { t } = useTranslation();
   return (
     <CenterView>
-      <Ionicons name={icon} size={44} color={c.muted} />
+      <Icon size={44} color={c.muted} strokeWidth={1.75} />
       <Text style={[styles.title, { color: c.text }]}>{title ?? t('states.errorTitle')}</Text>
       <Text style={[styles.text, { color: c.muted }]}>{message}</Text>
       {onRetry ? (
-        <Button
-          title={t('common.retry')}
-          icon="refresh"
+        <PrimaryButton
+          label={t('common.retry')}
+          icon={RotateCw}
+          size="md"
           onPress={onRetry}
-          style={{ marginTop: 16, minWidth: 140 }}
+          className="mt-4 min-w-[140px] px-5"
         />
       ) : null}
     </CenterView>
@@ -50,12 +53,13 @@ export function ErrorView({
 }
 
 export function EmptyView({
-  icon,
+  icon: Icon,
   title,
   description,
   children,
 }: {
-  icon: IconName;
+  /** Lucide icon component, e.g. `icon={Mail}`. */
+  icon: LucideIcon;
   title: string;
   description?: string;
   children?: ReactNode;
@@ -63,7 +67,7 @@ export function EmptyView({
   const c = useColors();
   return (
     <CenterView>
-      <Ionicons name={icon} size={44} color={c.muted} />
+      <Icon size={44} color={c.muted} strokeWidth={1.75} />
       <Text style={[styles.title, { color: c.text }]}>{title}</Text>
       {description ? <Text style={[styles.text, { color: c.muted }]}>{description}</Text> : null}
       {children}

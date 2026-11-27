@@ -1,0 +1,1 @@
+export { TabFade } from './TabFade';

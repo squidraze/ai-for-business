@@ -1,16 +1,18 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { Check, Globe, Play, Plus, Trash2 } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Platform, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button } from '@/components/Button';
+import { AnimatedSwitch } from '@/components/AnimatedSwitch';
 import { FormError } from '@/components/FormError';
 import { KeyboardAwareForm, KeyboardTarget } from '@/components/KeyboardAwareForm';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Skeleton } from '@/components/Skeleton';
 import { TextField } from '@/components/TextField';
 import { errorMessage } from '@/lib/api';
+import { useLabelColors } from '@/lib/screen';
 import { useColors } from '@/lib/theme';
 
 import { deviceTimeZone } from '../../recurrence';
@@ -42,6 +44,7 @@ const IOS_HEADER_HEIGHT = 44;
 /** Create (no `schedule`) or edit a task. */
 export function ScheduleForm({ schedule }: { schedule?: Schedule }) {
   const c = useColors();
+  const labelColors = useLabelColors();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const initial = useMemo(() => (schedule ? valuesFromSchedule(schedule) : DEFAULT_VALUES), [schedule]);
@@ -192,7 +195,7 @@ export function ScheduleForm({ schedule }: { schedule?: Schedule }) {
 
         <FieldGroup label={t('schedules.fields.timezone')} error={form.error('timezone')}>
           <View style={[styles.readOnly, { backgroundColor: c.inputBg, borderColor: c.border }]}>
-            <Ionicons name="globe-outline" size={18} color={c.muted} />
+            <Globe size={18} color={c.muted} />
             <Text style={[styles.readOnlyText, { color: c.text }]} numberOfLines={1}>
               {timezone}
             </Text>
@@ -213,24 +216,23 @@ export function ScheduleForm({ schedule }: { schedule?: Schedule }) {
             <Text style={{ color: c.text, fontSize: 15, fontWeight: '500' }}>{t('schedules.fields.enabled')}</Text>
             <Text style={{ color: c.muted, fontSize: 13, marginTop: 2 }}>{t('schedules.fields.enabledHint')}</Text>
           </View>
-          <Switch
+          <AnimatedSwitch
             value={values.enabled}
             onValueChange={(enabled) => setValue('enabled', enabled)}
             disabled={busy}
-            trackColor={{ true: c.primary, false: c.border }}
-            thumbColor="#ffffff"
             accessibilityLabel={t('schedules.fields.enabled')}
           />
         </View>
 
         <KeyboardTarget>
-          <Button
-            title={schedule ? t('schedules.save') : t('schedules.create')}
-            icon={schedule ? 'checkmark' : 'add'}
+          <PrimaryButton
+            label={schedule ? t('schedules.save') : t('schedules.create')}
+            icon={schedule ? Check : Plus}
+            size="base"
+            className="mt-5"
             onPress={submit}
             loading={saving}
             disabled={remove.isPending}
-            style={{ marginTop: 20 }}
           />
         </KeyboardTarget>
 
@@ -238,10 +240,13 @@ export function ScheduleForm({ schedule }: { schedule?: Schedule }) {
 
         {schedule ? (
           <View style={styles.extra}>
-            <Button
-              title={t('schedules.runNow')}
-              icon="play"
-              variant="secondary"
+            <PrimaryButton
+              label={t('schedules.runNow')}
+              icon={Play}
+              size="base"
+              colorClassName="bg-gray-100 dark:bg-zinc-800"
+              textClassName="text-black dark:text-white"
+              iconColor={labelColors.label}
               onPress={runNow}
               loading={run.isPending}
               disabled={busy}
@@ -254,10 +259,13 @@ export function ScheduleForm({ schedule }: { schedule?: Schedule }) {
                 {runMessage.text}
               </Text>
             ) : null}
-            <Button
-              title={t('schedules.delete')}
-              icon="trash-outline"
-              variant="danger"
+            <PrimaryButton
+              label={t('schedules.delete')}
+              icon={Trash2}
+              size="base"
+              colorClassName="bg-red-50 dark:bg-red-500/15"
+              textClassName="text-red-600 dark:text-red-400"
+              iconColor={c.danger}
               onPress={confirmDelete}
               loading={remove.isPending}
               disabled={saving}

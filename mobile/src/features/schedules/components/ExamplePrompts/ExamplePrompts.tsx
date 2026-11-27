@@ -1,3 +1,4 @@
+import { Sparkles } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet } from 'react-native';
 
@@ -24,7 +25,7 @@ export function ExamplePrompts({
       {EXAMPLES.map((key) => (
         <Chip
           key={key}
-          icon="sparkles-outline"
+          icon={Sparkles}
           label={t(`schedules.examples.${key}.title`)}
           disabled={disabled}
           onPress={() =>

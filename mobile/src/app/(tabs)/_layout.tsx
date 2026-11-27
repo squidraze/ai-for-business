@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { AlarmClock, CircleUserRound, MessagesSquare, Puzzle } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import Tabs from 'expo-router/js-tabs';
 
@@ -31,8 +31,10 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: t('tabs.chats'),
+          // ChatsPage draws its own ScreenHeader inside a top safe area.
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubbles-outline" color={color as string} size={size} />
+            <MessagesSquare color={color as string} size={size} />
           ),
         }}
       />
@@ -40,8 +42,9 @@ export default function TabsLayout() {
         name="schedules"
         options={{
           title: t('tabs.schedules'),
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="alarm-outline" color={color as string} size={size} />
+            <AlarmClock color={color as string} size={size} />
           ),
           tabBarBadge: pendingBadge,
           tabBarBadgeStyle: { backgroundColor: c.warning, color: '#ffffff' },
@@ -51,8 +54,10 @@ export default function TabsLayout() {
         name="connectors"
         options={{
           title: t('tabs.connectors'),
+          // ConnectorsPage draws its own ScreenHeader.
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="extension-puzzle-outline" color={color as string} size={size} />
+            <Puzzle color={color as string} size={size} />
           ),
         }}
       />
@@ -60,8 +65,10 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: t('tabs.profile'),
+          // ProfilePage draws its own ScreenHeader inside a top safe area.
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-circle-outline" color={color as string} size={size} />
+            <CircleUserRound color={color as string} size={size} />
           ),
         }}
       />

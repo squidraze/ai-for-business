@@ -66,7 +66,13 @@
     "weekdays_required": "Выберите хотя бы один день.",
     "interval_too_short": "Слишком короткий интервал.",
     "interval_too_long": "Интервал не может быть больше 24 часов.",
-    "request_timeout": "Сервер не ответил вовремя. Попробуйте ещё раз."
+    "request_timeout": "Сервер не ответил вовремя. Попробуйте ещё раз.",
+    "telegram_not_connected": "Telegram не подключён",
+    "telegram_unavailable": "Telegram недоступен, попробуйте ещё раз",
+    "gmail_not_connected": "Gmail не подключён",
+    "gmail_unavailable": "Gmail недоступен, попробуйте ещё раз",
+    "bitrix24_not_connected": "Bitrix24 не подключён",
+    "bitrix24_unavailable": "Bitrix24 недоступен, попробуйте ещё раз"
   },
   "validation": {
     "required": "Заполните это поле.",
@@ -174,7 +180,11 @@
     "notifications": "Уведомления",
     "notificationsOn": "Включены",
     "notificationsOff": "Выключены",
-    "notificationsEnableHint": "Включает уведомления или открывает настройки системы"
+    "notificationsEnableHint": "Включает уведомления или открывает настройки системы",
+    "theme": "Тема",
+    "themeSystem": "Как в системе",
+    "themeDark": "Тёмная",
+    "themeLight": "Светлая"
   },
   "languages": {
     "en": "English",
@@ -184,25 +194,140 @@
   "chats": {
     "emptyTitle": "Чатов пока нет",
     "emptyText": "Спросите ассистента о чём угодно — он умеет читать ваш Telegram и Gmail.",
-    "start": "Начать чат"
+    "start": "Начать чат",
+    "title": "Чаты",
+    "newChat": "Новый чат",
+    "untitled": "Новый чат",
+    "integrations": "Интеграции",
+    "rowHint": "Долгое нажатие — переименовать или удалить",
+    "rename": "Переименовать",
+    "save": "Сохранить",
+    "deleteTitle": "Удалить чат?",
+    "deleteText": "«{{title}}» будет удалён навсегда.",
+    "renameFailed": "Не удалось переименовать чат.",
+    "deleteFailed": "Не удалось удалить чат."
   },
   "telegram": {
     "noChats": "Чатов нет",
     "noMatch": "Нет чатов по запросу «{{query}}».",
-    "noMessages": "Сообщений пока нет"
+    "noMessages": "Сообщений пока нет",
+    "searchPlaceholder": "Поиск чатов",
+    "unnamed": "Без названия",
+    "you": "Вы: ",
+    "mediaPreview": "Медиа",
+    "chatFallback": "Чат",
+    "messagePlaceholder": "Сообщение",
+    "notSent": "Не отправлено",
+    "media": {
+      "photo": "Фото",
+      "video": "Видео",
+      "document": "Файл",
+      "voice": "Голосовое сообщение",
+      "sticker": "Стикер"
+    },
+    "card": {
+      "description": "Войдите в свой аккаунт Telegram, чтобы читать и отправлять сообщения.",
+      "account": "Аккаунт Telegram",
+      "open": "Открыть чаты",
+      "connect": "Подключить Telegram"
+    },
+    "connect": {
+      "title": "Подключить Telegram",
+      "phoneTitle": "Ваш номер телефона",
+      "phoneText": "Telegram пришлёт код входа в приложение Telegram.",
+      "phonePlaceholder": "+998 90 123 45 67",
+      "sendCode": "Отправить код",
+      "codeTitle": "Введите код",
+      "codeText": "Мы отправили код в Telegram на других ваших устройствах ({{phone}}).",
+      "codePlaceholder": "12345",
+      "signIn": "Войти",
+      "changeNumber": "Изменить номер",
+      "passwordTitle": "Двухэтапная проверка",
+      "passwordText": "Ваш аккаунт защищён дополнительным паролем.",
+      "passwordPlaceholder": "Облачный пароль",
+      "confirm": "Подтвердить"
+    }
   },
   "gmail": {
     "empty": "Входящих нет",
-    "noMatch": "Нет писем по запросу «{{query}}»."
+    "noMatch": "Нет писем по запросу «{{query}}».",
+    "title": "Входящие",
+    "searchPlaceholder": "Поиск писем (запрос Gmail, например from:bob)",
+    "compose": "Написать",
+    "unknownSender": "(неизвестно)",
+    "noSubject": "(без темы)",
+    "to": "кому: {{to}}",
+    "cc": ", копия: {{cc}}",
+    "reply": "Ответить",
+    "replyPlaceholder": "Напишите ответ…",
+    "replyNotSent": "Ответ не отправлен",
+    "send": "Отправить",
+    "notSent": "Не отправлено",
+    "newEmail": {
+      "title": "Новое письмо",
+      "to": "Кому",
+      "toPlaceholder": "name@example.com",
+      "cc": "Копия",
+      "subject": "Тема",
+      "body": "Сообщение",
+      "bodyPlaceholder": "Текст письма"
+    },
+    "card": {
+      "description": "Подключите аккаунт Google, чтобы читать письма, отправлять их и отвечать.",
+      "account": "Аккаунт Gmail",
+      "open": "Открыть входящие",
+      "connect": "Подключить Gmail",
+      "signInFailed": "Не удалось начать вход через Google"
+    }
   },
   "bitrix": {
-    "notConnected": "Bitrix24 не подключён",
-    "openConnectors": "Открыть коннекторы",
     "noDeals": "Сделок пока нет",
     "noLeads": "Лидов пока нет",
     "noDealsMatch": "Нет сделок по запросу «{{query}}».",
     "noLeadsMatch": "Нет лидов по запросу «{{query}}».",
-    "unknownType": "Неизвестный тип записи CRM."
+    "unknownType": "Неизвестный тип записи CRM.",
+    "title": "CRM",
+    "deals": "Сделки",
+    "leads": "Лиды",
+    "searchDeals": "Поиск сделок по названию",
+    "searchLeads": "Поиск лидов по названию",
+    "untitledDeal": "(сделка без названия)",
+    "untitledLead": "(лид без названия)",
+    "deal": "Сделка #{{id}}",
+    "lead": "Лид #{{id}}",
+    "fields": {
+      "stage": "Стадия",
+      "status": "Статус",
+      "amount": "Сумма",
+      "contact": "Контакт",
+      "company": "Компания",
+      "name": "Имя",
+      "phone": "Телефон",
+      "email": "Email",
+      "source": "Источник",
+      "responsible": "Ответственный",
+      "created": "Создано",
+      "modified": "Изменено",
+      "notes": "Заметки"
+    },
+    "openInPortal": "Открыть в Bitrix24",
+    "openFailed": "Не удалось открыть ссылку",
+    "comments": "Комментарии",
+    "commentsCount": "Комментарии ({{count}})",
+    "noComments": "Комментариев пока нет.",
+    "commentPlaceholder": "Добавить комментарий",
+    "commentNotAdded": "Комментарий не добавлен",
+    "unknownUser": "Пользователь Bitrix24",
+    "card": {
+      "description": "Подключите портал Bitrix24, чтобы смотреть сделки и лиды и добавлять комментарии.",
+      "account": "Портал Bitrix24",
+      "open": "Открыть CRM",
+      "step1": "В Bitrix24: Разработчикам → Другое → Входящий вебхук.",
+      "step2": "Отметьте право CRM (по желанию — Задачи, Пользователи).",
+      "step3": "Скопируйте URL вебхука и вставьте его сюда.",
+      "webhookPlaceholder": "https://yourportal.bitrix24.ru/rest/1/…/",
+      "connectFailed": "Не удалось подключить портал"
+    }
   },
   "notifications": {
     "channelName": "Результаты задач",
@@ -339,5 +464,19 @@
     "permission": {
       "notNow": "Не сейчас"
     }
+  },
+  "connectors": {
+    "intro": "Подключённые приложения доступны вам здесь и ИИ-ассистенту в чатах.",
+    "connected": "Подключено",
+    "notConnected": "Не подключено",
+    "connect": "Подключить",
+    "disconnect": "Отключить",
+    "disconnectConfirm": "Отключить {{name}}?",
+    "disconnectFailed": "Не удалось отключить",
+    "notConnectedTitle": "{{name}} не подключён",
+    "notConnectedText": "Подключите его на вкладке «Коннекторы», чтобы видеть здесь свои данные.",
+    "openConnectors": "Открыть коннекторы",
+    "howToConnect": "Как подключить",
+    "send": "Отправить"
   }
 }

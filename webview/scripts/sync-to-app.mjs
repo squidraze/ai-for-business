@@ -4,7 +4,7 @@
  * folder of this one in the forBusiness repo):
  *
  *   dist/index.html        -> ../mobile/assets/webchat/index.html
- *   src/bridge/protocol.ts -> ../mobile/src/webchat/protocol.ts
+ *   src/bridge/protocol.ts -> ../mobile/src/features/chat/bridge/protocol.ts
  *
  * The web app owns both files; nothing on the mobile side is edited by hand.
  *
@@ -94,7 +94,7 @@ const PROTOCOL_HEADER = [
   '',
 ].join('\n');
 
-const protocolTarget = join(MOBILE_DIR, 'src', 'webchat', 'protocol.ts');
+const protocolTarget = join(MOBILE_DIR, 'src', 'features', 'chat', 'bridge', 'protocol.ts');
 mkdirSync(dirname(protocolTarget), { recursive: true });
 const protocolText = readFileSync(join(ROOT, 'src', 'bridge', 'protocol.ts'), 'utf8').replace(/\r\n/g, '\n');
 writeFileSync(protocolTarget, PROTOCOL_HEADER + protocolText, 'utf8');

@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { ChevronDown, ChevronUp, Clock } from 'lucide-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -67,9 +67,9 @@ export function TimeField({
           },
         ]}
       >
-        <Ionicons name="time-outline" size={20} color={c.primary} />
+        <Clock size={20} color={c.primary} />
         <Text style={[styles.value, { color: value ? c.text : c.muted }]}>{value || '--:--'}</Text>
-        <Ionicons name={iosOpen ? 'chevron-up' : 'chevron-down'} size={18} color={c.muted} />
+        {iosOpen ? <ChevronUp size={18} color={c.muted} /> : <ChevronDown size={18} color={c.muted} />}
       </TouchableOpacity>
       {Platform.OS === 'ios' && iosOpen ? (
         <DateTimePicker

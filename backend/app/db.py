@@ -38,11 +38,7 @@ def create_all():
     import app.ai.models  # noqa: F401
     import app.notifications.models  # noqa: F401
     import app.schedules.models  # noqa: F401
-
-    try:
-        import app.connectors.models  # noqa: F401
-    except ImportError:
-        pass
+    import app.integrations  # noqa: F401  (the registry imports every integration with its models)
     Base.metadata.create_all(engine)
     _migrate()
 

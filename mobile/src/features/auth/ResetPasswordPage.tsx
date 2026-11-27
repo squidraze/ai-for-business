@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { errorCodeMessage, parseApiError } from '@/lib/api';
 import { useColors } from '@/lib/theme';
 
@@ -107,11 +107,12 @@ export function ResetPasswordPage() {
         editable={!reset.isPending}
       />
       <KeyboardTarget>
-        <Button
-          title={t('auth.reset.submit')}
+        <PrimaryButton
+          label={t('auth.reset.submit')}
+          size="base"
           onPress={submit}
           loading={reset.isPending}
-          style={{ marginTop: 6 }}
+          className="mt-1.5"
         />
       </KeyboardTarget>
       <ResendCode

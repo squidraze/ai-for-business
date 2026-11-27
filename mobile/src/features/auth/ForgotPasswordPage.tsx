@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/Button';
+import { PrimaryButton } from '@/components/PrimaryButton';
 
 import { useForgotPassword } from './auth.hooks';
 import { AuthLayout, KeyboardTarget } from './components/AuthLayout';
@@ -60,11 +60,12 @@ export function ForgotPasswordPage() {
         editable={!forgot.isPending}
       />
       <KeyboardTarget>
-        <Button
-          title={t('auth.forgot.submit')}
+        <PrimaryButton
+          label={t('auth.forgot.submit')}
+          size="base"
           onPress={submit}
           loading={forgot.isPending}
-          style={{ marginTop: 6 }}
+          className="mt-1.5"
         />
       </KeyboardTarget>
     </AuthLayout>

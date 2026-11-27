@@ -1,5 +1,5 @@
 /**
- * The bridge contract between the native host (mobile/src/webchat) and this
+ * The bridge contract between the native host (mobile/src/features/chat) and this
  * web app.
  *
  * SOURCE OF TRUTH. This file is copied verbatim into the Expo app by

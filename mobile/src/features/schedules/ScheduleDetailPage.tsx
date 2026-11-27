@@ -1,4 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
+import {
+  Bell,
+  CheckCheck,
+  CirclePause,
+  Clock,
+  MessagesSquare,
+  Play,
+  Repeat,
+  SquarePen,
+  type LucideIcon,
+} from 'lucide-react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useLayoutEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +17,6 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -15,13 +24,15 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 
+import { AnimatedSwitch } from '@/components/AnimatedSwitch';
 import { AsyncState, resolveAsyncState } from '@/components/AsyncState';
-import { Button } from '@/components/Button';
 import { FadeSwitch } from '@/components/FadeSwitch';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyView, ErrorView } from '@/components/StateView';
-import { Separator } from '@/components/ui';
+import { Separator } from '@/components/Separator';
 import { errorMessage, parseApiError } from '@/lib/api';
+import { useLabelColors } from '@/lib/screen';
 import { useColors } from '@/lib/theme';
 
 import { RunRow, RunRowSkeleton } from './components/RunRow';
@@ -34,6 +45,10 @@ import { useRunSchedule, useSchedule, useScheduleRuns, useToggleSchedule } from 
 
 /** Distance from the bottom (px) at which the next page of runs loads. */
 const LOAD_MORE_OFFSET = 300;
+
+/** Fill and label of the secondary (neutral) action buttons. */
+const NEUTRAL_FILL = 'bg-gray-100 dark:bg-zinc-800';
+const NEUTRAL_TEXT = 'text-black dark:text-white';
 
 /** `/schedules/[id]`: the task, its actions and the run history. */
 export function ScheduleDetailPage() {
@@ -55,7 +70,7 @@ export function ScheduleDetailPage() {
               accessibilityRole="button"
               accessibilityLabel={t('schedules.edit')}
             >
-              <Ionicons name="create-outline" size={24} color={c.primary} />
+              <SquarePen size={24} color={c.primary} />
             </TouchableOpacity>
           )
         : undefined,
@@ -81,6 +96,7 @@ export function ScheduleDetailPage() {
 
 function DetailContent({ schedule, refetch }: { schedule: Schedule; refetch: () => Promise<unknown> }) {
   const c = useColors();
+  const labelColors = useLabelColors();
   const { t } = useTranslation();
   const toggle = useToggleSchedule();
   const run = useRunSchedule(schedule.uuid);
@@ -131,20 +147,18 @@ function DetailContent({ schedule, refetch }: { schedule: Schedule; refetch: () 
       <View style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}>
         <View style={styles.cardTop}>
           <Text style={[styles.title, { color: c.text }]}>{schedule.title}</Text>
-          <Switch
+          <AnimatedSwitch
             value={schedule.enabled}
             onValueChange={(enabled) => toggle.mutate({ uuid: schedule.uuid, enabled })}
-            trackColor={{ true: c.primary, false: c.border }}
-            thumbColor="#ffffff"
             accessibilityLabel={t('schedules.fields.enabled')}
           />
         </View>
-        <InfoLine icon="repeat" text={formatRecurrence(schedule, t)} />
-        <InfoLine icon={schedule.enabled ? 'time-outline' : 'pause-circle-outline'} text={nextRunLabel(schedule, t)} />
+        <InfoLine icon={Repeat} text={formatRecurrence(schedule, t)} />
+        <InfoLine icon={schedule.enabled ? Clock : CirclePause} text={nextRunLabel(schedule, t)} />
         {schedule.last_run_at ? (
-          <InfoLine icon="checkmark-done-outline" text={t('schedules.lastRun', { when: formatWhen(schedule.last_run_at, t) })} />
+          <InfoLine icon={CheckCheck} text={t('schedules.lastRun', { when: formatWhen(schedule.last_run_at, t) })} />
         ) : null}
-        <InfoLine icon="notifications-outline" text={t(`schedules.notify.${schedule.notify}`)} />
+        <InfoLine icon={Bell} text={t(`schedules.notify.${schedule.notify}`)} />
         {schedule.pending_approval ? (
           <View style={{ marginTop: 12 }}>
             <StatusChip status="awaiting_approval" onPress={() => openScheduleChat(schedule)} />
@@ -161,22 +175,33 @@ function DetailContent({ schedule, refetch }: { schedule: Schedule; refetch: () 
       </View>
 
       <View style={styles.actions}>
-        <Button title={t('schedules.openChat')} icon="chatbubbles-outline" onPress={() => openScheduleChat(schedule)} />
+        <PrimaryButton
+          label={t('schedules.openChat')}
+          icon={MessagesSquare}
+          size="base"
+          onPress={() => openScheduleChat(schedule)}
+        />
         <View style={styles.actionRow}>
-          <Button
-            title={t('schedules.runNow')}
-            icon="play"
-            variant="secondary"
+          <PrimaryButton
+            label={t('schedules.runNow')}
+            icon={Play}
+            size="base"
+            className="flex-1"
+            colorClassName={NEUTRAL_FILL}
+            textClassName={NEUTRAL_TEXT}
+            iconColor={labelColors.label}
             onPress={runNow}
             loading={run.isPending}
-            style={{ flex: 1 }}
           />
-          <Button
-            title={t('schedules.edit')}
-            icon="create-outline"
-            variant="secondary"
+          <PrimaryButton
+            label={t('schedules.edit')}
+            icon={SquarePen}
+            size="base"
+            className="flex-1"
+            colorClassName={NEUTRAL_FILL}
+            textClassName={NEUTRAL_TEXT}
+            iconColor={labelColors.label}
             onPress={() => openScheduleEdit(schedule.uuid)}
-            style={{ flex: 1 }}
           />
         </View>
         {runMessage ? (
@@ -200,7 +225,7 @@ function DetailContent({ schedule, refetch }: { schedule: Schedule; refetch: () 
         ) : runsState === 'error' ? (
           <ErrorView message={errorMessage(runs.error)} onRetry={() => void runs.refetch()} />
         ) : runsState === 'empty' ? (
-          <EmptyView icon="time-outline" title={t('schedules.noRuns')} description={t('schedules.noRunsText')} />
+          <EmptyView icon={Clock} title={t('schedules.noRuns')} description={t('schedules.noRunsText')} />
         ) : (
           <View>
             {items.map((item, index) => (
@@ -217,11 +242,11 @@ function DetailContent({ schedule, refetch }: { schedule: Schedule; refetch: () 
   );
 }
 
-function InfoLine({ icon, text }: { icon: 'repeat' | 'time-outline' | 'pause-circle-outline' | 'checkmark-done-outline' | 'notifications-outline'; text: string }) {
+function InfoLine({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   const c = useColors();
   return (
     <View style={styles.line}>
-      <Ionicons name={icon} size={16} color={c.muted} />
+      <Icon size={16} color={c.muted} />
       <Text style={[styles.lineText, { color: c.text }]}>{text}</Text>
     </View>
   );

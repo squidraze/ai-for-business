@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -14,6 +13,7 @@ export function RunRow({ run }: { run: ScheduleRun }) {
   const c = useColors();
   const { t } = useTranslation();
   const look = statusLook(run.status, c);
+  const StatusIcon = look.icon;
   const detail =
     run.status === 'skipped' && run.skip_reason
       ? t(`schedules.skipReason.${run.skip_reason}`, { defaultValue: t('schedules.status.skipped') })
@@ -21,7 +21,7 @@ export function RunRow({ run }: { run: ScheduleRun }) {
   return (
     <View style={styles.row}>
       <View style={[styles.icon, { backgroundColor: look.bg }]}>
-        <Ionicons name={look.icon} size={18} color={look.fg} />
+        <StatusIcon size={18} color={look.fg} />
       </View>
       <View style={styles.body}>
         <View style={styles.top}>

@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Circle, CircleDot } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -41,11 +41,7 @@ export function NotifyPicker({
               index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.border },
             ]}
           >
-            <Ionicons
-              name={selected ? 'radio-button-on' : 'radio-button-off'}
-              size={22}
-              color={selected ? c.primary : c.muted}
-            />
+            {selected ? <CircleDot size={22} color={c.primary} /> : <Circle size={22} color={c.muted} />}
             <View style={styles.texts}>
               <Text style={[styles.title, { color: c.text }]}>{t(`schedules.notify.${option}`)}</Text>
               <Text style={[styles.hint, { color: c.muted }]}>{t(`schedules.notify.${option}Hint`)}</Text>

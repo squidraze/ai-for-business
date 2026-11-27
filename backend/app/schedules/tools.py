@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 from sqlalchemy import select
 
-from app.ai.tools import Tool, register_tool_provider
+from app.ai.tools import Tool, fn_schema as _fn, register_tool_provider
 from app.db import SessionLocal
 from app.notifications import last_device_timezone
 from app.schedules import recurrence, service
@@ -50,15 +50,6 @@ _RECURRENCE_PROPS = {
 }
 
 
-def _fn(name: str, description: str, properties: dict, required: list[str]) -> dict:
-    return {
-        "type": "function",
-        "function": {
-            "name": name,
-            "description": description,
-            "parameters": {"type": "object", "properties": properties, "required": required},
-        },
-    }
 
 
 def _default_tz(user_id: int) -> str:

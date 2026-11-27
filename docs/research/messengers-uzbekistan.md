@@ -25,7 +25,7 @@
 
 ### Сейчас: аккаунт пользователя (MTProto, Telethon)
 
-Как сделано в прототипе ([backend/app/connectors/telegram.py](../../backend/app/connectors/telegram.py)): вход по номеру, коду и 2FA, видны все чаты и история, есть поиск и отправка.
+Как сделано в прототипе ([backend/app/integrations/telegram/](../../backend/app/integrations/telegram/)): вход по номеру, коду и 2FA, видны все чаты и история, есть поиск и отправка.
 
 | Плюсы | Минусы |
 |---|---|
