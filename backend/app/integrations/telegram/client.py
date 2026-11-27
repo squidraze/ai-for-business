@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
+from collections import OrderedDict
 from typing import Any
 
 from sqlalchemy import select
@@ -52,6 +54,18 @@ _clients: dict[int, TelegramClient] = {}
 _lock = UserLocks()
 # user_id -> {dialog_id: (title, entity)} — filled by list_dialogs, used to resolve chat ids/names
 _dialogs: dict[int, dict[int, tuple[str, Any]]] = {}
+# user_id -> last StringSession written to the db (skips a db read on every request)
+_saved_sessions: dict[int, str] = {}
+# Avatars: the chat list asks for ~50 at once and re-asks on every poll/re-render.
+# Downloads are capped per user and the bytes (or "no photo") are cached in memory.
+PHOTO_CONCURRENCY = 4
+PHOTO_TIMEOUT_SECONDS = 10
+PHOTO_CACHE_TTL_SECONDS = 3600
+PHOTO_CACHE_MAX = 500
+_photo_slots: dict[int, asyncio.Semaphore] = {}
+_photos: dict[int, "OrderedDict[str, tuple[float, bytes | None]]"] = {}
+# one dialog reload at a time per user (concurrent avatar requests would each call get_dialogs(200))
+_dialogs_lock = UserLocks()
 
 
 # --------------------------------------------------------------------------- db helpers
@@ -166,6 +180,8 @@ def _new_client(session: str = "") -> TelegramClient:
 async def _drop(user_id: int, delete: bool = False) -> None:
     client = _clients.pop(user_id, None)
     _dialogs.pop(user_id, None)
+    _saved_sessions.pop(user_id, None)
+    _photos.pop(user_id, None)
     if client is not None:
         try:
             await client.disconnect()
@@ -176,13 +192,18 @@ async def _drop(user_id: int, delete: bool = False) -> None:
 
 
 def _persist_session(user_id: int, client: TelegramClient) -> None:
+    """Save the StringSession when it changed. Runs on every request, so it compares with the
+    last saved value in memory and touches the (sync, event-loop-blocking) db only on a change."""
     try:
         s = client.session.save()
     except Exception:  # noqa: BLE001
         return
+    if not s or _saved_sessions.get(user_id) == s:
+        return
     row = _row(user_id)
-    if row is not None and s and row.session != s:
+    if row is not None and row.session != s:
         _upsert(user_id, session=s)
+    _saved_sessions[user_id] = s
 
 
 async def _get_client(user_id: int, authorized: bool = True) -> TelegramClient:
@@ -246,6 +267,8 @@ async def send_code(user_id: int, phone: str) -> dict:
         # log the old one out — sign_in will replace it)
         old = _clients.pop(user_id, None)
         _dialogs.pop(user_id, None)
+        _saved_sessions.pop(user_id, None)
+        _photos.pop(user_id, None)
         if old is not None:
             try:
                 await old.disconnect()
@@ -477,7 +500,10 @@ async def _resolve(user_id: int, client: TelegramClient, chat_id: str) -> tuple[
     if raw.lstrip("-").isdigit():
         pid = int(raw)
         if not cache or pid not in cache:
-            await _load_dialogs(user_id, client, 200)
+            async with _dialogs_lock(user_id):
+                cache = _dialogs.get(user_id)
+                if not cache or pid not in cache:  # another request may have just reloaded
+                    await _load_dialogs(user_id, client, 200)
             cache = _dialogs.get(user_id) or {}
         if pid in cache:
             return cache[pid][1], cache[pid][0]
@@ -552,17 +578,55 @@ async def search_messages(user_id: int, query: str, chat_id: str | None = None, 
     return out
 
 
+def _cached_photo(user_id: int, chat_id: str) -> tuple[bool, bytes | None]:
+    cache = _photos.get(user_id)
+    hit = cache.get(chat_id) if cache else None
+    if hit is None or time.monotonic() - hit[0] > PHOTO_CACHE_TTL_SECONDS:
+        return False, None
+    cache.move_to_end(chat_id)
+    return True, hit[1]
+
+
+def _cache_photo(user_id: int, chat_id: str, data: bytes | None) -> None:
+    cache = _photos.setdefault(user_id, OrderedDict())
+    cache[chat_id] = (time.monotonic(), data)
+    cache.move_to_end(chat_id)
+    while len(cache) > PHOTO_CACHE_MAX:
+        cache.popitem(last=False)
+
+
 async def get_photo(user_id: int, chat_id: str) -> bytes | None:
-    client = await _get_client(user_id)
-    entity, _ = await _resolve(user_id, client, chat_id)
-    try:
-        data = await client.download_profile_photo(entity, file=bytes, download_big=False)
-    except tg_errors.FloodWaitError as e:
-        raise _map_error(e) from e
-    except Exception as e:  # noqa: BLE001
-        log.info("telegram photo for %s failed: %s", chat_id, e)
-        return None
-    return data or None
+    """Small avatar of a chat, or None when it has none. At most PHOTO_CONCURRENCY downloads per
+    user run at once (the rest queue), each capped at PHOTO_TIMEOUT_SECONDS, results cached."""
+    found, data = _cached_photo(user_id, chat_id)
+    if found:
+        return data
+    slots = _photo_slots.get(user_id)
+    if slots is None:
+        slots = _photo_slots[user_id] = asyncio.Semaphore(PHOTO_CONCURRENCY)
+    async with slots:
+        found, data = _cached_photo(user_id, chat_id)  # filled while we queued
+        if found:
+            return data
+        client = await _get_client(user_id)
+        entity, _ = await _resolve(user_id, client, chat_id)
+        try:
+            data = await asyncio.wait_for(
+                client.download_profile_photo(entity, file=bytes, download_big=False),
+                timeout=PHOTO_TIMEOUT_SECONDS,
+            )
+        except tg_errors.FloodWaitError as e:
+            raise _map_error(e) from e
+        except asyncio.TimeoutError:
+            # not cached: a slow DC now doesn't mean "no photo"; the app shows initials meanwhile
+            log.info("telegram photo for %s timed out", chat_id)
+            return None
+        except Exception as e:  # noqa: BLE001
+            log.info("telegram photo for %s failed: %s", chat_id, e)
+            return None
+        data = data or None
+        _cache_photo(user_id, chat_id, data)
+        return data
 
 
 async def shutdown() -> None:

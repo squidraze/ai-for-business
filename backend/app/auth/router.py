@@ -48,6 +48,11 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
         raise ApiError(401, "invalid_token")
     if not user.email_verified:
         raise ApiError(403, "email_not_verified", email=user.email)
+    # Hand the pooled connection back now. Otherwise it stays checked out until the response is
+    # sent, and a burst of slow requests (e.g. 50 Telegram avatars) drains the pool: every other
+    # request, the scheduler included, then waits 30 s for a connection. The session stays usable
+    # (it reconnects on the next query) and `user` stays loaded (expire_on_commit=False).
+    db.commit()
     return user
 
 
